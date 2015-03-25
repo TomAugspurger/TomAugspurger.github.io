@@ -1,0 +1,3023 @@
+<!DOCTYPE html>
+<html prefix="
+og: http://ogp.me/ns#
+article: http://ogp.me/ns/article#
+" lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>dplyr and pandas | Tom's Blog</title>
+
+                <link href="../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+
+                <link rel="alternate" type="application/rss+xml" title="RSS" href="../rss.xml">
+
+      <link rel="canonical" href="http://tomaugspurger.github.io/posts/dplry-pandas.html">
+
+
+
+    
+        <!--[if lt IE 9]><script src="/assets/js/html5.js"></script><![endif]-->
+
+    
+
+    
+    <meta name="author" content="Tom Augspurger">
+        <meta property="og:site_name" content="Tom's Blog">
+    <meta property="og:title" content="dplyr and pandas">
+    <meta property="og:url" content="http://tomaugspurger.github.io/posts/dplry-pandas.html">
+    <meta property="og:description" content="This notebook compares pandas
+and dplyr.
+The comparison is just on syntax (verbage), not performance. Whether you're an R user looking to switch to pandas (or the other way around), I hope this guide ">
+    <meta property="og:type" content="article">
+    <meta property="article:published_time" content="2014-10-16T07:00:00-05:00">
+           <meta property="article:tag" content="data science">
+           <meta property="article:tag" content="python">
+
+    
+    
+
+</head>
+<body>
+    <section class="social">
+        <ul>
+                    <li><a href="../index.html" title="Home"><i class="icon-home"></i></a></li>
+            <li><a href="../archive.html" title="Archives"><i class="icon-folder-open-alt"></i></a></li>
+            <li><a href="../categories/index.html" title="Tags"><i class="icon-tags"></i></a></li>
+            <li><a href="../rss.xml" title="RSS"><i class="icon-rss"></i></a></li>
+
+        </ul>
+    </section>
+    <section class="page-content">
+        <div class="content" rel="main">
+    <div class="post">
+        <h1 class="p-name entry-title" itemprop="headline name">dplyr and pandas</h1>
+
+        <div class="meta">
+            <div class="authordate">
+                <time class="timeago" datetime="2014-10-16T07:00:00-05:00">2014-10-16 07:00</time>
+            
+                      |  
+        <a href="dplry-pandas.ipynb" id="sourcelink">Source</a>
+
+            </div>
+                    <div itemprop="keywords" class="tags">
+        <ul>
+        Tags : 
+           <li><a class="tag p-category" href="../categories/data-science.html" rel="tag">data science</a></li>
+           <li><a class="tag p-category" href="../categories/python.html" rel="tag">python</a></li>
+        </ul>
+        </div>
+
+        </div>
+        <div class="body">
+            <div tabindex="-1" id="notebook" class="border-box-sizing">
+    <div class="container" id="notebook-container">
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This notebook compares <a href="http://pandas.pydata.org">pandas</a>
+and <a href="http://cran.r-project.org/web/packages/dplyr/index.html">dplyr</a>.
+The comparison is just on syntax (verbage), not performance. Whether you're an R user looking to switch to pandas (or the other way around), I hope this guide will help ease the transition.</p>
+<p>We'll work through the <a href="http://cran.r-project.org/web/packages/dplyr/vignettes/introduction.html">introductory dplyr vignette</a> to analyze some flight data.</p>
+<p>I'm working on a better layout to show the two packages side by side.
+But for now I'm just putting the <code>dplyr</code> code in a comment above each python call.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># Some prep work to get the data from R and into pandas</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="o">%</span><span class="k">load_ext</span> rmagic
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s">"display.max_rows"</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>/Users/tom/Envs/py3/lib/python3.4/site-packages/IPython/extensions/rmagic.py:693: UserWarning: The rmagic extension in IPython is deprecated in favour of rpy2.ipython. If available, that will be loaded instead.
+http://rpy.sourceforge.net/
+  warnings.warn("The rmagic extension in IPython is deprecated in favour of "
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="o">%%</span>R
+<span class="kn">library</span><span class="p">(</span><span class="s">"nycflights13"</span><span class="p">)</span>
+write.csv<span class="p">(</span>flights<span class="p">,</span> <span class="s">"flights.csv"</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Data:-nycflights13">Data: nycflights13<a class="anchor-link" href="dplry-pandas.html#Data:-nycflights13">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">flights</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"flights.csv"</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># dim(flights)   &lt;--- The R code</span>
+<span class="n">flights</span><span class="o">.</span><span class="n">shape</span>  <span class="c"># &lt;--- The python code</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[4]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(336776, 16)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># head(flights)</span>
+<span class="n">flights</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[5]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+      <th>arr_time</th>
+      <th>arr_delay</th>
+      <th>carrier</th>
+      <th>tailnum</th>
+      <th>flight</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>air_time</th>
+      <th>distance</th>
+      <th>hour</th>
+      <th>minute</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> 517</td>
+      <td> 2</td>
+      <td>  830</td>
+      <td> 11</td>
+      <td> UA</td>
+      <td> N14228</td>
+      <td> 1545</td>
+      <td> EWR</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1400</td>
+      <td> 5</td>
+      <td> 17</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> 533</td>
+      <td> 4</td>
+      <td>  850</td>
+      <td> 20</td>
+      <td> UA</td>
+      <td> N24211</td>
+      <td> 1714</td>
+      <td> LGA</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1416</td>
+      <td> 5</td>
+      <td> 33</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> 542</td>
+      <td> 2</td>
+      <td>  923</td>
+      <td> 33</td>
+      <td> AA</td>
+      <td> N619AA</td>
+      <td> 1141</td>
+      <td> JFK</td>
+      <td> MIA</td>
+      <td> 160</td>
+      <td> 1089</td>
+      <td> 5</td>
+      <td> 42</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> 544</td>
+      <td>-1</td>
+      <td> 1004</td>
+      <td>-18</td>
+      <td> B6</td>
+      <td> N804JB</td>
+      <td>  725</td>
+      <td> JFK</td>
+      <td> BQN</td>
+      <td> 183</td>
+      <td> 1576</td>
+      <td> 5</td>
+      <td> 44</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> 554</td>
+      <td>-6</td>
+      <td>  812</td>
+      <td>-25</td>
+      <td> DL</td>
+      <td> N668DN</td>
+      <td>  461</td>
+      <td> LGA</td>
+      <td> ATL</td>
+      <td> 116</td>
+      <td>  762</td>
+      <td> 5</td>
+      <td> 54</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Single-table-verbs">Single table verbs<a class="anchor-link" href="dplry-pandas.html#Single-table-verbs">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><code>dplyr</code> has a small set of nicely defined verbs. I've listed their closest pandas verbs.</p>
+<table>
+  <tr>
+    <td><b>dplyr</b></td>
+    <td><b>pandas</b></td>
+  </tr>
+  <tr>
+    <td>filter() (and slice())</td>
+    <td>query() (and loc[], iloc[])</td>
+  </tr>
+  <tr>
+    <td>arrange()</td>
+    <td>sort()</td>
+  </tr>
+  <tr>
+  <td>select() (and rename())</td>
+    <td>\_\_getitem\_\_ (and rename())</td>
+  </tr>
+  <tr>
+  <td>distinct()</td>
+    <td>drop_duplicates()</td>
+  </tr>
+  <tr>
+    <td>mutate() (and transmute())</td>
+    <td>None</td>
+  </tr>
+  <tr>
+    <td>summarise()</td>
+    <td>None</td>
+  </tr>
+  <tr>
+    <td>sample_n() and sample_frac()</td>
+    <td>None</td>
+  </tr>
+</table>
+
+
+<p>Some of the "missing" verbs in pandas are because there are other, different ways of achieving the same goal. For example <code>summarise</code> is spread across <code>mean</code>, <code>std</code>, etc. Others, like <code>sample_n</code>, just haven't been implemented yet.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Filter-rows-with-filter(),-query()">Filter rows with filter(), query()<a class="anchor-link" href="dplry-pandas.html#Filter-rows-with-filter(),-query()">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># filter(flights, month == 1, day == 1)</span>
+<span class="n">flights</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s">"month == 1 &amp; day == 1"</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[6]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+      <th>arr_time</th>
+      <th>arr_delay</th>
+      <th>carrier</th>
+      <th>tailnum</th>
+      <th>flight</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>air_time</th>
+      <th>distance</th>
+      <th>hour</th>
+      <th>minute</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1  </th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> 517</td>
+      <td>  2</td>
+      <td> 830</td>
+      <td> 11</td>
+      <td> UA</td>
+      <td> N14228</td>
+      <td> 1545</td>
+      <td> EWR</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1400</td>
+      <td>  5</td>
+      <td> 17</td>
+    </tr>
+    <tr>
+      <th>2  </th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> 533</td>
+      <td>  4</td>
+      <td> 850</td>
+      <td> 20</td>
+      <td> UA</td>
+      <td> N24211</td>
+      <td> 1714</td>
+      <td> LGA</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1416</td>
+      <td>  5</td>
+      <td> 33</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>841</th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> AA</td>
+      <td> N3EVAA</td>
+      <td> 1925</td>
+      <td> LGA</td>
+      <td> MIA</td>
+      <td> NaN</td>
+      <td> 1096</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>842</th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> B6</td>
+      <td> N618JB</td>
+      <td>  125</td>
+      <td> JFK</td>
+      <td> FLL</td>
+      <td> NaN</td>
+      <td> 1069</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>842 rows × 16 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The more verbose version:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># flights[flights$month == 1 &amp; flights$day == 1, ]</span>
+<span class="n">flights</span><span class="p">[(</span><span class="n">flights</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">flights</span><span class="o">.</span><span class="n">day</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[7]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+      <th>arr_time</th>
+      <th>arr_delay</th>
+      <th>carrier</th>
+      <th>tailnum</th>
+      <th>flight</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>air_time</th>
+      <th>distance</th>
+      <th>hour</th>
+      <th>minute</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1  </th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> 517</td>
+      <td>  2</td>
+      <td> 830</td>
+      <td> 11</td>
+      <td> UA</td>
+      <td> N14228</td>
+      <td> 1545</td>
+      <td> EWR</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1400</td>
+      <td>  5</td>
+      <td> 17</td>
+    </tr>
+    <tr>
+      <th>2  </th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> 533</td>
+      <td>  4</td>
+      <td> 850</td>
+      <td> 20</td>
+      <td> UA</td>
+      <td> N24211</td>
+      <td> 1714</td>
+      <td> LGA</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1416</td>
+      <td>  5</td>
+      <td> 33</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>841</th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> AA</td>
+      <td> N3EVAA</td>
+      <td> 1925</td>
+      <td> LGA</td>
+      <td> MIA</td>
+      <td> NaN</td>
+      <td> 1096</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>842</th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> B6</td>
+      <td> N618JB</td>
+      <td>  125</td>
+      <td> JFK</td>
+      <td> FLL</td>
+      <td> NaN</td>
+      <td> 1069</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>842 rows × 16 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># slice(flights, 1:10)</span>
+<span class="n">flights</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="mi">9</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[8]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+      <th>arr_time</th>
+      <th>arr_delay</th>
+      <th>carrier</th>
+      <th>tailnum</th>
+      <th>flight</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>air_time</th>
+      <th>distance</th>
+      <th>hour</th>
+      <th>minute</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> 517</td>
+      <td> 2</td>
+      <td> 830</td>
+      <td> 11</td>
+      <td> UA</td>
+      <td> N14228</td>
+      <td> 1545</td>
+      <td> EWR</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1400</td>
+      <td> 5</td>
+      <td> 17</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> 533</td>
+      <td> 4</td>
+      <td> 850</td>
+      <td> 20</td>
+      <td> UA</td>
+      <td> N24211</td>
+      <td> 1714</td>
+      <td> LGA</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1416</td>
+      <td> 5</td>
+      <td> 33</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> 557</td>
+      <td>-3</td>
+      <td> 709</td>
+      <td>-14</td>
+      <td> EV</td>
+      <td> N829AS</td>
+      <td> 5708</td>
+      <td> LGA</td>
+      <td> IAD</td>
+      <td>  53</td>
+      <td>  229</td>
+      <td> 5</td>
+      <td> 57</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td> 1</td>
+      <td> 557</td>
+      <td>-3</td>
+      <td> 838</td>
+      <td> -8</td>
+      <td> B6</td>
+      <td> N593JB</td>
+      <td>   79</td>
+      <td> JFK</td>
+      <td> MCO</td>
+      <td> 140</td>
+      <td>  944</td>
+      <td> 5</td>
+      <td> 57</td>
+    </tr>
+  </tbody>
+</table>
+<p>9 rows × 16 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Arrange-rows-with-arrange(),-sort()">Arrange rows with arrange(), sort()<a class="anchor-link" href="dplry-pandas.html#Arrange-rows-with-arrange(),-sort()">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># arrange(flights, year, month, day) </span>
+<span class="n">flights</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s">'year'</span><span class="p">,</span> <span class="s">'month'</span><span class="p">,</span> <span class="s">'day'</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[9]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+      <th>arr_time</th>
+      <th>arr_delay</th>
+      <th>carrier</th>
+      <th>tailnum</th>
+      <th>flight</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>air_time</th>
+      <th>distance</th>
+      <th>hour</th>
+      <th>minute</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1     </th>
+      <td> 2013</td>
+      <td>  1</td>
+      <td>  1</td>
+      <td> 517</td>
+      <td>  2</td>
+      <td> 830</td>
+      <td> 11</td>
+      <td> UA</td>
+      <td> N14228</td>
+      <td> 1545</td>
+      <td> EWR</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1400</td>
+      <td>  5</td>
+      <td> 17</td>
+    </tr>
+    <tr>
+      <th>2     </th>
+      <td> 2013</td>
+      <td>  1</td>
+      <td>  1</td>
+      <td> 533</td>
+      <td>  4</td>
+      <td> 850</td>
+      <td> 20</td>
+      <td> UA</td>
+      <td> N24211</td>
+      <td> 1714</td>
+      <td> LGA</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1416</td>
+      <td>  5</td>
+      <td> 33</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>111295</th>
+      <td> 2013</td>
+      <td> 12</td>
+      <td> 31</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> UA</td>
+      <td>    NaN</td>
+      <td>  219</td>
+      <td> EWR</td>
+      <td> ORD</td>
+      <td> NaN</td>
+      <td>  719</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>111296</th>
+      <td> 2013</td>
+      <td> 12</td>
+      <td> 31</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> UA</td>
+      <td>    NaN</td>
+      <td>  443</td>
+      <td> JFK</td>
+      <td> LAX</td>
+      <td> NaN</td>
+      <td> 2475</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>336776 rows × 16 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># arrange(flights, desc(arr_delay))</span>
+<span class="n">flights</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s">'arr_delay'</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="k">False</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[10]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+      <th>arr_time</th>
+      <th>arr_delay</th>
+      <th>carrier</th>
+      <th>tailnum</th>
+      <th>flight</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>air_time</th>
+      <th>distance</th>
+      <th>hour</th>
+      <th>minute</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>7073  </th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td>  9</td>
+      <td>  641</td>
+      <td> 1301</td>
+      <td> 1242</td>
+      <td> 1272</td>
+      <td> HA</td>
+      <td> N384HA</td>
+      <td>   51</td>
+      <td> JFK</td>
+      <td> HNL</td>
+      <td> 640</td>
+      <td> 4983</td>
+      <td>  6</td>
+      <td> 41</td>
+    </tr>
+    <tr>
+      <th>235779</th>
+      <td> 2013</td>
+      <td> 6</td>
+      <td> 15</td>
+      <td> 1432</td>
+      <td> 1137</td>
+      <td> 1607</td>
+      <td> 1127</td>
+      <td> MQ</td>
+      <td> N504MQ</td>
+      <td> 3535</td>
+      <td> JFK</td>
+      <td> CMH</td>
+      <td>  74</td>
+      <td>  483</td>
+      <td> 14</td>
+      <td> 32</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>336775</th>
+      <td> 2013</td>
+      <td> 9</td>
+      <td> 30</td>
+      <td>  NaN</td>
+      <td>  NaN</td>
+      <td>  NaN</td>
+      <td>  NaN</td>
+      <td> MQ</td>
+      <td> N511MQ</td>
+      <td> 3572</td>
+      <td> LGA</td>
+      <td> CLE</td>
+      <td> NaN</td>
+      <td>  419</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>336776</th>
+      <td> 2013</td>
+      <td> 9</td>
+      <td> 30</td>
+      <td>  NaN</td>
+      <td>  NaN</td>
+      <td>  NaN</td>
+      <td>  NaN</td>
+      <td> MQ</td>
+      <td> N839MQ</td>
+      <td> 3531</td>
+      <td> LGA</td>
+      <td> RDU</td>
+      <td> NaN</td>
+      <td>  431</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>336776 rows × 16 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Select-columns-with-select(),-[]">Select columns with select(), []<a class="anchor-link" href="dplry-pandas.html#Select-columns-with-select(),-%5B%5D">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># select(flights, year, month, day) </span>
+<span class="n">flights</span><span class="p">[[</span><span class="s">'year'</span><span class="p">,</span> <span class="s">'month'</span><span class="p">,</span> <span class="s">'day'</span><span class="p">]]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[11]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1     </th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td>  1</td>
+    </tr>
+    <tr>
+      <th>2     </th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td>  1</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>336775</th>
+      <td> 2013</td>
+      <td> 9</td>
+      <td> 30</td>
+    </tr>
+    <tr>
+      <th>336776</th>
+      <td> 2013</td>
+      <td> 9</td>
+      <td> 30</td>
+    </tr>
+  </tbody>
+</table>
+<p>336776 rows × 3 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># select(flights, year:day) </span>
+
+<span class="c"># No real equivalent here. Although I think this is OK.</span>
+<span class="c"># Typically I'll have the columns I want stored in a list</span>
+<span class="c"># somewhere, which can be passed right into __getitem__ ([]).</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># select(flights, -(year:day)) </span>
+
+<span class="c"># Again, simliar story. I would just use</span>
+<span class="c"># flights.drop(cols_to_drop, axis=1)</span>
+<span class="c"># or fligths[flights.columns.difference(pd.Index(cols_to_drop))]</span>
+<span class="c"># point to dplyr!</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># select(flights, tail_num = tailnum)</span>
+<span class="n">flights</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s">'tailnum'</span><span class="p">:</span> <span class="s">'tail_num'</span><span class="p">})[</span><span class="s">'tail_num'</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[14]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>1    N14228
+...
+336776    N839MQ
+Name: tail_num, Length: 336776, dtype: object</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>But like Hadley mentions, not that useful since it only returns the one column. <code>dplyr</code> and <code>pandas</code> compare well here.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># rename(flights, tail_num = tailnum)</span>
+<span class="n">flights</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s">'tailnum'</span><span class="p">:</span> <span class="s">'tail_num'</span><span class="p">})</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[15]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+      <th>arr_time</th>
+      <th>arr_delay</th>
+      <th>carrier</th>
+      <th>tail_num</th>
+      <th>flight</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>air_time</th>
+      <th>distance</th>
+      <th>hour</th>
+      <th>minute</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1     </th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td>  1</td>
+      <td> 517</td>
+      <td>  2</td>
+      <td> 830</td>
+      <td> 11</td>
+      <td> UA</td>
+      <td> N14228</td>
+      <td> 1545</td>
+      <td> EWR</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1400</td>
+      <td>  5</td>
+      <td> 17</td>
+    </tr>
+    <tr>
+      <th>2     </th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td>  1</td>
+      <td> 533</td>
+      <td>  4</td>
+      <td> 850</td>
+      <td> 20</td>
+      <td> UA</td>
+      <td> N24211</td>
+      <td> 1714</td>
+      <td> LGA</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1416</td>
+      <td>  5</td>
+      <td> 33</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>336775</th>
+      <td> 2013</td>
+      <td> 9</td>
+      <td> 30</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> MQ</td>
+      <td> N511MQ</td>
+      <td> 3572</td>
+      <td> LGA</td>
+      <td> CLE</td>
+      <td> NaN</td>
+      <td>  419</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>336776</th>
+      <td> 2013</td>
+      <td> 9</td>
+      <td> 30</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> MQ</td>
+      <td> N839MQ</td>
+      <td> 3531</td>
+      <td> LGA</td>
+      <td> RDU</td>
+      <td> NaN</td>
+      <td>  431</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>336776 rows × 16 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Pandas is more verbose, but the the argument to <code>columns</code> can be any mapping. So it's often used with a function to perform a common task, say <code>df.rename(columns=lambda x: x.replace('-', '_'))</code> to replace any dashes with underscores. Also, <code>rename</code> (the pandas version) can be applied to the Index.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Extract-distinct-(unique)-rows">Extract distinct (unique) rows<a class="anchor-link" href="dplry-pandas.html#Extract-distinct-(unique)-rows">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># distinct(select(flights, tailnum))</span>
+<span class="n">flights</span><span class="o">.</span><span class="n">tailnum</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[16]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array(['N14228', 'N24211', 'N619AA', ..., 'N776SK', 'N785SK', 'N557AS'], dtype=object)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>FYI this returns a numpy array instead of a Series.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># distinct(select(flights, origin, dest))</span>
+<span class="n">flights</span><span class="p">[[</span><span class="s">'origin'</span><span class="p">,</span> <span class="s">'dest'</span><span class="p">]]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[17]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>origin</th>
+      <th>dest</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1     </th>
+      <td> EWR</td>
+      <td> IAH</td>
+    </tr>
+    <tr>
+      <th>2     </th>
+      <td> LGA</td>
+      <td> IAH</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>255456</th>
+      <td> EWR</td>
+      <td> ANC</td>
+    </tr>
+    <tr>
+      <th>275946</th>
+      <td> EWR</td>
+      <td> LGA</td>
+    </tr>
+  </tbody>
+</table>
+<p>224 rows × 2 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>OK, so <code>dplyr</code> wins there from a consistency point of view. <code>unique</code> is only defined on Series, not DataFrames. The original intention for <code>drop_duplicates</code> is to check for records that were accidentally included twice. This feels a bit hacky using it to select the distinct combinations, but it works!</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Add-new-columns-with-mutate()">Add new columns with mutate()<a class="anchor-link" href="dplry-pandas.html#Add-new-columns-with-mutate()">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># mutate(flights,</span>
+<span class="c">#   gain = arr_delay - dep_delay,</span>
+<span class="c">#   speed = distance / air_time * 60)</span>
+
+<span class="n">flights</span><span class="p">[</span><span class="s">'gain'</span><span class="p">]</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">arr_delay</span> <span class="o">-</span> <span class="n">flights</span><span class="o">.</span><span class="n">dep_delay</span>
+<span class="n">flights</span><span class="p">[</span><span class="s">'speed'</span><span class="p">]</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">distance</span> <span class="o">/</span> <span class="n">flights</span><span class="o">.</span><span class="n">air_time</span> <span class="o">*</span> <span class="mi">60</span>
+<span class="n">flights</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[18]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+      <th>arr_time</th>
+      <th>arr_delay</th>
+      <th>carrier</th>
+      <th>tailnum</th>
+      <th>flight</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>air_time</th>
+      <th>distance</th>
+      <th>hour</th>
+      <th>minute</th>
+      <th>gain</th>
+      <th>speed</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1     </th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td>  1</td>
+      <td> 517</td>
+      <td>  2</td>
+      <td> 830</td>
+      <td> 11</td>
+      <td> UA</td>
+      <td> N14228</td>
+      <td> 1545</td>
+      <td> EWR</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1400</td>
+      <td>  5</td>
+      <td> 17</td>
+      <td>  9</td>
+      <td> 370.044053</td>
+    </tr>
+    <tr>
+      <th>2     </th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td>  1</td>
+      <td> 533</td>
+      <td>  4</td>
+      <td> 850</td>
+      <td> 20</td>
+      <td> UA</td>
+      <td> N24211</td>
+      <td> 1714</td>
+      <td> LGA</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1416</td>
+      <td>  5</td>
+      <td> 33</td>
+      <td> 16</td>
+      <td> 374.273128</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>336775</th>
+      <td> 2013</td>
+      <td> 9</td>
+      <td> 30</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> MQ</td>
+      <td> N511MQ</td>
+      <td> 3572</td>
+      <td> LGA</td>
+      <td> CLE</td>
+      <td> NaN</td>
+      <td>  419</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>        NaN</td>
+    </tr>
+    <tr>
+      <th>336776</th>
+      <td> 2013</td>
+      <td> 9</td>
+      <td> 30</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> MQ</td>
+      <td> N839MQ</td>
+      <td> 3531</td>
+      <td> LGA</td>
+      <td> RDU</td>
+      <td> NaN</td>
+      <td>  431</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>        NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>336776 rows × 18 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># mutate(flights,</span>
+<span class="c">#   gain = arr_delay - dep_delay,</span>
+<span class="c">#   gain_per_hour = gain / (air_time / 60)</span>
+<span class="c"># )</span>
+
+<span class="n">flights</span><span class="p">[</span><span class="s">'gain'</span><span class="p">]</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">arr_delay</span> <span class="o">-</span> <span class="n">flights</span><span class="o">.</span><span class="n">dep_delay</span>
+<span class="n">flights</span><span class="p">[</span><span class="s">'gain_per_hour'</span><span class="p">]</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">gain</span> <span class="o">/</span> <span class="p">(</span><span class="n">flights</span><span class="o">.</span><span class="n">air_time</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span>
+<span class="n">flights</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[19]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+      <th>arr_time</th>
+      <th>arr_delay</th>
+      <th>carrier</th>
+      <th>tailnum</th>
+      <th>flight</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>air_time</th>
+      <th>distance</th>
+      <th>hour</th>
+      <th>minute</th>
+      <th>gain</th>
+      <th>speed</th>
+      <th>gain_per_hour</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1     </th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td>  1</td>
+      <td> 517</td>
+      <td>  2</td>
+      <td> 830</td>
+      <td> 11</td>
+      <td> UA</td>
+      <td> N14228</td>
+      <td> 1545</td>
+      <td> EWR</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1400</td>
+      <td>  5</td>
+      <td> 17</td>
+      <td>  9</td>
+      <td> 370.044053</td>
+      <td> 2.378855</td>
+    </tr>
+    <tr>
+      <th>2     </th>
+      <td> 2013</td>
+      <td> 1</td>
+      <td>  1</td>
+      <td> 533</td>
+      <td>  4</td>
+      <td> 850</td>
+      <td> 20</td>
+      <td> UA</td>
+      <td> N24211</td>
+      <td> 1714</td>
+      <td> LGA</td>
+      <td> IAH</td>
+      <td> 227</td>
+      <td> 1416</td>
+      <td>  5</td>
+      <td> 33</td>
+      <td> 16</td>
+      <td> 374.273128</td>
+      <td> 4.229075</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>336775</th>
+      <td> 2013</td>
+      <td> 9</td>
+      <td> 30</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> MQ</td>
+      <td> N511MQ</td>
+      <td> 3572</td>
+      <td> LGA</td>
+      <td> CLE</td>
+      <td> NaN</td>
+      <td>  419</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>        NaN</td>
+      <td>      NaN</td>
+    </tr>
+    <tr>
+      <th>336776</th>
+      <td> 2013</td>
+      <td> 9</td>
+      <td> 30</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> NaN</td>
+      <td>NaN</td>
+      <td> MQ</td>
+      <td> N839MQ</td>
+      <td> 3531</td>
+      <td> LGA</td>
+      <td> RDU</td>
+      <td> NaN</td>
+      <td>  431</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>        NaN</td>
+      <td>      NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>336776 rows × 19 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><code>dplyr's</code> approach may be nicer here since you get to refer to the variables in subsequent statements within the <code>mutate()</code>. To achieve this with pandas, you have to add the <code>gain</code> variable as another column in <code>flights</code>. If I don't want it around I would have to explicitly drop it.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># transmute(flights,</span>
+<span class="c">#   gain = arr_delay - dep_delay,</span>
+<span class="c">#   gain_per_hour = gain / (air_time / 60)</span>
+<span class="c"># )</span>
+
+<span class="n">flights</span><span class="p">[</span><span class="s">'gain'</span><span class="p">]</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">arr_delay</span> <span class="o">-</span> <span class="n">flights</span><span class="o">.</span><span class="n">dep_delay</span>
+<span class="n">flights</span><span class="p">[</span><span class="s">'gain_per_hour'</span><span class="p">]</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">gain</span> <span class="o">/</span> <span class="p">(</span><span class="n">flights</span><span class="o">.</span><span class="n">air_time</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span>
+<span class="n">flights</span><span class="p">[[</span><span class="s">'gain'</span><span class="p">,</span> <span class="s">'gain_per_hour'</span><span class="p">]]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[20]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>gain</th>
+      <th>gain_per_hour</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1     </th>
+      <td>  9</td>
+      <td> 2.378855</td>
+    </tr>
+    <tr>
+      <th>2     </th>
+      <td> 16</td>
+      <td> 4.229075</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>336775</th>
+      <td>NaN</td>
+      <td>      NaN</td>
+    </tr>
+    <tr>
+      <th>336776</th>
+      <td>NaN</td>
+      <td>      NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>336776 rows × 2 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Summarise-values-with-summarise()">Summarise values with summarise()<a class="anchor-link" href="dplry-pandas.html#Summarise-values-with-summarise()">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [21]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">flights</span><span class="o">.</span><span class="n">dep_delay</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[21]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>12.639070257304708</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Randomly-sample-rows-with-sample_n()-and-sample_frac()">Randomly sample rows with sample_n() and sample_frac()<a class="anchor-link" href="dplry-pandas.html#Randomly-sample-rows-with-sample_n()-and-sample_frac()">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There's an open PR on <a href="https://github.com/pydata/pandas/pull/7274">Github</a> to make this nicer (closer to <code>dplyr</code>). For now you can drop down to numpy.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [22]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># sample_n(flights, 10)</span>
+<span class="n">flights</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">flights</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[22]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+      <th>arr_time</th>
+      <th>arr_delay</th>
+      <th>carrier</th>
+      <th>tailnum</th>
+      <th>flight</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>air_time</th>
+      <th>distance</th>
+      <th>hour</th>
+      <th>minute</th>
+      <th>gain</th>
+      <th>speed</th>
+      <th>gain_per_hour</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>316903</th>
+      <td> 2013</td>
+      <td>  9</td>
+      <td>  9</td>
+      <td> 1539</td>
+      <td>-6</td>
+      <td> 1650</td>
+      <td>-43</td>
+      <td> 9E</td>
+      <td> N918XJ</td>
+      <td> 3459</td>
+      <td> JFK</td>
+      <td> BNA</td>
+      <td>  98</td>
+      <td> 765</td>
+      <td> 15</td>
+      <td> 39</td>
+      <td>-37</td>
+      <td> 468.367347</td>
+      <td>-22.653061</td>
+    </tr>
+    <tr>
+      <th>105369</th>
+      <td> 2013</td>
+      <td> 12</td>
+      <td> 25</td>
+      <td>  905</td>
+      <td> 0</td>
+      <td> 1126</td>
+      <td> -7</td>
+      <td> FL</td>
+      <td> N939AT</td>
+      <td>  275</td>
+      <td> LGA</td>
+      <td> ATL</td>
+      <td> 117</td>
+      <td> 762</td>
+      <td>  9</td>
+      <td>  5</td>
+      <td> -7</td>
+      <td> 390.769231</td>
+      <td> -3.589744</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>82862 </th>
+      <td> 2013</td>
+      <td> 11</td>
+      <td> 30</td>
+      <td> 1627</td>
+      <td>-8</td>
+      <td> 1750</td>
+      <td>-35</td>
+      <td> AA</td>
+      <td> N4XRAA</td>
+      <td>  343</td>
+      <td> LGA</td>
+      <td> ORD</td>
+      <td> 111</td>
+      <td> 733</td>
+      <td> 16</td>
+      <td> 27</td>
+      <td>-27</td>
+      <td> 396.216216</td>
+      <td>-14.594595</td>
+    </tr>
+    <tr>
+      <th>190653</th>
+      <td> 2013</td>
+      <td>  4</td>
+      <td> 28</td>
+      <td>  748</td>
+      <td>-7</td>
+      <td>  856</td>
+      <td>-24</td>
+      <td> MQ</td>
+      <td> N520MQ</td>
+      <td> 3737</td>
+      <td> EWR</td>
+      <td> ORD</td>
+      <td> 107</td>
+      <td> 719</td>
+      <td>  7</td>
+      <td> 48</td>
+      <td>-17</td>
+      <td> 403.177570</td>
+      <td> -9.532710</td>
+    </tr>
+  </tbody>
+</table>
+<p>10 rows × 19 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [23]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># sample_frac(flights, 0.01)</span>
+<span class="n">flights</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">flights</span><span class="p">),</span>
+                               <span class="o">.</span><span class="mi">1</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">flights</span><span class="p">))]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[23]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+      <th>arr_time</th>
+      <th>arr_delay</th>
+      <th>carrier</th>
+      <th>tailnum</th>
+      <th>flight</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>air_time</th>
+      <th>distance</th>
+      <th>hour</th>
+      <th>minute</th>
+      <th>gain</th>
+      <th>speed</th>
+      <th>gain_per_hour</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>188581</th>
+      <td> 2013</td>
+      <td>  4</td>
+      <td> 25</td>
+      <td> 1836</td>
+      <td> -4</td>
+      <td> 2145</td>
+      <td> 7</td>
+      <td> DL</td>
+      <td> N398DA</td>
+      <td> 1629</td>
+      <td> JFK</td>
+      <td> LAS</td>
+      <td> 313</td>
+      <td> 2248</td>
+      <td> 18</td>
+      <td> 36</td>
+      <td> 11</td>
+      <td> 430.926518</td>
+      <td>  2.108626</td>
+    </tr>
+    <tr>
+      <th>307015</th>
+      <td> 2013</td>
+      <td>  8</td>
+      <td> 29</td>
+      <td> 1258</td>
+      <td>  5</td>
+      <td> 1409</td>
+      <td>-4</td>
+      <td> EV</td>
+      <td> N12957</td>
+      <td> 6054</td>
+      <td> EWR</td>
+      <td> IAD</td>
+      <td>  46</td>
+      <td>  212</td>
+      <td> 12</td>
+      <td> 58</td>
+      <td> -9</td>
+      <td> 276.521739</td>
+      <td>-11.739130</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>286563</th>
+      <td> 2013</td>
+      <td>  8</td>
+      <td>  7</td>
+      <td> 2126</td>
+      <td> 18</td>
+      <td>    6</td>
+      <td> 7</td>
+      <td> UA</td>
+      <td> N822UA</td>
+      <td>  373</td>
+      <td> EWR</td>
+      <td> PBI</td>
+      <td> 138</td>
+      <td> 1023</td>
+      <td> 21</td>
+      <td> 26</td>
+      <td>-11</td>
+      <td> 444.782609</td>
+      <td> -4.782609</td>
+    </tr>
+    <tr>
+      <th>62818 </th>
+      <td> 2013</td>
+      <td> 11</td>
+      <td>  8</td>
+      <td> 1300</td>
+      <td>  0</td>
+      <td> 1615</td>
+      <td> 5</td>
+      <td> VX</td>
+      <td> N636VA</td>
+      <td>  411</td>
+      <td> JFK</td>
+      <td> LAX</td>
+      <td> 349</td>
+      <td> 2475</td>
+      <td> 13</td>
+      <td>  0</td>
+      <td>  5</td>
+      <td> 425.501433</td>
+      <td>  0.859599</td>
+    </tr>
+  </tbody>
+</table>
+<p>33677 rows × 19 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Grouped-operations">Grouped operations<a class="anchor-link" href="dplry-pandas.html#Grouped-operations">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [24]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># planes &lt;- group_by(flights, tailnum)</span>
+<span class="c"># delay &lt;- summarise(planes,</span>
+<span class="c">#   count = n(),</span>
+<span class="c">#   dist = mean(distance, na.rm = TRUE),</span>
+<span class="c">#   delay = mean(arr_delay, na.rm = TRUE))</span>
+<span class="c"># delay &lt;- filter(delay, count &gt; 20, dist &lt; 2000)</span>
+
+<span class="n">planes</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">"tailnum"</span><span class="p">)</span>
+<span class="n">delay</span> <span class="o">=</span> <span class="n">planes</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s">"year"</span><span class="p">:</span> <span class="s">"count"</span><span class="p">,</span>
+                    <span class="s">"distance"</span><span class="p">:</span> <span class="s">"mean"</span><span class="p">,</span>
+                    <span class="s">"arr_delay"</span><span class="p">:</span> <span class="s">"mean"</span><span class="p">})</span>
+<span class="n">delay</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s">"year &gt; 20 &amp; distance &lt; 2000"</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[24]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>year</th>
+      <th>arr_delay</th>
+      <th>distance</th>
+    </tr>
+    <tr>
+      <th>tailnum</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>N0EGMQ</th>
+      <td> 371</td>
+      <td>  9.982955</td>
+      <td> 676.188679</td>
+    </tr>
+    <tr>
+      <th>N10156</th>
+      <td> 153</td>
+      <td> 12.717241</td>
+      <td> 757.947712</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>N999DN</th>
+      <td>  61</td>
+      <td> 14.311475</td>
+      <td> 895.459016</td>
+    </tr>
+    <tr>
+      <th>N9EAMQ</th>
+      <td> 248</td>
+      <td>  9.235294</td>
+      <td> 674.665323</td>
+    </tr>
+  </tbody>
+</table>
+<p>2961 rows × 3 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>For me, dplyr's <code>n()</code> looked is a bit starge at first, but it's already growing on me.</p>
+<p>I think pandas is more difficult for this particular example.
+There isn't as natural a way to mix column-agnostic aggregations (like <code>count</code>) with column-specific aggregations like the other two. You end up writing could like <code>.agg{'year': 'count'}</code> which reads, "I want the count of <code>year</code>", even though you don't care about <code>year</code> specifically.
+Additionally assigning names can't be done as cleanly in pandas; you have to just follow it up with a <code>rename</code> like before.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [25]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># destinations &lt;- group_by(flights, dest)</span>
+<span class="c"># summarise(destinations,</span>
+<span class="c">#   planes = n_distinct(tailnum),</span>
+<span class="c">#   flights = n()</span>
+<span class="c"># )</span>
+
+<span class="n">destinations</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">'dest'</span><span class="p">)</span>
+<span class="n">destinations</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
+    <span class="s">'tailnum'</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">unique</span><span class="p">()),</span>
+    <span class="s">'year'</span><span class="p">:</span> <span class="s">'count'</span>
+    <span class="p">})</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s">'tailnum'</span><span class="p">:</span> <span class="s">'planes'</span><span class="p">,</span>
+                       <span class="s">'year'</span><span class="p">:</span> <span class="s">'flights'</span><span class="p">})</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[25]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>flights</th>
+      <th>planes</th>
+    </tr>
+    <tr>
+      <th>dest</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>ABQ</th>
+      <td>  254</td>
+      <td> 108</td>
+    </tr>
+    <tr>
+      <th>ACK</th>
+      <td>  265</td>
+      <td>  58</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>TYS</th>
+      <td>  631</td>
+      <td> 273</td>
+    </tr>
+    <tr>
+      <th>XNA</th>
+      <td> 1036</td>
+      <td> 176</td>
+    </tr>
+  </tbody>
+</table>
+<p>105 rows × 2 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Similar to how <code>dplyr</code> provides optimized C++ versions of most of the <code>summarise</code> functions, pandas uses <a href="http://cython.org">cython</a> optimized versions for most of the <code>agg</code> methods.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [26]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># daily &lt;- group_by(flights, year, month, day)</span>
+<span class="c"># (per_day   &lt;- summarise(daily, flights = n()))</span>
+
+<span class="n">daily</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s">'year'</span><span class="p">,</span> <span class="s">'month'</span><span class="p">,</span> <span class="s">'day'</span><span class="p">])</span>
+<span class="n">per_day</span> <span class="o">=</span> <span class="n">daily</span><span class="p">[</span><span class="s">'distance'</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">per_day</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[26]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>year  month  day
+2013  1      1      842
+...
+2013  12     31     776
+Name: distance, Length: 365, dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [27]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># (per_month &lt;- summarise(per_day, flights = sum(flights)))</span>
+<span class="n">per_month</span> <span class="o">=</span> <span class="n">per_day</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s">'year'</span><span class="p">,</span> <span class="s">'month'</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">per_month</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[27]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>year  month
+2013  1        27004
+...
+2013  12       28135
+Name: distance, Length: 12, dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [28]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># (per_year  &lt;- summarise(per_month, flights = sum(flights)))</span>
+<span class="n">per_year</span> <span class="o">=</span> <span class="n">per_month</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">per_year</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[28]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>336776</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I'm not sure how <code>dplyr</code> is handling the other columns, like <code>year</code>, in the last example. With pandas, it's clear that we're grouping by them since they're included in the groupby. For the last example, we didn't group by anything, so they aren't included in the result.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Chaining">Chaining<a class="anchor-link" href="dplry-pandas.html#Chaining">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Any follower of Hadley's <a href="https://twitter.com/hadleywickham/">twitter account</a> will know how much R users <em>love</em> the <code>%&gt;%</code> (pipe) operator. And for good reason!</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [29]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="c"># flights %&gt;%</span>
+<span class="c">#   group_by(year, month, day) %&gt;%</span>
+<span class="c">#   select(arr_delay, dep_delay) %&gt;%</span>
+<span class="c">#   summarise(</span>
+<span class="c">#     arr = mean(arr_delay, na.rm = TRUE),</span>
+<span class="c">#     dep = mean(dep_delay, na.rm = TRUE)</span>
+<span class="c">#   ) %&gt;%</span>
+<span class="c">#   filter(arr &gt; 30 | dep &gt; 30)</span>
+<span class="p">(</span>
+<span class="n">flights</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s">'year'</span><span class="p">,</span> <span class="s">'month'</span><span class="p">,</span> <span class="s">'day'</span><span class="p">])</span>
+    <span class="p">[[</span><span class="s">'arr_delay'</span><span class="p">,</span> <span class="s">'dep_delay'</span><span class="p">]]</span>
+    <span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s">'arr_delay &gt; 30 | dep_delay &gt; 30'</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[29]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th></th>
+      <th>arr_delay</th>
+      <th>dep_delay</th>
+    </tr>
+    <tr>
+      <th>year</th>
+      <th>month</th>
+      <th>day</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">2013</th>
+      <th rowspan="2" valign="top">1 </th>
+      <th>16</th>
+      <td> 34.247362</td>
+      <td> 24.612865</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td> 32.602854</td>
+      <td> 28.658363</td>
+    </tr>
+    <tr>
+      <th>1 </th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">12</th>
+      <th>17</th>
+      <td> 55.871856</td>
+      <td> 40.705602</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td> 32.226042</td>
+      <td> 32.254149</td>
+    </tr>
+  </tbody>
+</table>
+<p>49 rows × 2 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Other-Data-Sources">Other Data Sources<a class="anchor-link" href="dplry-pandas.html#Other-Data-Sources">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Pandas has tons <a href="http://pandas.pydata.org/pandas-docs/version/0.15.0/io.html">IO tools</a> to help you get data in and out, including SQL databases via <a href="http://www.sqlalchemy.org">SQLAlchemy</a>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Summary">Summary<a class="anchor-link" href="dplry-pandas.html#Summary">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I think pandas held up pretty well, considering this was a vignette written for dplyr. I found the degree of similarity more interesting than the differences. The most difficult task was renaming of columns within an operation; they had to be followed up with a call to <code>rename</code> <em>after</em> the operation, which isn't that burdensome honestly.</p>
+<p>More and more it looks like we're moving towards future where being a language or package partisan just doesn't make sense. Not when you can load up a <a href="http://jupyter.org">Jupyter</a> (formerly IPython) notebook to call up a library written in R, and hand those results off to python or Julia or whatever for followup, before going back to R to make a cool <a href="http://shiny.rstudio.com">shiny</a> web app.</p>
+<p>There will always be a place for your "utility belt" package like dplyr or pandas, but it wouldn't hurt to be familiar with both.</p>
+<p>If you want to contribute to pandas, we're always looking for help at <a href="https://github.com/pydata/pandas/">https://github.com/pydata/pandas/</a>.
+You can get ahold of me directly on <a href="https://twitter.com/tomaugspurger">twitter</a>.</p>
+
+</div>
+</div>
+</div>
+    </div>
+  </div>
+
+        </div>
+                <ul class="pager">
+            <li class="previous">
+                <a href="pp03.html" rel="prev" title="Practical Pandas Part 3 - Exploratory Data Analysis">Previous post</a>
+            </li>
+            <li class="next">
+                <a href="pandas-assign.html" rel="next" title="Pandas Flow">Next post</a>
+            </li>
+        </ul>
+
+    </div>
+                    <footer id="footer" role="contentinfo">
+            <p>Contents © 2015         <a href="mailto:tom.w.augspurger@gmail.com">Tom Augspurger</a> - Powered by         <a href="http://getnikola.com" rel="nofollow">Nikola</a>         </p>
+            
+        </footer>
+
+        </div>
+    </section>
+    
+    
+                <script src="../assets/js/all-nocdn.js" type="text/javascript"></script>
+    
+<!-- Social buttons -->
+<div id="addthisbox" class="addthis_toolbox addthis_peekaboo_style addthis_default_style addthis_label_style addthis_32x32_style">
+<a class="addthis_button_more">Share</a>
+<ul>
+<li>
+<a class="addthis_button_facebook"></a>
+</li>
+<li>
+<a class="addthis_button_google_plusone_share"></a>
+</li>
+<li>
+<a class="addthis_button_linkedin"></a>
+</li>
+<li>
+<a class="addthis_button_twitter"></a>
+</li>
+</ul>
+</div>
+<script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4f7088a56bb93798"></script>
+<!-- End of social buttons -->
+
+
+        <script type="text/javascript">
+            $(function(){
+                $('.timeago').timeago();
+            });
+        </script>
+</body>
+</html>

@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html prefix="
+og: http://ogp.me/ns#
+article: http://ogp.me/ns/article#
+" lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Practical Pandas Part 1 - Reading the Data | Tom's Blog</title>
+
+                <link href="../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+
+                <link rel="alternate" type="application/rss+xml" title="RSS" href="../rss.xml">
+
+      <link rel="canonical" href="http://tomaugspurger.github.io/posts/pp01.html">
+
+
+
+    
+        <!--[if lt IE 9]><script src="/assets/js/html5.js"></script><![endif]-->
+
+    
+
+    
+    <meta name="author" content="Tom Augspurger">
+        <meta property="og:site_name" content="Tom's Blog">
+    <meta property="og:title" content="Practical Pandas Part 1 - Reading the Data">
+    <meta property="og:url" content="http://tomaugspurger.github.io/posts/pp01.html">
+    <meta property="og:description" content="This is the first post in a series where I'll show how I use pandas on real-world datasets.
+For this post, we'll look at data I collected with Cyclemeter on
+my daily bike ride to and from school last ">
+    <meta property="og:type" content="article">
+    <meta property="article:published_time" content="2014-08-26T00:00:00-05:00">
+           <meta property="article:tag" content="data science">
+           <meta property="article:tag" content="pandas">
+           <meta property="article:tag" content="python">
+
+    
+    
+
+</head>
+<body>
+    <section class="social">
+        <ul>
+                    <li><a href="../index.html" title="Home"><i class="icon-home"></i></a></li>
+            <li><a href="../archive.html" title="Archives"><i class="icon-folder-open-alt"></i></a></li>
+            <li><a href="../categories/index.html" title="Tags"><i class="icon-tags"></i></a></li>
+            <li><a href="../rss.xml" title="RSS"><i class="icon-rss"></i></a></li>
+
+        </ul>
+    </section>
+    <section class="page-content">
+        <div class="content" rel="main">
+    <div class="post">
+        <h1 class="p-name entry-title" itemprop="headline name">Practical Pandas Part 1 - Reading the Data</h1>
+
+        <div class="meta">
+            <div class="authordate">
+                <time class="timeago" datetime="2014-08-26T00:00:00-05:00">2014-08-26 00:00</time>
+            
+                      |  
+        <a href="pp01.ipynb" id="sourcelink">Source</a>
+
+            </div>
+                    <div itemprop="keywords" class="tags">
+        <ul>
+        Tags : 
+           <li><a class="tag p-category" href="../categories/data-science.html" rel="tag">data science</a></li>
+           <li><a class="tag p-category" href="../categories/pandas.html" rel="tag">pandas</a></li>
+           <li><a class="tag p-category" href="../categories/python.html" rel="tag">python</a></li>
+        </ul>
+        </div>
+
+        </div>
+        <div class="body">
+            <div tabindex="-1" id="notebook" class="border-box-sizing">
+    <div class="container" id="notebook-container">
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This is the first post in a series where I'll show how I use pandas on real-world datasets.</p>
+<p>For this post, we'll look at data I collected with <a href="http://abvio.com/cyclemeter/">Cyclemeter</a> on
+my daily bike ride to and from school last year.
+I had to manually start and stop the tracking at the beginning and end of each ride. There may
+have been times where I forgot to do that, so we'll see if we can find those.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's begin in the usual fashion, a bunch of imports and loading our data.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">IPython</span> <span class="k">import</span> <span class="n">display</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Each day has data recorded in two formats, CSVs and <a href="https://developers.google.com/kml/">KMLs</a>.
+For now I've just uploaded the CSVs to the <a href="https://github.com/TomAugspurger/PracticalPandas/tree/master/data"><code>data/</code></a> directory.
+We'll start with the those, and come back to the KMLs later.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="o">!</span>ls data <span class="p">|</span> head -n <span class="m">5</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Cyclemeter-Cycle-20130801-0707.csv
+Cyclemeter-Cycle-20130801-0707.kml
+Cyclemeter-Cycle-20130801-1720.csv
+Cyclemeter-Cycle-20130801-1720.kml
+Cyclemeter-Cycle-20130805-0819.csv
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Take a look at the first one to see how the file's laid out.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">'data/Cyclemeter-Cycle-20130801-0707.csv'</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[3]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Time</th>
+      <th>Ride Time</th>
+      <th>Ride Time (secs)</th>
+      <th>Stopped Time</th>
+      <th>Stopped Time (secs)</th>
+      <th>Latitude</th>
+      <th>Longitude</th>
+      <th>Elevation (feet)</th>
+      <th>Distance (miles)</th>
+      <th>Speed (mph)</th>
+      <th>Pace</th>
+      <th>Pace (secs)</th>
+      <th>Average Speed (mph)</th>
+      <th>Average Pace</th>
+      <th>Average Pace (secs)</th>
+      <th>Ascent (feet)</th>
+      <th>Descent (feet)</th>
+      <th>Calories</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td> 2013-08-01 07:07:10</td>
+      <td> 0:00:01</td>
+      <td>  1.1</td>
+      <td> 0:00:00</td>
+      <td> 0</td>
+      <td> 41.703753</td>
+      <td>-91.609892</td>
+      <td> 963</td>
+      <td> 0.00</td>
+      <td> 2.88</td>
+      <td> 0:20:51</td>
+      <td> 1251</td>
+      <td> 0.00</td>
+      <td> 0:00:00</td>
+      <td>    0</td>
+      <td> 0</td>
+      <td>   0</td>
+      <td> 0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td> 2013-08-01 07:07:17</td>
+      <td> 0:00:08</td>
+      <td>  8.2</td>
+      <td> 0:00:00</td>
+      <td> 0</td>
+      <td> 41.703825</td>
+      <td>-91.609835</td>
+      <td> 852</td>
+      <td> 0.01</td>
+      <td> 2.88</td>
+      <td> 0:20:51</td>
+      <td> 1251</td>
+      <td> 2.56</td>
+      <td> 0:23:27</td>
+      <td> 1407</td>
+      <td> 0</td>
+      <td> 129</td>
+      <td> 0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td> 2013-08-01 07:07:22</td>
+      <td> 0:00:13</td>
+      <td> 13.2</td>
+      <td> 0:00:00</td>
+      <td> 0</td>
+      <td> 41.703858</td>
+      <td>-91.609814</td>
+      <td> 789</td>
+      <td> 0.01</td>
+      <td> 2.88</td>
+      <td> 0:20:51</td>
+      <td> 1251</td>
+      <td> 2.27</td>
+      <td> 0:26:27</td>
+      <td> 1587</td>
+      <td> 0</td>
+      <td> 173</td>
+      <td> 0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td> 2013-08-01 07:07:27</td>
+      <td> 0:00:18</td>
+      <td> 18.2</td>
+      <td> 0:00:00</td>
+      <td> 0</td>
+      <td> 41.703943</td>
+      <td>-91.610090</td>
+      <td> 787</td>
+      <td> 0.02</td>
+      <td> 6.60</td>
+      <td> 0:09:06</td>
+      <td>  546</td>
+      <td> 4.70</td>
+      <td> 0:12:47</td>
+      <td>  767</td>
+      <td> 0</td>
+      <td> 173</td>
+      <td> 1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td> 2013-08-01 07:07:40</td>
+      <td> 0:00:31</td>
+      <td> 31.2</td>
+      <td> 0:00:00</td>
+      <td> 0</td>
+      <td> 41.704381</td>
+      <td>-91.610258</td>
+      <td> 788</td>
+      <td> 0.06</td>
+      <td> 9.50</td>
+      <td> 0:06:19</td>
+      <td>  379</td>
+      <td> 6.37</td>
+      <td> 0:09:26</td>
+      <td>  566</td>
+      <td> 0</td>
+      <td> 173</td>
+      <td> 2</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">df</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>&lt;class 'pandas.core.frame.DataFrame'&gt;
+Int64Index: 252 entries, 0 to 251
+Data columns (total 18 columns):
+Time                   252 non-null object
+Ride Time              252 non-null object
+Ride Time (secs)       252 non-null float64
+Stopped Time           252 non-null object
+Stopped Time (secs)    252 non-null float64
+Latitude               252 non-null float64
+Longitude              252 non-null float64
+Elevation (feet)       252 non-null int64
+Distance (miles)       252 non-null float64
+Speed (mph)            252 non-null float64
+Pace                   252 non-null object
+Pace (secs)            252 non-null int64
+Average Speed (mph)    252 non-null float64
+Average Pace           252 non-null object
+Average Pace (secs)    252 non-null int64
+Ascent (feet)          252 non-null int64
+Descent (feet)         252 non-null int64
+Calories               252 non-null int64
+dtypes: float64(7), int64(6), object(5)</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Pandas has automatically parsed the headers, but it could use a bit of help on some dtypes.
+We can see that the <code>Time</code> column is a <code>datetime</code> but it's been parsed as an <code>object</code> dtype.
+This is pandas' fallback dtype that can store anything, but its operations won't be optimized like
+they would on an <code>float</code> or <code>bool</code> or <code>datetime[64]</code>. <code>read_csv</code> takes a <code>parse_dates</code> parameter, which
+we'll give a list of column names.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">date_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s">"Time"</span><span class="p">,</span> <span class="s">"Ride Time"</span><span class="p">,</span> <span class="s">"Stopped Time"</span><span class="p">,</span> <span class="s">"Pace"</span><span class="p">,</span> <span class="s">"Average Pace"</span><span class="p">]</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"data/Cyclemeter-Cycle-20130801-0707.csv"</span><span class="p">,</span>
+                 <span class="n">parse_dates</span><span class="o">=</span><span class="n">date_cols</span><span class="p">)</span>
+<span class="n">display</span><span class="o">.</span><span class="n">display_html</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="n">df</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Time</th>
+      <th>Ride Time</th>
+      <th>Ride Time (secs)</th>
+      <th>Stopped Time</th>
+      <th>Stopped Time (secs)</th>
+      <th>Latitude</th>
+      <th>Longitude</th>
+      <th>Elevation (feet)</th>
+      <th>Distance (miles)</th>
+      <th>Speed (mph)</th>
+      <th>Pace</th>
+      <th>Pace (secs)</th>
+      <th>Average Speed (mph)</th>
+      <th>Average Pace</th>
+      <th>Average Pace (secs)</th>
+      <th>Ascent (feet)</th>
+      <th>Descent (feet)</th>
+      <th>Calories</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2013-08-01 07:07:10</td>
+      <td>2014-08-26 00:00:01</td>
+      <td>  1.1</td>
+      <td>2014-08-26</td>
+      <td> 0</td>
+      <td> 41.703753</td>
+      <td>-91.609892</td>
+      <td> 963</td>
+      <td> 0.00</td>
+      <td> 2.88</td>
+      <td>2014-08-26 00:20:51</td>
+      <td> 1251</td>
+      <td> 0.00</td>
+      <td>2014-08-26 00:00:00</td>
+      <td>    0</td>
+      <td> 0</td>
+      <td>   0</td>
+      <td> 0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2013-08-01 07:07:17</td>
+      <td>2014-08-26 00:00:08</td>
+      <td>  8.2</td>
+      <td>2014-08-26</td>
+      <td> 0</td>
+      <td> 41.703825</td>
+      <td>-91.609835</td>
+      <td> 852</td>
+      <td> 0.01</td>
+      <td> 2.88</td>
+      <td>2014-08-26 00:20:51</td>
+      <td> 1251</td>
+      <td> 2.56</td>
+      <td>2014-08-26 00:23:27</td>
+      <td> 1407</td>
+      <td> 0</td>
+      <td> 129</td>
+      <td> 0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2013-08-01 07:07:22</td>
+      <td>2014-08-26 00:00:13</td>
+      <td> 13.2</td>
+      <td>2014-08-26</td>
+      <td> 0</td>
+      <td> 41.703858</td>
+      <td>-91.609814</td>
+      <td> 789</td>
+      <td> 0.01</td>
+      <td> 2.88</td>
+      <td>2014-08-26 00:20:51</td>
+      <td> 1251</td>
+      <td> 2.27</td>
+      <td>2014-08-26 00:26:27</td>
+      <td> 1587</td>
+      <td> 0</td>
+      <td> 173</td>
+      <td> 0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2013-08-01 07:07:27</td>
+      <td>2014-08-26 00:00:18</td>
+      <td> 18.2</td>
+      <td>2014-08-26</td>
+      <td> 0</td>
+      <td> 41.703943</td>
+      <td>-91.610090</td>
+      <td> 787</td>
+      <td> 0.02</td>
+      <td> 6.60</td>
+      <td>2014-08-26 00:09:06</td>
+      <td>  546</td>
+      <td> 4.70</td>
+      <td>2014-08-26 00:12:47</td>
+      <td>  767</td>
+      <td> 0</td>
+      <td> 173</td>
+      <td> 1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2013-08-01 07:07:40</td>
+      <td>2014-08-26 00:00:31</td>
+      <td> 31.2</td>
+      <td>2014-08-26</td>
+      <td> 0</td>
+      <td> 41.704381</td>
+      <td>-91.610258</td>
+      <td> 788</td>
+      <td> 0.06</td>
+      <td> 9.50</td>
+      <td>2014-08-26 00:06:19</td>
+      <td>  379</td>
+      <td> 6.37</td>
+      <td>2014-08-26 00:09:26</td>
+      <td>  566</td>
+      <td> 0</td>
+      <td> 173</td>
+      <td> 2</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>&lt;class 'pandas.core.frame.DataFrame'&gt;
+Int64Index: 252 entries, 0 to 251
+Data columns (total 18 columns):
+Time                   252 non-null datetime64[ns]
+Ride Time              252 non-null datetime64[ns]
+Ride Time (secs)       252 non-null float64
+Stopped Time           252 non-null datetime64[ns]
+Stopped Time (secs)    252 non-null float64
+Latitude               252 non-null float64
+Longitude              252 non-null float64
+Elevation (feet)       252 non-null int64
+Distance (miles)       252 non-null float64
+Speed (mph)            252 non-null float64
+Pace                   252 non-null datetime64[ns]
+Pace (secs)            252 non-null int64
+Average Speed (mph)    252 non-null float64
+Average Pace           252 non-null datetime64[ns]
+Average Pace (secs)    252 non-null int64
+Ascent (feet)          252 non-null int64
+Descent (feet)         252 non-null int64
+Calories               252 non-null int64
+dtypes: datetime64[ns](5), float64(7), int64(6)</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>One minor issue is that some of the dates are parsed as <code>datetimes</code> when they're really just <code>times</code>.
+We'll take care of that later. Pandas store everything as <code>datetime64</code>. For now we'll keep them as
+<code>datetimes</code>, and remember that they're really just <code>times</code>.</p>
+<p>Now let's do the same thing, but for all the files.</p>
+<p>Use a generator expression to filter down to just csv's that match the simple
+condition of having the correct naming style.
+I try to use lazy generators instead of lists wherever possible.
+In this case the list is so small that it really doesn't matter, but it's
+a good habit.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">csvs</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s">'data'</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">'Cyclemeter'</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">'.csv'</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I see a potential problem: We'll potentailly want to concatenate each csv together
+into a single DataFrame. However we'll want to retain some idea of which specific
+ride an observation came from. So let's create a <code>ride_id</code> variable, which will
+just be an integar ranging from $0 \ldots N$, where $N$ is the number of rides.</p>
+<p>Make a simple helper function to do this, and apply it to each csv.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="k">def</span> <span class="nf">read_ride</span><span class="p">(</span><span class="n">path_</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    read in csv at path, and assign the `ride_id` variable to i.</span>
+<span class="sd">    """</span>
+    <span class="n">date_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s">"Time"</span><span class="p">,</span> <span class="s">"Ride Time"</span><span class="p">,</span> <span class="s">"Stopped Time"</span><span class="p">,</span> <span class="s">"Pace"</span><span class="p">,</span> <span class="s">"Average Pace"</span><span class="p">]</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path_</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="n">date_cols</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'ride_id'</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+    <span class="k">return</span> <span class="n">df</span>
+
+<span class="n">dfs</span> <span class="o">=</span> <span class="p">(</span><span class="n">read_ride</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">'data'</span><span class="p">,</span> <span class="n">csv</span><span class="p">),</span> <span class="n">i</span><span class="p">)</span>
+       <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">csv</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">csvs</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now concatenate together. The original indicies are meaningless, so we'll ignore them in the concat.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="k">True</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[8]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Time</th>
+      <th>Ride Time</th>
+      <th>Ride Time (secs)</th>
+      <th>Stopped Time</th>
+      <th>Stopped Time (secs)</th>
+      <th>Latitude</th>
+      <th>Longitude</th>
+      <th>Elevation (feet)</th>
+      <th>Distance (miles)</th>
+      <th>Speed (mph)</th>
+      <th>Pace</th>
+      <th>Pace (secs)</th>
+      <th>Average Speed (mph)</th>
+      <th>Average Pace</th>
+      <th>Average Pace (secs)</th>
+      <th>Ascent (feet)</th>
+      <th>Descent (feet)</th>
+      <th>Calories</th>
+      <th>ride_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2013-08-01 07:07:10</td>
+      <td>2014-08-26 00:00:01</td>
+      <td>  1.1</td>
+      <td>2014-08-26</td>
+      <td> 0</td>
+      <td> 41.703753</td>
+      <td>-91.609892</td>
+      <td> 963</td>
+      <td> 0.00</td>
+      <td> 2.88</td>
+      <td>2014-08-26 00:20:51</td>
+      <td> 1251</td>
+      <td> 0.00</td>
+      <td>2014-08-26 00:00:00</td>
+      <td>    0</td>
+      <td> 0</td>
+      <td>   0</td>
+      <td> 0</td>
+      <td> 0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2013-08-01 07:07:17</td>
+      <td>2014-08-26 00:00:08</td>
+      <td>  8.2</td>
+      <td>2014-08-26</td>
+      <td> 0</td>
+      <td> 41.703825</td>
+      <td>-91.609835</td>
+      <td> 852</td>
+      <td> 0.01</td>
+      <td> 2.88</td>
+      <td>2014-08-26 00:20:51</td>
+      <td> 1251</td>
+      <td> 2.56</td>
+      <td>2014-08-26 00:23:27</td>
+      <td> 1407</td>
+      <td> 0</td>
+      <td> 129</td>
+      <td> 0</td>
+      <td> 0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2013-08-01 07:07:22</td>
+      <td>2014-08-26 00:00:13</td>
+      <td> 13.2</td>
+      <td>2014-08-26</td>
+      <td> 0</td>
+      <td> 41.703858</td>
+      <td>-91.609814</td>
+      <td> 789</td>
+      <td> 0.01</td>
+      <td> 2.88</td>
+      <td>2014-08-26 00:20:51</td>
+      <td> 1251</td>
+      <td> 2.27</td>
+      <td>2014-08-26 00:26:27</td>
+      <td> 1587</td>
+      <td> 0</td>
+      <td> 173</td>
+      <td> 0</td>
+      <td> 0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2013-08-01 07:07:27</td>
+      <td>2014-08-26 00:00:18</td>
+      <td> 18.2</td>
+      <td>2014-08-26</td>
+      <td> 0</td>
+      <td> 41.703943</td>
+      <td>-91.610090</td>
+      <td> 787</td>
+      <td> 0.02</td>
+      <td> 6.60</td>
+      <td>2014-08-26 00:09:06</td>
+      <td>  546</td>
+      <td> 4.70</td>
+      <td>2014-08-26 00:12:47</td>
+      <td>  767</td>
+      <td> 0</td>
+      <td> 173</td>
+      <td> 1</td>
+      <td> 0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2013-08-01 07:07:40</td>
+      <td>2014-08-26 00:00:31</td>
+      <td> 31.2</td>
+      <td>2014-08-26</td>
+      <td> 0</td>
+      <td> 41.704381</td>
+      <td>-91.610258</td>
+      <td> 788</td>
+      <td> 0.06</td>
+      <td> 9.50</td>
+      <td>2014-08-26 00:06:19</td>
+      <td>  379</td>
+      <td> 6.37</td>
+      <td>2014-08-26 00:09:26</td>
+      <td>  566</td>
+      <td> 0</td>
+      <td> 173</td>
+      <td> 2</td>
+      <td> 0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Great! The data itself is clean enough that we didn't have to do too much munging.</p>
+<p>Let's persist the merged <code>DataFrame</code>. Writing it out to a csv would be fine, but I like to use
+pandas' <code>HDF5</code> integration (via pytables) for personal projects.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">df</span><span class="o">.</span><span class="n">to_hdf</span><span class="p">(</span><span class="s">'data/cycle_store.h5'</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s">'merged'</span><span class="p">,</span>
+          <span class="nb">format</span><span class="o">=</span><span class="s">'table'</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I used the <code>table</code> format in case we want to do some querying on the HDFStore itself, but we'll save that for next time.</p>
+<p>That's it for this post. Next time, we'll do some exploratry data analysis on the data.</p>
+
+</div>
+</div>
+</div>
+    </div>
+  </div>
+
+        </div>
+                <ul class="pager">
+            <li class="previous">
+                <a href="setting-up.html" rel="prev" title="Setting Up">Previous post</a>
+            </li>
+            <li class="next">
+                <a href="pp02.html" rel="next" title="Practical Pandas Part 2 - More Tidying, More Data, and Merging">Next post</a>
+            </li>
+        </ul>
+
+    </div>
+                    <footer id="footer" role="contentinfo">
+            <p>Contents © 2015         <a href="mailto:tom.w.augspurger@gmail.com">Tom Augspurger</a> - Powered by         <a href="http://getnikola.com" rel="nofollow">Nikola</a>         </p>
+            
+        </footer>
+
+        </div>
+    </section>
+    
+    
+                <script src="../assets/js/all-nocdn.js" type="text/javascript"></script>
+    
+<!-- Social buttons -->
+<div id="addthisbox" class="addthis_toolbox addthis_peekaboo_style addthis_default_style addthis_label_style addthis_32x32_style">
+<a class="addthis_button_more">Share</a>
+<ul>
+<li>
+<a class="addthis_button_facebook"></a>
+</li>
+<li>
+<a class="addthis_button_google_plusone_share"></a>
+</li>
+<li>
+<a class="addthis_button_linkedin"></a>
+</li>
+<li>
+<a class="addthis_button_twitter"></a>
+</li>
+</ul>
+</div>
+<script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4f7088a56bb93798"></script>
+<!-- End of social buttons -->
+
+
+        <script type="text/javascript">
+            $(function(){
+                $('.timeago').timeago();
+            });
+        </script>
+</body>
+</html>

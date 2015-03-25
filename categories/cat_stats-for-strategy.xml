@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title>Tom's Blog (stats for strategy)</title><link>http://tomaugspurger.github.io/</link><description></description><atom:link type="application/rss+xml" href="http://tomaugspurger.github.io/categories/cat_stats-for-strategy.xml" rel="self"></atom:link><language>en</language><lastBuildDate>Wed, 25 Mar 2015 00:34:16 GMT</lastBuildDate><generator>http://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Stats for Strategy Quiz 10 Review</title><link>http://tomaugspurger.github.io/posts/Quiz 10 Review.html</link><dc:creator>Tom Augspurger</dc:creator><description>&lt;div&gt;&lt;p&gt;This was our first week of Time Series Analysis, and we covered smoothing methods and autocorrelation. Overall, the scores were pretty good. If you have any questions going into the final, let me know. I'll be around.&lt;/p&gt;
+&lt;h2&gt;Section A01&lt;/h2&gt;
+&lt;p&gt;This quiz focused on exponential smoothing. Make sure that you know about moving averages and autocorrelation too.&lt;/p&gt;
+&lt;h4&gt;#1&lt;/h4&gt;
+&lt;p&gt;You needed to find the biggest decline in the time series.
+You should never have to guess in stats, and I'm worried that some of you just looked at the graph and guessed the right week.
+I'd suggest plotting the series to get an idea of where the biggest declines were.
+Then you can go into the dataset and verify that the biggest decline was the the week of 2007-07-21.&lt;/p&gt;
+&lt;h4&gt;#2&lt;/h4&gt;
+&lt;p&gt;The model that provides the most smoothing will &lt;em&gt;always&lt;/em&gt; be the model with the lowest $w$, $w=.10$ in this case.
+This puts 10% of the weight on the most recent observation, and 90% on prior observations, which means that the exponentially smoothed prediction won't jump around a lot in response to one day's change.&lt;/p&gt;
+&lt;p&gt;For part $d$, some people got returned an interval. It was only asking for a single number though, the prediction error: $e_t = y_t - \hat{y}_t$. If it had asked for a prediction error with $x$% confidence, then you should return an interval.&lt;/p&gt;
+&lt;p&gt;I'm not sure if anyone got the extra credit. This was like the Cubs example we did in class. For ES models, the prediction for tomorrow depends on the entire history. This means we need to fit our model to the entire dataset. But, part $f$ was specifically concerned with the accuracy of &lt;em&gt;future&lt;/em&gt; forecasts. So even though we fit the model to the whole dataset, we only are interested in the residuals of 2008. Copy-paste those up to a new column and calculate the MSE.&lt;/p&gt;
+&lt;h2&gt;Section B42&lt;/h2&gt;
+&lt;p&gt;This quiz focused on moving averages. Make sure that you know about exponential smoothing and autocorrelation too.&lt;/p&gt;
+&lt;h4&gt;#1&lt;/h4&gt;
+&lt;p&gt;You needed to find the biggest decline in the time series.
+You should never have to guess in stats, and I'm worried that some of you just looked at the graph and guessed the right week.
+I'd suggest plotting the series to get an idea of where the biggest declines were.
+Then you can go into the dataset and verify that the biggest decline was the the week of 2007-07-21.&lt;/p&gt;
+&lt;h4&gt;#2&lt;/h4&gt;
+&lt;p&gt;The model that provides the most smoothing will &lt;em&gt;always&lt;/em&gt; be the model with the highest $k$, $k=12$ in this case.
+This averages the last $k$ periods when forecasting for tomorrow, which means that the moving average won't jump around a lot in response to one just one day's change.&lt;/p&gt;
+&lt;p&gt;For part $d$, some people got returned an interval. It was only asking for a single number though, the prediction error: $e_t = y_t - \hat{y}_t$. If it had asked for a prediction error with $x$% confidence, then you should return an interval.&lt;/p&gt;
+&lt;p&gt;I'm not sure if anyone got the extra credit. This was like the Cubs example we did in class. For MA models, we don't want to lose a prediction for the first $k$ periods, so we need to fit our model to the entire dataset. But, part $f$ was specifically concerned with the accuracy of &lt;em&gt;future&lt;/em&gt; forecasts. So even though we fit the model to the whole dataset, we only are interested in the residuals of 2008. Copy-paste those up to a new column and calculate the MSE.&lt;/p&gt;&lt;/div&gt;</description><category>review</category><category>stats for strategy</category><guid>http://tomaugspurger.github.io/posts/Quiz 10 Review.html</guid><pubDate>Thu, 01 May 2014 17:00:00 GMT</pubDate></item><item><title>Stats for Strategy Quiz 8 Review</title><link>http://tomaugspurger.github.io/posts/Quiz 8 Review.html</link><dc:creator>Tom Augspurger</dc:creator><description>&lt;div&gt;&lt;p&gt;Good luck on the exam.
+Don't forget your section number!&lt;/p&gt;
+&lt;h2&gt;Section A01&lt;/h2&gt;
+&lt;h3&gt;#2&lt;/h3&gt;
+&lt;p&gt;Remember that for the modified best conservative model, we still care about the significance of all the predictors other than the ones that must be included.&lt;/p&gt;
+&lt;h3&gt;#3&lt;/h3&gt;
+&lt;p&gt;Quite a few people are still giving point estimates (just $\hat{y}$) when the question asks you to predict $y$ with some % certainty.
+If you're asked to predict something with 95% certainty, your answer should be an interval.&lt;/p&gt;
+&lt;h3&gt;#4&lt;/h3&gt;
+&lt;p&gt;Make sure to use the right model for each question.
+This one asks us to go back to the best conservative model (from #1).
+Also, &lt;code&gt;Forearm&lt;/code&gt; can still be interpreted, despite not being in the model.
+We just say that it is unrelated to &lt;code&gt;BP&lt;/code&gt;, after accounting for the other two predictors.&lt;/p&gt;
+&lt;h3&gt;#5&lt;/h3&gt;
+&lt;p&gt;We want the most accurate estimate of $\beta_{calf}$, so we'll use the full model (see p. 134 in the notebook).
+Including insignificant predictors will increase the variance of your $\hat{y}$'s.
+But for this problem we're only interested in the slope, so we'll include all the predictors, even if they aren't significant.&lt;/p&gt;
+&lt;h2&gt;Section B42&lt;/h2&gt;
+&lt;p&gt;Make sure to understand the goal of the drop method: find the model that gives us the most accurate predictions (best $\hat{y}$'s), i.e. the best conservative model.
+The drop method is a fast way to (usually) get the best conservative model when you have many predictors.&lt;/p&gt;
+&lt;p&gt;For part c, we can still interpret predictors that aren't included in the model.
+Each of them is unrelated to blood pressure after controlling for the variables you did include in the model.&lt;/p&gt;
+&lt;p&gt;The last question asks you to interpret the slope for &lt;code&gt;Age&lt;/code&gt; from the simple regression model.
+First of all, make sure to use the simple regression model; &lt;code&gt;Age&lt;/code&gt; should be the only predictor.
+Since &lt;code&gt;Age&lt;/code&gt; is a binary variable, the interpretation is a bit different than usual.
+Instead of saying "For every 1 unit increase in &lt;code&gt;Age&lt;/code&gt;, &lt;code&gt;BP&lt;/code&gt; changes by $\hat{\beta_1}$", we just compare the two groups.
+Since $\hat{\beta_1} = 2.5$, we can say that "On average, people older than 40 (&lt;code&gt;Age&lt;/code&gt;=1) have 2.50 points higher blood pressure than people younger than 40."&lt;/p&gt;&lt;/div&gt;</description><category>review</category><category>stats for strategy</category><guid>http://tomaugspurger.github.io/posts/Quiz 8 Review.html</guid><pubDate>Thu, 10 Apr 2014 22:00:00 GMT</pubDate></item><item><title>Stats for Strategy Quiz 7 Review</title><link>http://tomaugspurger.github.io/posts/Quiz 7 Review.html</link><dc:creator>Tom Augspurger</dc:creator><description>&lt;div&gt;&lt;h2&gt;Section A01&lt;/h2&gt;
+&lt;h3&gt;#1&lt;/h3&gt;
+&lt;p&gt;The test statistic for $H_0: \beta_1 = \beta_2 = 0$ is the $F$ statistic. It's what we'll use for when we're testing multiple parameters at once.&lt;/p&gt;
+&lt;p&gt;Several people had $\beta_1 = 0$ &lt;strong&gt;or&lt;/strong&gt; $\beta_2 = 0$.
+This is wrong; it should be &lt;strong&gt;and&lt;/strong&gt; not &lt;strong&gt;or&lt;/strong&gt;.
+This is actually an important difference since the distribution for the $F$ statistic is testing for both slopes simultaneously being zero.&lt;/p&gt;
+&lt;h3&gt;#2&lt;/h3&gt;
+&lt;p&gt;This one is similar to #1, except we're testing a single parameter.
+That means we want the $t$ statistic.
+We want the $t$ from the full model, since we're interested in if winterizing is a significant predictor after accounting for thermostat setting.&lt;/p&gt;
+&lt;h3&gt;#3&lt;/h3&gt;
+&lt;p&gt;Standard interpretation for a multiple regression slope.
+Make sure to explain that this is the slope for &lt;code&gt;Winter&lt;/code&gt;, when holding &lt;code&gt;Therm&lt;/code&gt; constant.&lt;/p&gt;
+&lt;h3&gt;#4&lt;/h3&gt;
+&lt;p&gt;Similar to #3, but from the simple regression model.
+We know we want the simple regression since we're asked for the &lt;em&gt;total effect&lt;/em&gt; (not controlling for anything else).&lt;/p&gt;
+&lt;p&gt;Some people were mixing up the response and the predictor variables in the interpretation.
+Remember, the slope is $\frac{\Delta y}{\Delta x}$. We change $x$ (the predictor) and see how $y$ responds.
+To keep the interpretation simple, we change $x$ by one unit. Then the change in $y$ is the estimated slope $\hat{\beta}$.&lt;/p&gt;
+&lt;h3&gt;#5&lt;/h3&gt;
+&lt;p&gt;The direct effect is the slope from the full regression model.
+It's the direct effect since we've controlled for all the other predictors,
+there's nothing else included in the slope.&lt;/p&gt;
+&lt;h2&gt;Section B42&lt;/h2&gt;
+&lt;h3&gt;#1&lt;/h3&gt;
+&lt;p&gt;The test statistic for $\beta_1 = \beta_2 = \beta_3 = 0$ is the $F$ statistic. It's what we'll use for when we're testing multiple parameters at once.&lt;/p&gt;
+&lt;p&gt;Several people had $\beta_1 = 0$ &lt;strong&gt;or&lt;/strong&gt; $\beta_2 = 0$ &lt;strong&gt;or&lt;/strong&gt; $\beta_3 = 0$.
+This is wrong; it should be &lt;strong&gt;and&lt;/strong&gt; not &lt;strong&gt;or&lt;/strong&gt;.
+This is actually an important difference since the distribution for the $F$ statistic is testing for both slopes simultaneously being zero.&lt;/p&gt;
+&lt;h3&gt;#2&lt;/h3&gt;
+&lt;p&gt;Be careful to not mix up interpreting slopes vs. interpreting tests. #2 asked for you to interpret the result of a $t$ test: is $X_2$ is significant predictor of $y$, after controlling for the other predictors?&lt;/p&gt;
+&lt;h3&gt;#3&lt;/h3&gt;
+&lt;p&gt;Make sure you know what all you're controlling for when interpreting slopes.
+For this one the best conservative model only had &lt;code&gt;HSM&lt;/code&gt; as a predictor.
+That means our interpretation of $\hat{B_1}$ doesn't include controlling for the other predictors.&lt;/p&gt;
+&lt;p&gt;For the prediction in part &lt;code&gt;c&lt;/code&gt;, a lot of people made the same mistake as last week: they reported the point estimate $\hat{y}$, instead of an interval.
+The question asked us to estimate with 90% certainty, so we know the answer should be an interval.&lt;/p&gt;
+&lt;h3&gt;#4&lt;/h3&gt;
+&lt;p&gt;The population regression equation is&lt;/p&gt;
+&lt;p&gt;\begin{equation}
+    y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \epsilon
+\end{equation}&lt;/p&gt;
+&lt;p&gt;where the $\beta_i$'s are unknown.
+We want to slice out the subsection of the population with the grades given in the question.
+Substitute those in for the $X_i$'s.
+This is still a population regression equation (but for a subset of the population), so the $\beta_i$'s are still unknown.&lt;/p&gt;&lt;/div&gt;</description><category>review</category><category>stats for strategy</category><guid>http://tomaugspurger.github.io/posts/Quiz 7 Review.html</guid><pubDate>Fri, 04 Apr 2014 17:00:00 GMT</pubDate></item><item><title>Stats for Strategy Quiz 6 Review</title><link>http://tomaugspurger.github.io/posts/Quiz 6 Review.html</link><dc:creator>Tom Augspurger</dc:creator><description>&lt;div&gt;&lt;p&gt;For parts &lt;strong&gt;b&lt;/strong&gt; and &lt;strong&gt;d&lt;/strong&gt; we wanted intervals.&lt;/p&gt;
+&lt;p&gt;Part &lt;strong&gt;b&lt;/strong&gt; asked for a CI for the slope $\beta_1$. For this one you use the formula $\hat{\beta_1} \pm t^{\ast}_{n-p-1} SE(\hat{\beta_1})$. $n$ is the sample size and $p$ is the number of predictors (1 in this case).&lt;/p&gt;
+&lt;p&gt;You get the $\hat{\beta_1}$ and $SE(\hat{\beta_1})$
+from a computer or calculator and lookup the $t^{\ast}$
+in the table.
+Remember to round the degrees of freedom down when looking up
+$t^{\ast}$
+in the table.
+We want to be conservative and not overstate our sample size.&lt;/p&gt;
+&lt;p&gt;Part &lt;strong&gt;d&lt;/strong&gt; asked for a different kind of interval, one for a $\hat{y}$.&lt;/p&gt;
+&lt;p&gt;For this kind of problem, you'll use either $\hat{y} \pm t^{\ast} SE_{\hat{\mu}}$ or $\hat{y} \pm t^{\ast} SE_{\hat{y}}$, depending on whether you are predicting for all observations with that value of $X$ or for a single observation.&lt;/p&gt;
+&lt;p&gt;We don't give you the formulas for the $SE_{\hat{\mu}}$ or $SE_{\hat{y}}$. Minitab gives the $SE_{\hat{\mu}}$ (they call it SE-Fit). So in practice you'll just take the CI or PI from the Minitab output.&lt;/p&gt;
+&lt;p&gt;If you're struggling with the Minitab or stats part of this stuff, let me know. Send me an email &lt;a href="mailto:thomas-augspurger@uiowa.edu"&gt;thomas-augspurger@uiowa.edu&lt;/a&gt; or stop by my office hours: Tuesdays from 10:30 - 11:30 and 12:30 - 1:30 (or by appointment). I want you to be comfortable with the basics of regression; the rest of the course builds on what we did last week.&lt;/p&gt;&lt;/div&gt;</description><category>review</category><category>stats for strategy</category><guid>http://tomaugspurger.github.io/posts/Quiz 6 Review.html</guid><pubDate>Fri, 28 Mar 2014 17:00:00 GMT</pubDate></item><item><title>Stats for Strategy Quiz 5 Review</title><link>http://tomaugspurger.github.io/posts/Quiz 5 Review.html</link><dc:creator>Tom Augspurger</dc:creator><description>&lt;div&gt;&lt;h2&gt;Section A01&lt;/h2&gt;
+&lt;h3&gt;Problem 1&lt;/h3&gt;
+&lt;p&gt;Make sure to read the questions carefully, in particular &lt;strong&gt;the underlined or bold parts&lt;/strong&gt;. For this question we wanted the &lt;strong&gt;statistical concept&lt;/strong&gt; that explains why interpreting a prediction for a car with 0 City MPG is mislaeding. I agree with many of you that a negative Highway MPG doesn't make sense physically, but that doesn't answer the question.&lt;/p&gt;
+&lt;p&gt;The statistical concept is &lt;em&gt;extrapolation&lt;/em&gt;: making predictions for values outside of your sample dataset. The City MPG of $0$ fell below of the lowest City MPG in our sample. We can't be confident that the relationship that we found in the sample area holds for City MPGs that low (it probably doesn't in this case).&lt;/p&gt;
+&lt;h3&gt;Problem 2&lt;/h3&gt;
+&lt;p&gt;If $r_i$ is the indivudal contribution of website $i$ to the correlation, then&lt;/p&gt;
+&lt;p&gt;\begin{equation}
+    r_i  = \left( \frac{\bar{x} - x_i}{s_x} \right) \left( \frac{\bar{y} - y_i}{s_y} \right)
+\end{equation}&lt;/p&gt;
+&lt;p&gt;In this case $\bar{x} = 140.5, x_i = 138.38, s_x = 10.46, \bar{y} = 1.17, y_i =  1.007, s_y = 0.1513$&lt;/p&gt;
+&lt;h3&gt;Problem 3&lt;/h3&gt;
+&lt;p&gt;You'll want to find the correlation coefficient $r$ using your calculator. Talk to me if you don't know how.&lt;/p&gt;
+&lt;h2&gt;Seciton B42&lt;/h2&gt;
+&lt;h3&gt;Problem 1&lt;/h3&gt;
+&lt;p&gt;The prompt was to name a &lt;strong&gt;lurking variable&lt;/strong&gt; based on one of the possibilties listed. The two possibilties hinted at the number of failures of each brand being related to the number of each tire on the road. Simply concluding that the Wilderness tires are worst without considering the number of each brand in use would be wrong. The number of each brand in use is the lurking variable.&lt;/p&gt;
+&lt;p&gt;It's &lt;em&gt;possible&lt;/em&gt; that there are other lurking variables: The average age of each brand of tire (older tires more likely to fail), the type of road typically driven on for each brand (rougher, country roads are more likely to cause a flat). You all were very creative with your potential lurking variables. But to get the points, your answer needed to be based on the possibilities listed.&lt;/p&gt;
+&lt;h3&gt;Problem 2&lt;/h3&gt;
+&lt;p&gt;We're asserting that there's a linear relationship between the &lt;em&gt;population&lt;/em&gt; number of hits per day and the &lt;em&gt;population&lt;/em&gt; sales revenue per hit.&lt;/p&gt;
+&lt;p&gt;\begin{equation}
+    revenue = \beta_0 + \beta_1 hits + \varepsilon
+\end{equation}&lt;/p&gt;
+&lt;p&gt;The question wants us to estimate the fitted regression equation. You can get the estimate for the coefficeints a bunch of different ways (by hand, using linear algebra, your calculator, a computer). For this one, the easiest way would be with your calculator. The &lt;em&gt;fitted&lt;/em&gt; or estimated regression equation is&lt;/p&gt;
+&lt;p&gt;\begin{equation}
+    revenue = 2.00 - .007 hits
+\end{equation}&lt;/p&gt;
+&lt;h3&gt;Problem 3&lt;/h3&gt;
+&lt;p&gt;Your calculator should also give the $R^2$, the percentage of variation in revenue explained by the variation in number of hits. Talk to me if you are having trouble with this.&lt;/p&gt;&lt;/div&gt;</description><category>review</category><category>stats for strategy</category><guid>http://tomaugspurger.github.io/posts/Quiz 5 Review.html</guid><pubDate>Fri, 14 Mar 2014 17:00:00 GMT</pubDate></item><item><title>Stats for Strategy Quiz 4 Review</title><link>http://tomaugspurger.github.io/posts/Quiz 4 Review.html</link><dc:creator>Tom Augspurger</dc:creator><description>&lt;div&gt;&lt;p&gt;We are circling clusters of &lt;strong&gt;means&lt;/strong&gt;.
+Some people were circling the samples.
+ANOVA is all about comparing how spread out the &lt;strong&gt;means&lt;/strong&gt; are &lt;em&gt;relative to how spread out the &lt;strong&gt;samples&lt;/strong&gt; are&lt;/em&gt;.
+If two means are far away (relative to how spread out the samples are) the &lt;strong&gt;means&lt;/strong&gt; will be in separate clusters.&lt;/p&gt;
+&lt;p&gt;The number of clusters decreases as the F statistic decreases. The extreme case is $F \leq 1$ where the means aren't very spread out relative to the variance of the samples. In this case, we fail to reject $H_0$ (that all the means are the same), and we have a single cluster.&lt;/p&gt;
+&lt;p&gt;By the way, there's no need to eyeball the clusters. You run an ANOVA on each column (Vitamin A, C, E), and look at the Tukey intervals.
+Scan the Tukey intervals for significant differences and sketch out the clusters like I did in class.
+The $F$ statistic and $p-value$ alone doesn't tell us how many clusters there may be.
+At most it can tell us if there's 1 cluster, or 2+ clusters (why? Hint: look in the notes for a reference to $H_0$ being a "Gateway Hypothesis")&lt;/p&gt;&lt;/div&gt;</description><category>review</category><category>stats for strategy</category><guid>http://tomaugspurger.github.io/posts/Quiz 4 Review.html</guid><pubDate>Fri, 28 Feb 2014 02:00:00 GMT</pubDate></item><item><title>Stats for Strategy Quiz 3 Review</title><link>http://tomaugspurger.github.io/posts/Quiz 3 Review.html</link><dc:creator>Tom Augspurger</dc:creator><description>&lt;div&gt;&lt;h2&gt;A01&lt;a name="sectionA01"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Take a look a ICON for the solutions on this one. There's a brief explanation of each answer. It's harder to give feedback on this one since it's multiple choice, so email me if you have any questions.&lt;/p&gt;
+&lt;p&gt;Remember that this week's homework was over $\chi^2$ and two-means. This quiz only covered $\chi^2$, so make sure you figure out if you understand two-means.&lt;/p&gt;
+&lt;h3&gt;#1&lt;/h3&gt;
+&lt;p&gt;This is the mathy way of writing that &lt;code&gt;Wine choice&lt;/code&gt; and &lt;code&gt;Music&lt;/code&gt; are unrelated: the type of music playing doesn't affect the type of wine you buy: $p_{11} = p_{21} = p_{31}$. The first subscript represent the type of wine and the second represents the type of music.&lt;/p&gt;
+&lt;h3&gt;#6 &amp;amp; #7&lt;/h3&gt;
+&lt;p&gt;For these two you need to figure out which output to use. You can tell by the numbers put in Minitab for the # of events and # of trials. Make sure that they line up with the definitions of $p_1$ and $p_2$: so for #6 we have $p_1$: the proportion of all wines bought while French music are playing that are French.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2&gt;B42&lt;a name="sectionB42"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Remember that this week's homework was over $\chi^2$ and two-means. This quiz only covered two-means, so make sure you figure out if you understand $\chi^2$.&lt;/p&gt;
+&lt;h3&gt;#1&lt;/h3&gt;
+&lt;p&gt;Step 1 still includes defining parameters. A lot of people didn't.
+Were you confused by $\chi^2$? We don't &lt;em&gt;usually&lt;/em&gt; define them there (or in ANOVA) since there are usually so many.
+But with 2 means we can define the 2 means $\mu_1$ and $\mu_2$.&lt;/p&gt;
+&lt;p&gt;This one was independent (not paired) since the 70 men and 70 women were each randomly sampled from their own populations. There's no reason to link up &lt;code&gt;man #1&lt;/code&gt; with &lt;code&gt;women #1&lt;/code&gt; rather than some other. A couple of examples of how this &lt;em&gt;could&lt;/em&gt; have been setup as a paired problem:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;each man and woman is a fraternal twin, and their sibling of the opposite sex is also in the survey. Then we pair &lt;strong&gt;by twin&lt;/strong&gt;.&lt;/li&gt;
+&lt;li&gt;The 70 men and 70 women are put into study pairs at the beginning of the semester. Then we pair by &lt;strong&gt;study pair&lt;/strong&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;#2&lt;/h3&gt;
+&lt;p&gt;In this problem, &lt;code&gt;The sample evidence supports the null hypothesis&lt;/code&gt; is only true when $\bar{x}_1 = \bar{x}_2$ (since $H_0$ is $\mu_1 = \mu_2$). &lt;em&gt;Anything&lt;/em&gt; else is evidence against $H_0$ and in favor of $H_a$. The only remaining question is whether there's just some sample evidence against $H_0$, or enough sample evidence against $H_0$ that we are comfortable rejecting it, in favor of $H_a$.&lt;/p&gt;
+&lt;h3&gt;#3&lt;/h3&gt;
+&lt;p&gt;A lot of people were trying to talk about the &lt;em&gt;people&lt;/em&gt; differing. Something like &lt;code&gt;between 17% to 43.1% men differ from women&lt;/code&gt;. Or &lt;code&gt;between 17% fewer to 43.1% more men than women have a better GPA&lt;/code&gt;. That's wrong.
+Our CI is for the value $\mu_1 - \mu_2$, the difference in the two means, &lt;em&gt;i.e.&lt;/em&gt; the difference in the two average GPAs. So we're 99% confident that the mean GPA for men is between 17 points lower to 43.1 points higher than the mean GPA for women.&lt;/p&gt;&lt;/div&gt;</description><category>review</category><category>stats for strategy</category><guid>http://tomaugspurger.github.io/posts/Quiz 3 Review.html</guid><pubDate>Fri, 21 Feb 2014 18:00:00 GMT</pubDate></item><item><title>Stats for Strategy Quiz 2 Review</title><link>http://tomaugspurger.github.io/posts/Quiz 2 Review.html</link><dc:creator>Tom Augspurger</dc:creator><description>&lt;div&gt;&lt;h2&gt;General Comments&lt;/h2&gt;
+&lt;p&gt;Much better this week! Keep it up. If you see &lt;font color="red"&gt;(half)&lt;/font&gt; anywhere on your quiz that means that you missed an earlier question, which caused you to miss the later question. So you did everything correct on the later question, but you didn't get the right answer because of the earlier mistake.&lt;/p&gt;
+&lt;p&gt;For example suppose you mess up calculating the p-value, so now it's bigger than $\alpha$ when it should have been smaller. That messes you up in step 3 since you fail to reject $H_0$ when you should have rejected it. You get half credit for these. Ask me if you have any questions about grading.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://tomaugspurger.github.io/posts/Quiz%202%20Review.html#sectionA01"&gt;Section A01&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://tomaugspurger.github.io/posts/Quiz%202%20Review.html#sectionB42"&gt;Section B42&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;A01&lt;a name="sectionA01"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h3&gt;#1&lt;/h3&gt;
+&lt;p&gt;The first step is to recognize the problem. As you're reading the prompt, you should be asking yourself:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;What kind of data is this? (quantitative (t) or categorical (Z))&lt;/li&gt;
+&lt;li&gt;How many samples / populations are there?&lt;/li&gt;
+&lt;li&gt;What is the sample / samples? What is the population / populations?&lt;/li&gt;
+&lt;li&gt;What are the sample statistics? What are the population parameters?&lt;/li&gt;
+&lt;li&gt;Are we testing a hypothesis? Or do we need a CI?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Still some confusion about the parameters:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Describe the population&lt;/li&gt;
+&lt;li&gt;$p_1$ and $p_2$ in this case (no hats)&lt;/li&gt;
+&lt;li&gt;The parameters' values are not usually known.&lt;/li&gt;
+&lt;li&gt;In this case we care about the &lt;strong&gt;proportion&lt;/strong&gt;, not the raw number who attend&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;#2&lt;/h3&gt;
+&lt;p&gt;For the p-value:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Select alternative -&amp;gt; greater than (to match $H_a$)&lt;/li&gt;
+&lt;li&gt;We don't use Fisher's p-value&lt;/li&gt;
+&lt;li&gt;check the box for pooled p: $p = \frac{x_1 + x_2}{n_1 + n_2}$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;#3&lt;/h3&gt;
+&lt;p&gt;Deciding: What is the p-value?&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The risk of &lt;em&gt;wrongly&lt;/em&gt; rejecting $H_0$ (based on our sample evidence) when $H_0$ is actually true.&lt;/li&gt;
+&lt;li&gt;Compare that to our risk tolerance $\alpha$.&lt;/li&gt;
+&lt;li&gt;When it's not too risky to reject $H_0$, p-value $&amp;lt; \alpha$ we reject $H_0$ and go with $H_a$&lt;/li&gt;
+&lt;li&gt;When it is too risky to reject $H_0$, we fail to reject $H_0$ (which isn't quite the same as concluding that $H_0$ is true).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;#4/5&lt;/h3&gt;
+&lt;p&gt;Can we conclude that more underclassmen attend the game than upperclassmen? Not quite. What if $N_2 &amp;gt;&amp;gt; N_1$, &lt;em&gt;i.e.&lt;/em&gt; there are a lot more upperclassmen in the population?&lt;/p&gt;
+&lt;h2&gt;B42&lt;a name="sectionB42"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h3&gt;#1&lt;/h3&gt;
+&lt;p&gt;The first step is to recognize the problem. As you're reading the prompt, you should be asking yourself:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;What kind of data is this? (quantitative (t) or categorical (Z))&lt;/li&gt;
+&lt;li&gt;How many samples / populations are there?&lt;/li&gt;
+&lt;li&gt;What is the sample / samples? What is the population / populations?&lt;/li&gt;
+&lt;li&gt;What are the sample statistics? What are the population parameters?&lt;/li&gt;
+&lt;li&gt;Are we testing a hypothesis? Or do we need a CI?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Still some confusion about the parameters:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Describe the population&lt;/li&gt;
+&lt;li&gt;$p_1$ and $p_2$ in this case (no hats)&lt;/li&gt;
+&lt;li&gt;The parameters' values are not usually known.&lt;/li&gt;
+&lt;li&gt;In this case we care about the &lt;strong&gt;proportion&lt;/strong&gt;, not the raw number who attend&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The alternative hypothesis is what we're testing: Are current users less likely than nonusers to prefer the new product. $H_a: p_1 &amp;lt; p_2$&lt;/p&gt;
+&lt;h3&gt;#2&lt;/h3&gt;
+&lt;p&gt;Which way to shade? We shade evidence for $H_a$ so to the left of the $Z$ in this case.&lt;/p&gt;
+&lt;h3&gt;#3&lt;/h3&gt;
+&lt;p&gt;Deciding: What is the p-value?&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The risk of &lt;em&gt;wrongly&lt;/em&gt; rejecting $H_0$ (based on our sample evidence) when $H_0$ is actually true.&lt;/li&gt;
+&lt;li&gt;Compare that to our risk tolerance $\alpha$.&lt;/li&gt;
+&lt;li&gt;When it's not too risky to reject $H_0$, p-value $&amp;lt; \alpha$ we reject $H_0$ and go with $H_a$&lt;/li&gt;
+&lt;li&gt;When it is too risky to reject $H_0$, we fail to reject $H_0$ (which isn't quite the same as concluding that $H_0$ is true).&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;</description><category>review</category><category>stats for strategy</category><guid>http://tomaugspurger.github.io/posts/Quiz 2 Review.html</guid><pubDate>Fri, 07 Feb 2014 18:00:00 GMT</pubDate></item><item><title>Quiz 1 Review</title><link>http://tomaugspurger.github.io/posts/Discussion Review.html</link><dc:creator>Tom Augspurger</dc:creator><description>&lt;div&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;General remarks&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;read the questions carefully, especially the bold and underlined parts.&lt;/li&gt;
+&lt;li&gt;The full solutions are on ICON.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="http://tomaugspurger.github.io/posts/Discussion%20Review.html#sectionA01"&gt;Section A01&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://tomaugspurger.github.io/posts/Discussion%20Review.html#sectionB42"&gt;Section B42&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Section A01&lt;a name="sectionA01"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;h4&gt;#1&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;Don't mix up the sample &lt;strong&gt;statistic&lt;/strong&gt; with the &lt;strong&gt;sample&lt;/strong&gt;. The sample is a group of some objects (bars, people, etc.). The statistic is some number that describes the sample (the proportion checking IDs).&lt;/li&gt;
+&lt;li&gt;The actual &lt;em&gt;number&lt;/em&gt; of bars checking IDs isn't that interesting, since it depends on the size of the sample or population. If I just say 3 bars didn't check IDs, is that meaningful? You need to know how many bars I visited to put those 3 that didn't check IDs in context.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;#2&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Means vs. proportions problem:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;What kind of data do you have? Is it categorical (proportions) or quantitative (means)?&lt;/li&gt;
+&lt;li&gt;Use the $t$ table for means and the $Z$ for proportions.
+-Step 1 includes defining the parameter or parameters. In this case that means $p$: the proportion of all adults who choose clothing first.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;When to use CI vs. test statistic &amp;amp; p-values?&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Testing a hypothesis: &lt;code&gt;clothing is the first choice for most adults&lt;/code&gt;, so we need to find a a test statistic ($Z$) and a p-value. CI and hypothesis tests are related, but a p-value is exactly what we need for the hypothesis tests: What is the probability of wrongly rejecting $H_0$ based on our sample when $H_0$ is actually true?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;A lot of people did hypothesis tests on the &lt;em&gt;statistic&lt;/em&gt; instead of the &lt;em&gt;parameter&lt;/em&gt; (i.e. $H_A: \hat{p} &amp;gt; 0.5$). But we already know $\hat{p} = .47719 &amp;lt; .5$, so there's no reason to do a hypothesis test on that. We don't know the value of the parameter $p$, so we do the hypothesis test on it.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Shading helps. In this case we had&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;\begin{align}
+    H_A &amp;amp;= p &amp;gt;    0.5 \\
+    H_0 &amp;amp;= p \leq 0.5
+\end{align}&lt;/p&gt;
+&lt;p&gt;The p-value is evidence for $H_A$, so we want to shade to the right.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;When to reject vs. fail to reject $H_0$?&lt;ul&gt;
+&lt;li&gt;Look at the definitions of a p-value on &lt;code&gt;p. 26&lt;/code&gt;. We reject $H_0$ when the p-value (the risk of wrongly rejection $H_0$ when it's actually true) is small compared the $\alpha$, our risk tolerance.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Section B42 &lt;a name="sectionB42"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;h4&gt;#1&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;Don't mix up the population &lt;strong&gt;parameter&lt;/strong&gt; with the population. The population is a set of objects (people, bars, etc). and the parameter is a number (probably unknown) that describes them.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;#2&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;Make sure to define the parameter or parameters.&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;When to use CI vs. test statistic &amp;amp; p-values?&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Testing a hypothesis: &lt;code&gt;clothing is the first choice for most adults&lt;/code&gt;, so we need to find a a test statistic ($Z$) and a p-value. CI and hypothesis tests are related, but a p-value is exactly what we need for the hypothesis tests: What is the probability of wrongly rejecting $H_0$ based on our sample when $H_0$ is actually true?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;When to reject vs. fail to reject $H_0$?&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Look at the definitions of a p-value on &lt;code&gt;p. 26&lt;/code&gt;. We reject $H_0$ when the p-value (the risk of wrongly rejection $H_0$ when it's actually true) is small compared the $\alpha$, our risk tolerance.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;$p_0$ vs. $\hat{p}$ in the denominator for $Z$. Be careful with the formula.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;It is true that clothing is the first choice ...&lt;/code&gt; vs. &lt;code&gt;Sufficient evidence to conclude that clothing is the first choice ...&lt;/code&gt; aren't quite the same.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;2b: Select $H_a \neq$ to get a CI and check the box to use the normal (Z) distrubtion.&lt;/p&gt;&lt;/div&gt;</description><category>review</category><category>stats for strategy</category><guid>http://tomaugspurger.github.io/posts/Discussion Review.html</guid><pubDate>Mon, 03 Feb 2014 18:00:00 GMT</pubDate></item></channel></rss>

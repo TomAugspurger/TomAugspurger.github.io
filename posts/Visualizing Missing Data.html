@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html prefix="
+og: http://ogp.me/ns#
+article: http://ogp.me/ns/article#
+" lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Visualizing Missing Data | Tom's Blog</title>
+
+                <link href="../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+
+                <link rel="alternate" type="application/rss+xml" title="RSS" href="../rss.xml">
+
+      <link rel="canonical" href="http://tomaugspurger.github.io/posts/Visualizing%20Missing%20Data.html">
+
+
+
+    
+        <!--[if lt IE 9]><script src="/assets/js/html5.js"></script><![endif]-->
+
+    
+
+    
+    <meta name="author" content="Tom Augspurger">
+        <meta property="og:site_name" content="Tom's Blog">
+    <meta property="og:title" content="Visualizing Missing Data">
+    <meta property="og:url" content="http://tomaugspurger.github.io/posts/Visualizing Missing Data.html">
+    <meta property="og:description" content="This
+StackOverflow question asked how to visualize missing data in Python.
+The question author linked to this chart, created in R.
+
+
+
+
+
+
+
+
+
+
+I wasn't aware of any existing implementation, and it didn'">
+    <meta property="og:type" content="article">
+    <meta property="article:published_time" content="2014-02-22T12:00:00-06:00">
+           <meta property="article:tag" content="data science">
+           <meta property="article:tag" content="python">
+           <meta property="article:tag" content="scripts">
+           <meta property="article:tag" content="visualization">
+
+    
+    
+
+</head>
+<body>
+    <section class="social">
+        <ul>
+                    <li><a href="../index.html" title="Home"><i class="icon-home"></i></a></li>
+            <li><a href="../archive.html" title="Archives"><i class="icon-folder-open-alt"></i></a></li>
+            <li><a href="../categories/index.html" title="Tags"><i class="icon-tags"></i></a></li>
+            <li><a href="../rss.xml" title="RSS"><i class="icon-rss"></i></a></li>
+
+        </ul>
+    </section>
+    <section class="page-content">
+        <div class="content" rel="main">
+    <div class="post">
+        <h1 class="p-name entry-title" itemprop="headline name">Visualizing Missing Data</h1>
+
+        <div class="meta">
+            <div class="authordate">
+                <time class="timeago" datetime="2014-02-22T12:00:00-06:00">2014-02-22 12:00</time>
+            
+                      |  
+        <a href="Visualizing%20Missing%20Data.ipynb" id="sourcelink">Source</a>
+
+            </div>
+                    <div itemprop="keywords" class="tags">
+        <ul>
+        Tags : 
+           <li><a class="tag p-category" href="../categories/data-science.html" rel="tag">data science</a></li>
+           <li><a class="tag p-category" href="../categories/python.html" rel="tag">python</a></li>
+           <li><a class="tag p-category" href="../categories/scripts.html" rel="tag">scripts</a></li>
+           <li><a class="tag p-category" href="../categories/visualization.html" rel="tag">visualization</a></li>
+        </ul>
+        </div>
+
+        </div>
+        <div class="body">
+            <div tabindex="-1" id="notebook" class="border-box-sizing">
+    <div class="container" id="notebook-container">
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a href="http://stackoverflow.com/questions/21925114/is-there-an-implementation-of-missingmaps-in-pythons-ecosystem">This</a>
+StackOverflow question asked how to visualize missing data in Python.
+The question author linked to this chart, created in R.</p>
+<p><img src="http://i.stack.imgur.com/kr7Ks.png" alt=""></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I wasn't aware of any existing implementation, and it didn't seem all that difficult, so I decided to write my own.  Here's the result.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">missingmap</span> <span class="k">import</span> <span class="n">missmap</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">'https://raw.github.com/mattdelhey/kaggle-titanic/master/Data/train.csv'</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[1]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style="max-height:1000px;max-width:1500px;overflow:auto;">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>survived</th>
+      <th>pclass</th>
+      <th>name</th>
+      <th>sex</th>
+      <th>age</th>
+      <th>sibsp</th>
+      <th>parch</th>
+      <th>ticket</th>
+      <th>fare</th>
+      <th>cabin</th>
+      <th>embarked</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td> 0</td>
+      <td> 3</td>
+      <td>                           Braund, Mr. Owen Harris</td>
+      <td>   male</td>
+      <td> 22</td>
+      <td> 1</td>
+      <td> 0</td>
+      <td>        A/5 21171</td>
+      <td>  7.2500</td>
+      <td>  NaN</td>
+      <td> S</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td> 1</td>
+      <td> 1</td>
+      <td> Cumings, Mrs. John Bradley (Florence Briggs Th...</td>
+      <td> female</td>
+      <td> 38</td>
+      <td> 1</td>
+      <td> 0</td>
+      <td>         PC 17599</td>
+      <td> 71.2833</td>
+      <td>  C85</td>
+      <td> C</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td> 1</td>
+      <td> 3</td>
+      <td>                            Heikkinen, Miss. Laina</td>
+      <td> female</td>
+      <td> 26</td>
+      <td> 0</td>
+      <td> 0</td>
+      <td> STON/O2. 3101282</td>
+      <td>  7.9250</td>
+      <td>  NaN</td>
+      <td> S</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td> 1</td>
+      <td> 1</td>
+      <td>      Futrelle, Mrs. Jacques Heath (Lily May Peel)</td>
+      <td> female</td>
+      <td> 35</td>
+      <td> 1</td>
+      <td> 0</td>
+      <td>           113803</td>
+      <td> 53.1000</td>
+      <td> C123</td>
+      <td> S</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td> 0</td>
+      <td> 3</td>
+      <td>                          Allen, Mr. William Henry</td>
+      <td>   male</td>
+      <td> 35</td>
+      <td> 0</td>
+      <td> 0</td>
+      <td>           373450</td>
+      <td>  8.0500</td>
+      <td>  NaN</td>
+      <td> S</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">missmap</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">'Titanic Missing Data Map'</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAuMAAAIMCAYAAABfb6LzAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz%0AAAALEgAACxIB0t1+/AAAIABJREFUeJzt3X+cXHdd7/H37I+UCsoPuZRCuo2kuR+4gGIRLciP1BTl%0A6kWi10iiMYgiIhakNk0TUSlcELggWCjlh5dfAiLBSxBFqAqFQGxuJUEotn6a7GZ/pWnYqkgm2d3Z%0AnTn3jzNrtnH3nHB2Zj8zc17PxyOP7G52Z9893Uw+5zuf7+dbSZJEAAAAAFZfX3QAAAAAoKwoxgEA%0AAIAgFOMAAABAEIpxAAAAIAjFOAAAABCEYhwAAAAIMhAdAACKMLMbJT2z+e7jJY1Imm6+/25JD3b3%0AN5rZiyQNuvs7C36fJ0va7e5bzvPz1zWzfMndn3XOn71f0gskPVzSYyRdf76Pe87jvFrSUXf/0Hf6%0AtUs81kZJn5H0z80P9UuqSnqNu3/2PL7+jyW9090Pfwff8wOSdkja5O63Lvr4OqXX7h3u/rLzfTwA%0A6GYU4wC6krv/1sLbZnZM0i8sUxA+XdIdK/g+hyR9pwXzjKQNZjbk7uPNjA9sZkmaj/uVAo+7kOlV%0ARb4uw1F3/8GFd8zs+yXdYmbPc/fbc772Kknv+g6/XyJpXNJ2Sbcu+vgOSSebfw4ApUAxDqDnmNkN%0Akr5X0uckPVfSVWZ2RtInlK6aP0LSIyWNSfp5d58ys1FJ75e0SdKQpI+5+/XNleO3u/sTzexBkt4u%0A6WmS5iV90t1fuUSEuqSPSfpFSa9vfuxnJX1S0rXNjIsf9+mS/lDpqnQi6fXu/omMj39A0h3u/odm%0ANtP8Hs+W9ChJN7r7jWbWL+lNzf/+f5d0u6THufuVedfP3b9uZm+TdI2kbWZ2haQ3SrpA0sWS/tbd%0AX2Rmr2t+zw+b2QuUtj7+p89b5tv8maRfNbML3H22+bGfl7S3+TjK+L7rJH1Z0i2SLpdUkXS1u385%0A778NADoNPeMAelEiKXH3T0r6lKS3NNtUni/pgLs/zd0fI+mMpF9a9DUPdPdnKi22X2Zml57zuK+R%0AtEbSYyU9SdKPmtkztbQPKV35XbBD0geW+dxXNzP+kKRfkbRQMN+wzMcTnV09XiNpyt2fLunnJL3B%0AzC6Q9CKlherjJT1VaVvMd7Li/HVJT2y+/XJJv+fuVzQf76fN7AebNyL3SPrF5gr6kp+3zONPSbpN%0A0vMkqXnjcZekf130OVmP9yhJtzZX9K+X9LHmDQgAdBWKcQC9qnLu2+7+NkkHzey3zeydkp4g6YGL%0APu8vmp93j6RvSnrYOY+5SdJ73T1x9zl33+ju+5f65s2WmYaZXW5ml0j6bnf/p2WyfkzSO8zsw5Ke%0ALGlhtX3vMh8/1180f/+q0lXkB0r6SUkfdPeau88pfUWgsszXLyVRerMipX3uDzOzPZJulvRdkh60%0AxNec7+ct+BOdvWF5gdJXJs738b7t7h+WJHe/RemrEd9/3v91ANAhKMYB9Krk3LfN7I1KV6FPKi1O%0A/0b3L1Cnz/mac4vX+cXvmNmjzezcgn2xhdXx7UoLzyW5+3uUrkL/raSfkPR1M/ue5T6+xENMNx9n%0A4b+5ImlO93+Ob2TkXMpTlK6OS2lLyHOUrly/WtKkli7sz/fzpPT6fkrSj5jZWknPUNp2UtHZ/3dZ%0Aj1c/5/H6lvgYAHQ8inEAvaiis0XbvNJWDkn6cUl/5O4fUdom8Wyl/djn6+8kvcDMKs1WkE/o7ESX%0ApXxYaR/08yX96XKfZGZ/L+kH3f2Dkn5d0kMkPdTMDiz1ceWvcCeSPi1pu5mtMbMBSb+s8yzIzeyH%0AJb1E0o1m9lClq/K7m20/ayVdprPXbV7SmvP4vHNV3L0maZ/Sm5ZPuftCMV0xs4fkPN5Dzeynmnmf%0AK6mmFWzUBYAobOAE0IsW91R/RtJNZpYo7fl+s5n9jtI2lD9XWuCd72O9WtKNkr6mtCj8s2ahuNTX%0AyN3vMbM7JX3L3b+1+M/Oefs6pYXva5UWzDe4+5iZ7Vrm40s9xrnvf0CSKW1dqUo6pvuv/C/+/PVm%0A9tXm+w2lGz63ufsdkmRmr5d02MzukXSnpL9Wet1uVbop9WNKe9SzPm/Ja6T0FYMvSfrNRR9P3P1b%0AGd93ROnK//Obm0inJf3MolcGAKBrVJKE5y4A6DVm9mxJj2i+CrAwl/2Mu++JTbZyzWkqd7n7hdFZ%0AAGClWBkHgN70T5KuM7PrlD7X/6Ok342N1FKsJAHoCayMAwAAAEHYwAkAAAAEoRgHAAAAgmT2jE+d%0AWlP6HpbhI4me+uT5/E8EAAAAlpEkyZJjaTN7xg/dMVj6YryRNHRs+Ds5tK43TYzVtfOa6BQAAADd%0AablinGkqOcaOSXt2cajb7Ex0AgAAgN6TWYwPrWNF+PQZaeRodAoAAAD0IjZwAgAAAEEoxnP09/Hq%0A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%0AqLv7TLNVZ97MytamsuByd/91SXL3a8ysrCvCf650U/PPKV35eo+knwhNFONntOgVI6XtjaV5xWiB%0Amb1O0q/q7KslZX1V/bckPUfSxyQNSfobSaUrxrupdui0Q38+1fz93ZLetejXu8MSxXqApHsk/Zmk%0AMUlrld7pfjAyVICnu/sOSVV3f5/K2RsrSReY2Q+Y2QPMbE1zM1/ZfLl5s/7o5upwWdszEjN7uCSZ%0A2UMl9QfnifJdSv/deLS7v17lvQ6/Lempku6T9AeSfjY2TpifknSpu1/c/FXGQlySppu/f7u5ElzW%0AvxddUzt0VDHu7l9rvvkNST+tdFLCj0sq3bzUpke4+++6+y3ufoOkNe7+e0pnh5ZJv5k9QPqPl2Pr%0AwXmimNJe0LskefNXqbj7Hkl/Iun/SPord782OFKU10j6BzM7rHSiymuC80RZo3QV8JCZPV5pq0YZ%0A1Rdefnf3eUllfcXoq5JKNTlkGcOS/p+k95nZq5SeU1JGXVM7dFSbyiIfULr798NKR/t9UOW80/9u%0AM3ucu9/V7B1/UHM17EHRwVbZW5UWHP9F0u2SyjQl4T+4exk3ZN2PmW1z949K+oyZXWxmn3X350Tn%0ACvAQSRuUnjz5zTIdBnaOayU9T9LrJG1XWpiX0eJXjN6l8r5i9A1J95jZyeb7ibs/JjJQBHd/oZk9%0AyN2rzQ2cZT0crGtqh04txr/L3d/ZfPurzVPWyuhqSR82s4uV9oq/TOmu4NeFplpl7v5xM/uc0pNI%0AR3T/cY+lYWbPk/SbSv/e9kl6mLt/f2yqVbfDzE4pbeF6ndIpEmX0Ynf/sEp+Aqe7HzCzh0l6kaSv%0Aufvt0ZmCvEPpAXF3Snqh0kNfymir0laEf48OEsnMnirphWY2IKnPzC529zLupfiC0ul8l0kadfep%0A2DjL66hivPmkWpF03MyerfRCPlXpbN0yulzS90iaVTrA/73u/sTYSKvPzG5y96sl3W5mPyHpJqWr%0AgmXzWqUTI16i9O/GUGiaGP9TaY/wAyQ9w92/GZwnygVm9o9KW5UaKu8m97dLeoTSSQkvMbMfa7Yy%0Alc2fKr0xvVrpRs636D/PoS+DUUlnOnVixip6p6Q3Kt3YfIek8dg4YT6rtGXnjzu5EJc6rBhXOhd0%0Awe80f5XZbypt0/ldpVMDnhsbJ8y3zeyNSttzHq90l3gZnXD328zsN9z9/c3Z86VwzoSlGaVHnt9o%0A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">
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Not half bad. The dataset is about the passengers on the Titanic. It's available from <a href="https://www.kaggle.com/c/titanic-gettingStarted">Kaggle</a>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Implementation">Implementation<a class="anchor-link" href="Visualizing%20Missing%20Data.html#Implementation">¶</a>
+</h4>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Everything is done in a single function, which I've posted in a <a href="https://gist.github.com/TomAugspurger/9156696">gist</a>. <em>Note: I'm working on getting line numbers to show up in the blog. You may want to follow that link to the gist to see the line numbers I refer to below.</em></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">collections</span> <span class="k">as</span> <span class="n">collections</span>
+<span class="kn">from</span> <span class="nn">matplotlib.patches</span> <span class="k">import</span> <span class="n">Rectangle</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">izip</span><span class="p">,</span> <span class="n">cycle</span>
+
+
+<span class="k">def</span> <span class="nf">missmap</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="k">None</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="k">None</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s">'descending'</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="k">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Plot the missing values of df.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pandas DataFrame</span>
+<span class="sd">    ax : matplotlib axes</span>
+<span class="sd">        if None then a new figure and axes will be created</span>
+<span class="sd">    colors : dict</span>
+<span class="sd">        dict with {True: c1, False: c2} where the values are</span>
+<span class="sd">        matplotlib colors.</span>
+<span class="sd">    aspect : int</span>
+<span class="sd">        the width to height ratio for each rectangle.</span>
+<span class="sd">    sort : one of {'descending', 'ascending', None}</span>
+<span class="sd">    title : str</span>
+<span class="sd">    kwargs : dict</span>
+<span class="sd">        matplotlib.axes.bar kwargs</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ax : matplotlib axes</span>
+
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="k">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+    <span class="c"># setup the axes</span>
+    <span class="n">dfn</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">sort</span> <span class="ow">in</span> <span class="p">(</span><span class="s">'ascending'</span><span class="p">,</span> <span class="s">'descending'</span><span class="p">):</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">sort_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s">'ascending'</span><span class="p">:</span> <span class="k">True</span><span class="p">,</span> <span class="s">'descending'</span><span class="p">:</span> <span class="k">False</span><span class="p">}</span>
+        <span class="n">counts</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="n">sort_dict</span><span class="p">[</span><span class="n">sort</span><span class="p">])</span>
+        <span class="n">dfn</span> <span class="o">=</span> <span class="n">dfn</span><span class="p">[</span><span class="n">counts</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+
+    <span class="n">ny</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">nx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="c"># each column is a stacked bar made up of ny patches.</span>
+    <span class="n">xgrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)),</span> <span class="p">(</span><span class="n">ny</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">ygrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ny</span><span class="p">),</span> <span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="c"># xys is the lower left corner of each patch</span>
+    <span class="n">xys</span> <span class="o">=</span> <span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">izip</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">ygrid</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">colors</span> <span class="ow">is</span> <span class="k">None</span><span class="p">:</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">{</span><span class="k">True</span><span class="p">:</span> <span class="s">'#EAF205'</span><span class="p">,</span> <span class="k">False</span><span class="p">:</span> <span class="s">'k'</span><span class="p">}</span>
+
+    <span class="n">widths</span> <span class="o">=</span> <span class="n">cycle</span><span class="p">([</span><span class="n">aspect</span><span class="p">])</span>
+    <span class="n">heights</span> <span class="o">=</span> <span class="n">cycle</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">xy</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">izip</span><span class="p">(</span><span class="n">xys</span><span class="p">,</span> <span class="n">widths</span><span class="p">,</span> <span class="n">heights</span><span class="p">,</span> <span class="n">dfn</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
+        <span class="n">color_array</span> <span class="o">=</span> <span class="n">dfn</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span>
+
+        <span class="n">rects</span> <span class="o">=</span> <span class="p">[</span><span class="n">Rectangle</span><span class="p">(</span><span class="n">xyc</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                 <span class="k">for</span> <span class="n">xyc</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">color_array</span><span class="p">)]</span>
+
+        <span class="n">p_coll</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">PatchCollection</span><span class="p">(</span><span class="n">rects</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color_array</span><span class="p">,</span>
+                                             <span class="n">edgecolor</span><span class="o">=</span><span class="n">color_array</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">add_collection</span><span class="p">(</span><span class="n">p_coll</span><span class="p">,</span> <span class="n">autolim</span><span class="o">=</span><span class="k">False</span><span class="p">)</span>
+
+    <span class="c"># post plot aesthetics</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nx</span><span class="p">))</span>  <span class="c"># center the ticks</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">():</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">set_rotation</span><span class="p">(</span><span class="mi">90</span><span class="p">)</span>
+
+    <span class="c"># remove tick lines</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s">'both'</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s">'both'</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="s">'off'</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="s">'off'</span><span class="p">,</span>
+                   <span class="n">labelleft</span><span class="o">=</span><span class="s">'off'</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="k">False</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">title</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ax</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I think my method is about the most straightforward way to do this. I represent each point in the DataFrame as a rectangle.
+Every rectangle is the same size. They differ only in their color, which is determined by whether the value is valid or missing.</p>
+<p>My first implemenation used Matplotlib's <code>ax.bar()</code> and simply stacked the points on top of eachother, similar to <a href="http://matplotlib.org/examples/pylab_examples/bar_stacked.html">this example</a>. However, matplotlib is a memory hog when plotting a lot of points or patches. Because my method means one patch per data point, the original implementation was slow.</p>
+<p>The solution was to use a <a href="http://matplotlib.org/api/collections_api.html#module-matplotlib.collections"><code>Collection</code></a>, which is designed for this task.</p>
+<p>Line 39 takes the original <code>DataFrame</code> and returns a <code>DataFrame</code> of <code>bool</code>, <code>True</code> wherever there is a <code>NaN</code> in <code>df</code>.</p>
+<p>The <code>if</code> block starting on line 41 handles how the columns are sorted along the x-axis of the plot.</p>
+<p>The next section is some more setup. <code>matplotlib.patches.Rectangle</code> expects 3 arguments:</p>
+<ul>
+<li>
+<code>(x, y)</code>: a tuple giving the lower-left corner of the rectangle</li>
+<li>width: a float giving the width</li>
+<li>height: a float giving the height</li>
+</ul>
+<p>I create two 2-d arrays, <code>xgrid</code> and <code>ygrid</code>. Each of these is an <code>nx</code> (# of columns) by <code>ny</code> (# of rows) matrix.</p>
+<p>Here's what they look like:</p>
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span><span class="n">xgrid</span>
+<span class="n">array</span><span class="p">([[</span> <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">],</span>
+       <span class="p">[</span> <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">],</span>
+       <span class="p">[</span> <span class="mi">2</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span>  <span class="mi">2</span><span class="p">],</span>
+       <span class="o">...</span><span class="p">,</span> 
+       <span class="p">[</span> <span class="mi">8</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span>  <span class="mi">8</span><span class="p">],</span>
+       <span class="p">[</span> <span class="mi">9</span><span class="p">,</span>  <span class="mi">9</span><span class="p">,</span>  <span class="mi">9</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mi">9</span><span class="p">,</span>  <span class="mi">9</span><span class="p">,</span>  <span class="mi">9</span><span class="p">],</span>
+       <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">]])</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="n">ygrid</span>
+<span class="n">array</span><span class="p">([[</span>  <span class="mi">0</span><span class="p">,</span>   <span class="mi">1</span><span class="p">,</span>   <span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mi">415</span><span class="p">,</span> <span class="mi">416</span><span class="p">,</span> <span class="mi">417</span><span class="p">],</span>
+   <span class="p">[</span>  <span class="mi">0</span><span class="p">,</span>   <span class="mi">1</span><span class="p">,</span>   <span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mi">415</span><span class="p">,</span> <span class="mi">416</span><span class="p">,</span> <span class="mi">417</span><span class="p">],</span>
+   <span class="p">[</span>  <span class="mi">0</span><span class="p">,</span>   <span class="mi">1</span><span class="p">,</span>   <span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mi">415</span><span class="p">,</span> <span class="mi">416</span><span class="p">,</span> <span class="mi">417</span><span class="p">],</span>
+   <span class="o">...</span><span class="p">,</span> 
+   <span class="p">[</span>  <span class="mi">0</span><span class="p">,</span>   <span class="mi">1</span><span class="p">,</span>   <span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mi">415</span><span class="p">,</span> <span class="mi">416</span><span class="p">,</span> <span class="mi">417</span><span class="p">],</span>
+   <span class="p">[</span>  <span class="mi">0</span><span class="p">,</span>   <span class="mi">1</span><span class="p">,</span>   <span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mi">415</span><span class="p">,</span> <span class="mi">416</span><span class="p">,</span> <span class="mi">417</span><span class="p">],</span>
+   <span class="p">[</span>  <span class="mi">0</span><span class="p">,</span>   <span class="mi">1</span><span class="p">,</span>   <span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mi">415</span><span class="p">,</span> <span class="mi">416</span><span class="p">,</span> <span class="mi">417</span><span class="p">]])</span>
+</pre></div>
+<p>We'll zip the two together to get the <code>(x, y)</code> needed for the lower-left corner of each rectangle. So the first point gets
+<code>(xgrid[0][0], ygrid[0][0])</code>, which is <code>(0, 0)</code>. Every point in the same column has the same <code>x</code> coordinate, and each point's <code>y</code> coordinate is bumped up by one.</p>
+<p>Line 53:</p>
+<div class="highlight"><pre><span class="n">xys</span> <span class="o">=</span> <span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">izip</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">ygrid</span><span class="p">))</span>
+</pre></div>
+<p>returns a generator who's elements are the lower left coordinates for each point. I do it lazily with <code>izip</code> from the <code>itertools</code> module, since we don't need the entire list of tuples at once.</p>
+<p>The user can specify what colors to use for True and False, and the aspect ratio.
+Initially I was going to create an <code>nx</code> by <code>ny</code> matrix of widths and heights. But, since every rectangle will be the same shape, I realized that would be wasteful. We can just make a generator that always returns the same number using <code>itertools.cycle</code>.</p>
+<p>Line 61 is where the action occurs. We iterate over 4 iterables, the lower left coordinates, the widths, the heights, and the columns of the <code>DataFrame</code>. For each column in <code>df</code>, we create an array of colors, based on which values are <code>NaN</code>s.</p>
+<p>Line 64 makes a list of <code>Rectangels</code> for that column of <code>df</code> using a list comprehension. Notice that I don't specify the color of each rectangle here. That's what I did at first, but those colors get overridden by line 67, when you create the <code>PatchCollection</code>. That is apparently the correct place to specify the color of each rectangle. The <code>PatchCollection</code> is added to the <code>axes</code>, <code>ax</code>.</p>
+<p>The rest is purely aesthetic stuff: getting the x-labels from the columns of <code>df</code>, centering and rotating them, removing the labels and ticks from the y axis, and setting a title.</p>
+<p>Overall I was pleased with how it turned out. Let me know if you have any suggestions for improvement!</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [ ]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+    </div>
+  </div>
+
+        </div>
+                <ul class="pager">
+            <li class="previous">
+                <a href="Quiz%203%20Review.html" rel="prev" title="Stats for Strategy Quiz 3 Review">Previous post</a>
+            </li>
+            <li class="next">
+                <a href="python-wheels.html" rel="next" title="Stats for Strategy Quiz 4 Review">Next post</a>
+            </li>
+        </ul>
+
+    </div>
+                    <footer id="footer" role="contentinfo">
+            <p>Contents © 2015         <a href="mailto:tom.w.augspurger@gmail.com">Tom Augspurger</a> - Powered by         <a href="http://getnikola.com" rel="nofollow">Nikola</a>         </p>
+            
+        </footer>
+
+        </div>
+    </section>
+    
+    
+                <script src="../assets/js/all-nocdn.js" type="text/javascript"></script>
+    
+<!-- Social buttons -->
+<div id="addthisbox" class="addthis_toolbox addthis_peekaboo_style addthis_default_style addthis_label_style addthis_32x32_style">
+<a class="addthis_button_more">Share</a>
+<ul>
+<li>
+<a class="addthis_button_facebook"></a>
+</li>
+<li>
+<a class="addthis_button_google_plusone_share"></a>
+</li>
+<li>
+<a class="addthis_button_linkedin"></a>
+</li>
+<li>
+<a class="addthis_button_twitter"></a>
+</li>
+</ul>
+</div>
+<script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4f7088a56bb93798"></script>
+<!-- End of social buttons -->
+
+
+        <script type="text/javascript">
+            $(function(){
+                $('.timeago').timeago();
+            });
+        </script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html prefix="
+og: http://ogp.me/ns#
+article: http://ogp.me/ns/article#
+" lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Stats for Strategy Quiz 7 Review | Tom's Blog</title>
+
+                <link href="../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+
+                <link rel="alternate" type="application/rss+xml" title="RSS" href="../rss.xml">
+
+      <link rel="canonical" href="http://tomaugspurger.github.io/posts/Quiz%207%20Review.html">
+
+
+
+    
+        <!--[if lt IE 9]><script src="/assets/js/html5.js"></script><![endif]-->
+
+    
+
+    
+    <meta name="author" content="Tom Augspurger">
+        <meta property="og:site_name" content="Tom's Blog">
+    <meta property="og:title" content="Stats for Strategy Quiz 7 Review">
+    <meta property="og:url" content="http://tomaugspurger.github.io/posts/Quiz 7 Review.html">
+    <meta property="og:description" content="Section A01
+#1
+The test statistic for $H_0: \beta_1 = \beta_2 = 0$ is the $F$ statistic. It's what we'll use for when we're testing multiple parameters at once.
+Several people had $\beta_1 = 0$ or $\b">
+    <meta property="og:type" content="article">
+    <meta property="article:published_time" content="2014-04-04T12:00:00-05:00">
+           <meta property="article:tag" content="review">
+           <meta property="article:tag" content="stats for strategy">
+
+    
+    
+
+</head>
+<body>
+    <section class="social">
+        <ul>
+                    <li><a href="../index.html" title="Home"><i class="icon-home"></i></a></li>
+            <li><a href="../archive.html" title="Archives"><i class="icon-folder-open-alt"></i></a></li>
+            <li><a href="../categories/index.html" title="Tags"><i class="icon-tags"></i></a></li>
+            <li><a href="../rss.xml" title="RSS"><i class="icon-rss"></i></a></li>
+
+        </ul>
+    </section>
+    <section class="page-content">
+        <div class="content" rel="main">
+    <div class="post">
+        <h1 class="p-name entry-title" itemprop="headline name">Stats for Strategy Quiz 7 Review</h1>
+
+        <div class="meta">
+            <div class="authordate">
+                <time class="timeago" datetime="2014-04-04T12:00:00-05:00">2014-04-04 12:00</time>
+            
+                      |  
+        <a href="Quiz%207%20Review.md" id="sourcelink">Source</a>
+
+            </div>
+                    <div itemprop="keywords" class="tags">
+        <ul>
+        Tags : 
+           <li><a class="tag p-category" href="../categories/review.html" rel="tag">review</a></li>
+           <li><a class="tag p-category" href="../categories/stats-for-strategy.html" rel="tag">stats for strategy</a></li>
+        </ul>
+        </div>
+
+        </div>
+        <div class="body">
+            <div>
+<h2>Section A01</h2>
+<h3>#1</h3>
+<p>The test statistic for $H_0: \beta_1 = \beta_2 = 0$ is the $F$ statistic. It's what we'll use for when we're testing multiple parameters at once.</p>
+<p>Several people had $\beta_1 = 0$ <strong>or</strong> $\beta_2 = 0$.
+This is wrong; it should be <strong>and</strong> not <strong>or</strong>.
+This is actually an important difference since the distribution for the $F$ statistic is testing for both slopes simultaneously being zero.</p>
+<h3>#2</h3>
+<p>This one is similar to #1, except we're testing a single parameter.
+That means we want the $t$ statistic.
+We want the $t$ from the full model, since we're interested in if winterizing is a significant predictor after accounting for thermostat setting.</p>
+<h3>#3</h3>
+<p>Standard interpretation for a multiple regression slope.
+Make sure to explain that this is the slope for <code>Winter</code>, when holding <code>Therm</code> constant.</p>
+<h3>#4</h3>
+<p>Similar to #3, but from the simple regression model.
+We know we want the simple regression since we're asked for the <em>total effect</em> (not controlling for anything else).</p>
+<p>Some people were mixing up the response and the predictor variables in the interpretation.
+Remember, the slope is $\frac{\Delta y}{\Delta x}$. We change $x$ (the predictor) and see how $y$ responds.
+To keep the interpretation simple, we change $x$ by one unit. Then the change in $y$ is the estimated slope $\hat{\beta}$.</p>
+<h3>#5</h3>
+<p>The direct effect is the slope from the full regression model.
+It's the direct effect since we've controlled for all the other predictors,
+there's nothing else included in the slope.</p>
+<h2>Section B42</h2>
+<h3>#1</h3>
+<p>The test statistic for $\beta_1 = \beta_2 = \beta_3 = 0$ is the $F$ statistic. It's what we'll use for when we're testing multiple parameters at once.</p>
+<p>Several people had $\beta_1 = 0$ <strong>or</strong> $\beta_2 = 0$ <strong>or</strong> $\beta_3 = 0$.
+This is wrong; it should be <strong>and</strong> not <strong>or</strong>.
+This is actually an important difference since the distribution for the $F$ statistic is testing for both slopes simultaneously being zero.</p>
+<h3>#2</h3>
+<p>Be careful to not mix up interpreting slopes vs. interpreting tests. #2 asked for you to interpret the result of a $t$ test: is $X_2$ is significant predictor of $y$, after controlling for the other predictors?</p>
+<h3>#3</h3>
+<p>Make sure you know what all you're controlling for when interpreting slopes.
+For this one the best conservative model only had <code>HSM</code> as a predictor.
+That means our interpretation of $\hat{B_1}$ doesn't include controlling for the other predictors.</p>
+<p>For the prediction in part <code>c</code>, a lot of people made the same mistake as last week: they reported the point estimate $\hat{y}$, instead of an interval.
+The question asked us to estimate with 90% certainty, so we know the answer should be an interval.</p>
+<h3>#4</h3>
+<p>The population regression equation is</p>
+<p>\begin{equation}
+    y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \epsilon
+\end{equation}</p>
+<p>where the $\beta_i$'s are unknown.
+We want to slice out the subsection of the population with the grades given in the question.
+Substitute those in for the $X_i$'s.
+This is still a population regression equation (but for a subset of the population), so the $\beta_i$'s are still unknown.</p>
+</div>
+        </div>
+                <ul class="pager">
+            <li class="previous">
+                <a href="Quiz%206%20Review.html" rel="prev" title="Stats for Strategy Quiz 6 Review">Previous post</a>
+            </li>
+            <li class="next">
+                <a href="Quiz%208%20Review.html" rel="next" title="Stats for Strategy Quiz 8 Review">Next post</a>
+            </li>
+        </ul>
+
+    </div>
+                    <footer id="footer" role="contentinfo">
+            <p>Contents © 2015         <a href="mailto:tom.w.augspurger@gmail.com">Tom Augspurger</a> - Powered by         <a href="http://getnikola.com" rel="nofollow">Nikola</a>         </p>
+            
+        </footer>
+
+        </div>
+    </section>
+    
+    
+                <script src="../assets/js/all-nocdn.js" type="text/javascript"></script>
+    
+<!-- Social buttons -->
+<div id="addthisbox" class="addthis_toolbox addthis_peekaboo_style addthis_default_style addthis_label_style addthis_32x32_style">
+<a class="addthis_button_more">Share</a>
+<ul>
+<li>
+<a class="addthis_button_facebook"></a>
+</li>
+<li>
+<a class="addthis_button_google_plusone_share"></a>
+</li>
+<li>
+<a class="addthis_button_linkedin"></a>
+</li>
+<li>
+<a class="addthis_button_twitter"></a>
+</li>
+</ul>
+</div>
+<script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4f7088a56bb93798"></script>
+<!-- End of social buttons -->
+
+
+        <script type="text/javascript">
+            $(function(){
+                $('.timeago').timeago();
+            });
+        </script>
+</body>
+</html>
