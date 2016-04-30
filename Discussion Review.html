@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+          <title>DatasFrame</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="./theme/css/main.css" />
+        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+
+
+
+    <meta name="tags" content="Stats For Strategy" />
+    <meta name="tags" content="Review" />
+
+</head>
+
+<body id="index" class="home">
+    <nav>
+      <a href=".">Home | </a>
+      <a href="/archives.html">Archive | </a>
+      <a href="/categories.html">Categories | </a>
+      <a href="/pages/about.html">About | </a>
+      <a href="/feeds/all.rss.xml">RSS</a>
+    </nav>
+
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="./Discussion Review.html" rel="bookmark"
+         title="Permalink to Quiz 1 Review">Quiz 1 Review</a></h2>
+ 
+  </header>
+  <footer class="post-info">
+    <abbr class="published" title="2014-02-03T12:00:00-06:00">
+      Mon 03 February 2014
+    </abbr>
+    <address class="vcard author">
+      By           <a class="url fn" href="./author/tom-augspurger.html">Tom Augspurger</a>
+    </address>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <ul>
+<li>
+<p>General remarks</p>
+<ul>
+<li>read the questions carefully, especially the bold and underlined parts.</li>
+<li>The full solutions are on ICON.</li>
+</ul>
+</li>
+<li>
+<p><a href="#sectionA01">Section A01</a></p>
+</li>
+<li><a href="#sectionB42">Section B42</a></li>
+</ul>
+<h2>Section A01<a name="sectionA01"></a></h2>
+<h3>#1</h3>
+<ul>
+<li>Don't mix up the sample <strong>statistic</strong> with the <strong>sample</strong>. The sample is a group of some objects (bars, people, etc.). The statistic is some number that describes the sample (the proportion checking IDs).</li>
+<li>The actual <em>number</em> of bars checking IDs isn't that interesting, since it depends on the size of the sample or population. If I just say 3 bars didn't check IDs, is that meaningful? You need to know how many bars I visited to put those 3 that didn't check IDs in context.</li>
+</ul>
+<h3>#2</h3>
+<ul>
+<li>
+<p>Means vs. proportions problem:</p>
+<ul>
+<li>What kind of data do you have? Is it categorical (proportions) or quantitative (means)?</li>
+<li>Use the <span class="math">\(t\)</span> table for means and the <span class="math">\(Z\)</span> for proportions.
+-Step 1 includes defining the parameter or parameters. In this case that means <span class="math">\(p\)</span>: the proportion of all adults who choose clothing first.</li>
+</ul>
+</li>
+<li>
+<p>When to use CI vs. test statistic &amp; p-values?</p>
+<ul>
+<li>Testing a hypothesis: <code>clothing is the first choice for most adults</code>, so we need to find a a test statistic (<span class="math">\(Z\)</span>) and a p-value. CI and hypothesis tests are related, but a p-value is exactly what we need for the hypothesis tests: What is the probability of wrongly rejecting <span class="math">\(H_0\)</span> based on our sample when <span class="math">\(H_0\)</span> is actually true?</li>
+</ul>
+</li>
+<li>
+<p>A lot of people did hypothesis tests on the <em>statistic</em> instead of the <em>parameter</em> (i.e. <span class="math">\(H_A: \hat{p} &gt; 0.5\)</span>). But we already know <span class="math">\(\hat{p} = .47719 &lt; .5\)</span>, so there's no reason to do a hypothesis test on that. We don't know the value of the parameter <span class="math">\(p\)</span>, so we do the hypothesis test on it.</p>
+</li>
+<li>
+<p>Shading helps. In this case we had</p>
+</li>
+</ul>
+<div class="math">\begin{align}
+    H_A &amp;= p &gt;    0.5 \\\\
+    H_0 &amp;= p \leq 0.5
+\end{align}</div>
+<p>The p-value is evidence for <span class="math">\(H_A\)</span>, so we want to shade to the right.</p>
+<ul>
+<li>When to reject vs. fail to reject <span class="math">\(H_0\)</span>?<ul>
+<li>Look at the definitions of a p-value on <code>p. 26</code>. We reject <span class="math">\(H_0\)</span> when the p-value (the risk of wrongly rejection <span class="math">\(H_0\)</span> when it's actually true) is small compared the <span class="math">\(\alpha\)</span>, our risk tolerance.</li>
+</ul>
+</li>
+</ul>
+<h2>Section B42 <a name="sectionB42"></a></h2>
+<h3>#1</h3>
+<ul>
+<li>Don't mix up the population <strong>parameter</strong> with the population. The population is a set of objects (people, bars, etc). and the parameter is a number (probably unknown) that describes them.</li>
+</ul>
+<h3>#2</h3>
+<ul>
+<li>Make sure to define the parameter or parameters.</li>
+<li>
+<p>When to use CI vs. test statistic &amp; p-values?</p>
+<ul>
+<li>Testing a hypothesis: <code>clothing is the first choice for most adults</code>, so we need to find a a test statistic (<span class="math">\(Z\)</span>) and a p-value. CI and hypothesis tests are related, but a p-value is exactly what we need for the hypothesis tests: What is the probability of wrongly rejecting <span class="math">\(H_0\)</span> based on our sample when <span class="math">\(H_0\)</span> is actually true?</li>
+</ul>
+</li>
+<li>
+<p>When to reject vs. fail to reject <span class="math">\(H_0\)</span>?</p>
+<ul>
+<li>Look at the definitions of a p-value on <code>p. 26</code>. We reject <span class="math">\(H_0\)</span> when the p-value (the risk of wrongly rejection <span class="math">\(H_0\)</span> when it's actually true) is small compared the <span class="math">\(\alpha\)</span>, our risk tolerance.</li>
+</ul>
+</li>
+<li><span class="math">\(p_0\)</span> vs. <span class="math">\(\hat{p}\)</span> in the denominator for <span class="math">\(Z\)</span>. Be careful with the formula.</li>
+<li><code>It is true that clothing is the first choice ...</code> vs. <code>Sufficient evidence to conclude that clothing is the first choice ...</code> aren't quite the same.</li>
+</ul>
+<p>2b: Select <span class="math">\(H_a \neq\)</span> to get a CI and check the box to use the normal (Z) distrubtion.</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript'; 
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+  </div><!-- /.entry-content -->
+</section>
+
+    <footer>
+      <p>&copy; Tom Augspurger </p>
+    </footer>
+  </main>
+
+</body>
+</html>

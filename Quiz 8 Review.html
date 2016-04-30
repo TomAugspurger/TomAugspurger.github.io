@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+          <title>DatasFrame</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="./theme/css/main.css" />
+        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+
+
+
+    <meta name="tags" content="stats for strategy" />
+    <meta name="tags" content="review" />
+
+</head>
+
+<body id="index" class="home">
+    <nav>
+      <a href=".">Home | </a>
+      <a href="/archives.html">Archive | </a>
+      <a href="/categories.html">Categories | </a>
+      <a href="/pages/about.html">About | </a>
+      <a href="/feeds/all.rss.xml">RSS</a>
+    </nav>
+
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="./Quiz 8 Review.html" rel="bookmark"
+         title="Permalink to Quiz 9 Review">Quiz 9 Review</a></h2>
+ 
+  </header>
+  <footer class="post-info">
+    <abbr class="published" title="2014-04-10T17:00:00-05:00">
+      Thu 10 April 2014
+    </abbr>
+    <address class="vcard author">
+      By           <a class="url fn" href="./author/tom-augspurger.html">Tom Augspurger</a>
+    </address>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <p>Don't forget your section number!</p>
+<h1>Section A01</h1>
+<h2>#2</h2>
+<p>Remember that for the modified best conservative model, we still care about the significance of all the predictors other than the ones that must be included.</p>
+<h2>#3</h2>
+<p>Quite a few people are still giving point estimates (just <span class="math">\(\hat{y}\)</span>) when the question asks you to predict <span class="math">\(y\)</span> with some % certainty.
+If you're asked to predict something with 95% certainty, your answer should be an interval.</p>
+<h2>#4</h2>
+<p>Make sure to use the right model for each question.
+This one asks us to go back to the best conservative model (from #1).
+Also, <code>Forearm</code> can still be interpreted, despite not being in the model.
+We just say that it is unrelated to <code>BP</code>, after accounting for the other two predictors.</p>
+<h2>#5</h2>
+<p>We want the most accurate estimate of <span class="math">\(\beta_{calf}\)</span>, so we'll use the full model (see p. 134 in the notebook).
+Including insignificant predictors will increase the variance of your <span class="math">\(\hat{y}\)</span>'s.
+But for this problem we're only interested in the slope, so we'll include all the predictors, even if they aren't significant.</p>
+<h1>Section B42</h1>
+<p>Make sure to understand the goal of the drop method: find the model that gives us the most accurate predictions (best <span class="math">\(\hat{y}\)</span>'s), i.e. the best conservative model.
+The drop method is a fast way to (usually) get the best conservative model when you have many predictors.</p>
+<p>For part c, we can still interpret predictors that aren't included in the model.
+Each of them is unrelated to blood pressure after controlling for the variables you did include in the model.</p>
+<p>The last question asks you to interpret the slope for <code>Age</code> from the simple regression model.
+First of all, make sure to use the simple regression model; <code>Age</code> should be the only predictor.
+Since <code>Age</code> is a binary variable, the interpretation is a bit different than usual.
+Instead of saying "For every 1 unit increase in <code>Age</code>, <code>BP</code> changes by <span class="math">\(\hat{\beta_1}\)</span>", we just compare the two groups.
+Since <span class="math">\(\hat{\beta_1} = 2.5\)</span>, we can say that "On average, people older than 40 (<code>Age</code>=1) have 2.50 points higher blood pressure than people younger than 40."</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript'; 
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+  </div><!-- /.entry-content -->
+</section>
+
+    <footer>
+      <p>&copy; Tom Augspurger </p>
+    </footer>
+  </main>
+
+</body>
+</html>

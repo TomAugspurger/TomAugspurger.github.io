@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+          <title>DatasFrame</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="../theme/css/main.css" />
+        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+
+
+
+    <meta name="tags" content="stats for strategy" />
+    <meta name="tags" content="review" />
+
+</head>
+
+<body id="index" class="home">
+    <nav>
+      <a href="..">Home | </a>
+      <a href="/archives.html">Archive | </a>
+      <a href="/categories.html">Categories | </a>
+      <a href="/pages/about.html">About | </a>
+      <a href="/feeds/all.rss.xml">RSS</a>
+    </nav>
+
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="../drafts/python-wheels.html" rel="bookmark"
+         title="Permalink to python wheels">python wheels</a></h2>
+ 
+  </header>
+  <footer class="post-info">
+    <abbr class="published" title="2014-02-27T20:00:00-06:00">
+      Thu 27 February 2014
+    </abbr>
+    <address class="vcard author">
+      By           <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
+    </address>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <h2>Links</h2>
+<h2>Tools</h2>
+<p>-twinse (note about needing '~/.pypic'). I made mine through python setup.py register but that may be insecure?</p>
+<h2>Commands</h2>
+<ul>
+<li><code>python setup.py bdist_wheel</code> : create a wheel and place it under <code>./dist</code></li>
+</ul>
+<p>Wheels with binary extensions are platform specific, but <code>whl</code> isn't (yet) able to handle/determine that(?) It can handle py2 / py3 as the naming of the <code>whl</code> file contains the python version (See http://lucumr.pocoo.org/2014/1/27/python-on-wheels/.</p>
+<h2>setup.py</h2>
+<ul>
+<li>install_requires = ['pypi dependency names']</li>
+</ul>
+<h2>Building</h2>
+<p><code>python setup.py sdist</code>  (does the python 2 vs 3 version matter here?)
+<code>python setup.py bdist_wheel</code> python does matter here since 2 and 3 get written to separate wheel zips.</p>
+<h2>Uploading to PyPI</h2>
+  </div><!-- /.entry-content -->
+</section>
+
+    <footer>
+      <p>&copy; Tom Augspurger </p>
+    </footer>
+  </main>
+
+</body>
+</html>

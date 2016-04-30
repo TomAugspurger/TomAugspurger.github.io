@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+          <title>DatasFrame</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="./theme/css/main.css" />
+        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+
+
+
+    <meta name="tags" content="stats for strategy" />
+    <meta name="tags" content="review" />
+
+</head>
+
+<body id="index" class="home">
+    <nav>
+      <a href=".">Home | </a>
+      <a href="/archives.html">Archive | </a>
+      <a href="/categories.html">Categories | </a>
+      <a href="/pages/about.html">About | </a>
+      <a href="/feeds/all.rss.xml">RSS</a>
+    </nav>
+
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="./Quiz 2 Review.html" rel="bookmark"
+         title="Permalink to Quiz 2 Review">Quiz 2 Review</a></h2>
+ 
+  </header>
+  <footer class="post-info">
+    <abbr class="published" title="2014-02-07T12:00:00-06:00">
+      Fri 07 February 2014
+    </abbr>
+    <address class="vcard author">
+      By           <a class="url fn" href="./author/tom-augspurger.html">Tom Augspurger</a>
+    </address>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <p>Much better this week! Keep it up. If you see <font color='red'>(half)</font> anywhere on your quiz that means that you missed an earlier question, which caused you to miss the later question. So you did everything correct on the later question, but you didn't get the right answer because of the earlier mistake.</p>
+<p>For example suppose you mess up calculating the p-value, so now it's bigger than <span class="math">\(\alpha\)</span> when it should have been smaller. That messes you up in step 3 since you fail to reject <span class="math">\(H_0\)</span> when you should have rejected it. You get half credit for these. Ask me if you have any questions about grading.</p>
+<ul>
+<li><a href="#sectionA01">Section A01</a></li>
+<li><a href="#sectionB42">Section B42</a></li>
+</ul>
+<h1>A01<a name="sectionA01"></a></h1>
+<h2>#1</h2>
+<p>The first step is to recognize the problem. As you're reading the prompt, you should be asking yourself:</p>
+<ul>
+<li>What kind of data is this? (quantitative (t) or categorical (Z))</li>
+<li>How many samples / populations are there?</li>
+<li>What is the sample / samples? What is the population / populations?</li>
+<li>What are the sample statistics? What are the population parameters?</li>
+<li>Are we testing a hypothesis? Or do we need a CI?</li>
+</ul>
+<p>Still some confusion about the parameters:</p>
+<ul>
+<li>Describe the population</li>
+<li><span class="math">\(p_1\)</span> and <span class="math">\(p_2\)</span> in this case (no hats)</li>
+<li>The parameters' values are not usually known.</li>
+<li>In this case we care about the <strong>proportion</strong>, not the raw number who attend</li>
+</ul>
+<h2>#2</h2>
+<p>For the p-value:</p>
+<ul>
+<li>Select alternative -&gt; greater than (to match <span class="math">\(H_a\)</span>)</li>
+<li>We don't use Fisher's p-value</li>
+<li>check the box for pooled p: <span class="math">\(p = \frac{x_1 + x_2}{n_1 + n_2}\)</span></li>
+</ul>
+<h2>#3</h2>
+<p>Deciding: What is the p-value?</p>
+<ul>
+<li>The risk of <em>wrongly</em> rejecting <span class="math">\(H_0\)</span> (based on our sample evidence) when <span class="math">\(H_0\)</span> is actually true.</li>
+<li>Compare that to our risk tolerance <span class="math">\(\alpha\)</span>.</li>
+<li>When it's not too risky to reject <span class="math">\(H_0\)</span>, p-value <span class="math">\(&lt; \alpha\)</span> we reject <span class="math">\(H_0\)</span> and go with <span class="math">\(H_a\)</span></li>
+<li>When it is too risky to reject <span class="math">\(H_0\)</span>, we fail to reject <span class="math">\(H_0\)</span> (which isn't quite the same as concluding that <span class="math">\(H_0\)</span> is true).</li>
+</ul>
+<h2>#4/5</h2>
+<p>Can we conclude that more underclassmen attend the game than upperclassmen? Not quite. What if <span class="math">\(N_2 &gt;&gt; N_1\)</span>, <em>i.e.</em> there are a lot more upperclassmen in the population?</p>
+<h1>B42<a name="sectionB42"></a></h1>
+<h2>#1</h2>
+<p>The first step is to recognize the problem. As you're reading the prompt, you should be asking yourself:</p>
+<ul>
+<li>What kind of data is this? (quantitative (t) or categorical (Z))</li>
+<li>How many samples / populations are there?</li>
+<li>What is the sample / samples? What is the population / populations?</li>
+<li>What are the sample statistics? What are the population parameters?</li>
+<li>Are we testing a hypothesis? Or do we need a CI?</li>
+</ul>
+<p>Still some confusion about the parameters:</p>
+<ul>
+<li>Describe the population</li>
+<li><span class="math">\(p_1\)</span> and <span class="math">\(p_2\)</span> in this case (no hats)</li>
+<li>The parameters' values are not usually known.</li>
+<li>In this case we care about the <strong>proportion</strong>, not the raw number who attend</li>
+</ul>
+<p>The alternative hypothesis is what we're testing: Are current users less likely than nonusers to prefer the new product. <span class="math">\(H_a: p_1 &lt; p_2\)</span></p>
+<h2>#2</h2>
+<p>Which way to shade? We shade evidence for <span class="math">\(H_a\)</span> so to the left of the <span class="math">\(Z\)</span> in this case.</p>
+<h2>#3</h2>
+<p>Deciding: What is the p-value?</p>
+<ul>
+<li>The risk of <em>wrongly</em> rejecting <span class="math">\(H_0\)</span> (based on our sample evidence) when <span class="math">\(H_0\)</span> is actually true.</li>
+<li>Compare that to our risk tolerance <span class="math">\(\alpha\)</span>.</li>
+<li>When it's not too risky to reject <span class="math">\(H_0\)</span>, p-value <span class="math">\(&lt; \alpha\)</span> we reject <span class="math">\(H_0\)</span> and go with <span class="math">\(H_a\)</span></li>
+<li>When it is too risky to reject <span class="math">\(H_0\)</span>, we fail to reject <span class="math">\(H_0\)</span> (which isn't quite the same as concluding that <span class="math">\(H_0\)</span> is true).</li>
+</ul>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript'; 
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+  </div><!-- /.entry-content -->
+</section>
+
+    <footer>
+      <p>&copy; Tom Augspurger </p>
+    </footer>
+  </main>
+
+</body>
+</html>

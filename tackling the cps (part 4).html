@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+          <title>DatasFrame</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="./theme/css/main.css" />
+        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+
+
+
+
+</head>
+
+<body id="index" class="home">
+    <nav>
+      <a href=".">Home | </a>
+      <a href="/archives.html">Archive | </a>
+      <a href="/categories.html">Categories | </a>
+      <a href="/pages/about.html">About | </a>
+      <a href="/feeds/all.rss.xml">RSS</a>
+    </nav>
+
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="./tackling the cps (part 4).html" rel="bookmark"
+         title="Permalink to Tacking the CPS (part 4)">Tacking the CPS (part 4)</a></h2>
+ 
+  </header>
+  <footer class="post-info">
+    <abbr class="published" title="2014-05-19T12:01:00-05:00">
+      Mon 19 May 2014
+    </abbr>
+    <address class="vcard author">
+      By           <a class="url fn" href="./author/tom-augspurger.html">Tom Augspurger</a>
+    </address>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <p>As a reminder, the CPS interviews households 8 times over the course of 16 months. They're interviewed for 4 months, take 8 months off, and are interviewed four more times. So if your first interview was in month <span class="math">\(m\)</span>, you're also interviewed in months </p>
+<div class="math">$$m + 1, m + 2, m + 3, m + 12, m + 13, m + 14, m + 15$$</div>
+<p>.</p>
+<p>I stored the data in <a href="http://pandas-docs.github.io/pandas-docs-travis/dsintro.html#panel">Panels</a>, the less well-known, higher-dimensional cousin of the <a href="http://pandas.pydata.org/pandas-docs/version/0.13.1/generated/pandas.DataFrame.html">DataFrame</a>. Panels are 3-D structures, which is great for this kind of data. The three dimensions are</p>
+<ol>
+<li>items: Month in Survey (0 - 7)</li>
+<li>fields: Things like employment status, earnings, hours worked</li>
+<li>id: An identifier for each household</li>
+</ol>
+<p>Think of each item as a 2-D slice (a DataFrame) into the 3-D Panel. So each household is described by a single Panel (or 8 DataFrames).</p>
+<p>The actual panel construction occurs in <a href="https://github.com/TomAugspurger/dnwr-zlb/blob/master/data_wrangling/cps_wrangling/panel_construction/make_panel.py#L151"><code>make_full_panel</code></a>. Given a starting month, it figures out the months needed to generate that wave's Panel (<span class="math">\(m, m + 1, m + 2, \ldots\)</span>), and stores these in an iterator called <code>dfs</code>.
+Since each month on disk contains people from 8 different waves (first month, second month, ...), I filter down to just the people in their <span class="math">\(i^{th}\)</span> month in the survey, where <span class="math">\(i\)</span> is the month I'm interested in.
+Everything up until this point is done lazily; nothing has actually be read into memory yet.</p>
+<p>Now we'll read in each month, storing each month's DataFrame in a dictionary, <code>df_dict</code>. We take the first month as is.
+Each subsequent month has to be matched against the first month.</p>
+<div class="codehilite"><pre><span></span>    <span class="n">df_dict</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="n">df1</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dfn</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dfs</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">df_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">match_panel</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">dfn</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;panel_log&#39;</span><span class="p">])</span>
+    <span class="c1"># Lose dtype info here if I just do from dict.</span>
+    <span class="c1"># to preserve dtypes:</span>
+    <span class="n">df_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">df_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">}</span>
+    <span class="n">wp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Panel</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">df_dict</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;minor&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wp</span>
+</pre></div>
+
+
+<p>In an ideal world, we just check to see if the indexes match (the unique identifier). However, the unique ID given by the Census Bureau isn't so unique, so we use some heuristics to guess if the person is actually the same as the one interviewed next week. <code>match_panel</code> basically checks to see if a person's race and gender hasn't changed, and that their age has changed by less than a year or so.</p>
+<p>There's a bit more code that handles special cases, errors, and the writing of the output.
+I was especially interested in earnings data, so I wrote that out separately.
+But now we're finally to the point where we can do some analysis:</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+    
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript'; 
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+  </div><!-- /.entry-content -->
+</section>
+
+    <footer>
+      <p>&copy; Tom Augspurger </p>
+    </footer>
+  </main>
+
+</body>
+</html>

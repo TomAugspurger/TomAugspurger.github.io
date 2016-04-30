@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+          <title>DatasFrame</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="./theme/css/main.css" />
+        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+
+
+
+
+</head>
+
+<body id="index" class="home">
+    <nav>
+      <a href=".">Home | </a>
+      <a href="/archives.html">Archive | </a>
+      <a href="/categories.html">Categories | </a>
+      <a href="/pages/about.html">About | </a>
+      <a href="/feeds/all.rss.xml">RSS</a>
+    </nav>
+
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="./tidy-data.html" rel="bookmark"
+         title="Permalink to Tidy Data in Action">Tidy Data in Action</a></h2>
+ 
+  </header>
+  <footer class="post-info">
+    <abbr class="published" title="2015-01-01T00:00:00-06:00">
+      Thu 01 January 2015
+    </abbr>
+    <address class="vcard author">
+      By           <a class="url fn" href="./author/tom-augspurger.html">Tom Augspurger</a>
+    </address>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <p><a href="http://had.co.nz">Hadley Whickham</a> wrote a famous paper (for a certain definition of famous) about the importance of <a href="http://vita.had.co.nz/papers/tidy-data.pdf">tidy data</a> when doing data analysis.
+I want to talk a bit about that, using an example from a StackOverflow post, with a solution using <a href="http://pandas.pydata.org">pandas</a>. The principles of tidy data aren't language specific.</p>
+<p>A tidy dataset must satisfy three criteria<sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup>:</p>
+<ol>
+<li>Each variable forms a column.</li>
+<li>Each observation forms a row.</li>
+<li>Each type of observational unit forms a table.</li>
+</ol>
+<p>In this <a href="http://stackoverflow.com/questions/22695680/python-pandas-timedelta-specific-rows">StackOverflow post</a>, the asker had some data NBA games, and wanted to know the number of days since a team last played. Here's the example data:</p>
+<div class="codehilite"><pre><span></span><span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;HomeTeam&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;HOU&#39;</span><span class="p">,</span> <span class="s1">&#39;CHI&#39;</span><span class="p">,</span> <span class="s1">&#39;DAL&#39;</span><span class="p">,</span> <span class="s1">&#39;HOU&#39;</span><span class="p">],</span>
+                   <span class="s1">&#39;AwayTeam&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="s1">&#39;CHI&#39;</span><span class="p">,</span> <span class="s1">&#39;DAL&#39;</span><span class="p">,</span> <span class="s1">&#39;CHI&#39;</span><span class="p">,</span> <span class="s1">&#39;DAL&#39;</span><span class="p">],</span>
+                   <span class="s1">&#39;HomeGameNum&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                   <span class="s1">&#39;AwayGameNum&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                   <span class="s1">&#39;Date&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">date</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">11</span><span class="p">),</span> <span class="n">datetime</span><span class="o">.</span><span class="n">date</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">12</span><span class="p">),</span>
+                             <span class="n">datetime</span><span class="o">.</span><span class="n">date</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">14</span><span class="p">),</span> <span class="n">datetime</span><span class="o">.</span><span class="n">date</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">15</span><span class="p">)]})</span>
+<span class="n">df</span>
+</pre></div>
+
+
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>AwayGameNum</th>
+      <th>AwayTeam</th>
+      <th>Date</th>
+      <th>HomeGameNum</th>
+      <th>HomeTeam</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>CHI</td>
+      <td>2014-03-11</td>
+      <td>1</td>
+      <td>HOU</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>DAL</td>
+      <td>2014-03-12</td>
+      <td>2</td>
+      <td>CHI</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>CHI</td>
+      <td>2014-03-14</td>
+      <td>2</td>
+      <td>DAL</td>
+    </tr>
+    <tr>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3</td>
+      <td>DAL</td>
+      <td>2014-03-15</td>
+      <td>2</td>
+      <td>HOU</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>I want to focus on the second of the three criteria: <em>Each observation forms a row.</em>
+Realize that the structure your dataset should take reflects the question you're trying to answer.
+For the SO question, we want to answer "How many days has it been since this team's last game?"
+Given this context what is an observation?</p>
+<hr />
+<p>We'll define an observation as a team playing on a day.
+Does the original dataset in <code>df</code> satisfy the criteria for tidy data?
+No, it doesn't since each row contains <strong>2</strong> observations, one for the home team and one for the away team.</p>
+<p>Let's tidy up the dataset, using the <a href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.melt.html">melt</a> function
+taken from R's <a href="https://cran.r-project.org/web/packages/reshape/reshape.pdf">reshape</a> package (also via Hadley Wickham).</p>
+<div class="codehilite"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">Date</span><span class="p">)</span>
+<span class="n">tidy</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+          <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;game_number&#39;</span><span class="p">))</span>
+          <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">melt</span><span class="p">,</span> <span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;game_number&#39;</span><span class="p">,</span> <span class="s1">&#39;Date&#39;</span><span class="p">],</span>
+                <span class="n">value_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;AwayTeam&#39;</span><span class="p">,</span> <span class="s1">&#39;HomeTeam&#39;</span><span class="p">])</span>
+          <span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">&#39;game_number&#39;</span><span class="p">))</span>
+<span class="n">tidy</span>
+</pre></div>
+
+
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>game_number</th>
+      <th>Date</th>
+      <th>variable</th>
+      <th>value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>2014-03-11</td>
+      <td>AwayTeam</td>
+      <td>CHI</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>2014-03-11</td>
+      <td>HomeTeam</td>
+      <td>HOU</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>2014-03-12</td>
+      <td>AwayTeam</td>
+      <td>DAL</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>1</td>
+      <td>2014-03-12</td>
+      <td>HomeTeam</td>
+      <td>CHI</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2</td>
+      <td>2014-03-14</td>
+      <td>AwayTeam</td>
+      <td>CHI</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>2</td>
+      <td>2014-03-14</td>
+      <td>HomeTeam</td>
+      <td>DAL</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>3</td>
+      <td>2014-03-15</td>
+      <td>HomeTeam</td>
+      <td>HOU</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Now we group, and apply a <code>lambda</code> function that calculates the days of rest between games.</p>
+<div class="codehilite"><pre><span></span><span class="n">tidy</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">Date</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">diff</span><span class="p">()</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;rest&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>rest</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>0 days</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1 days</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>1 days</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0 days</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>3 days</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>I planned on comparing that one line solution to the code needed with the messy data.
+But honestly, I'm having trouble writing the messy data version.
+You don't really have anything to group on, so you'd need to keep track of the row where you last saw this team (either in <code>AwayTeam</code> or <code>HomeTeam</code>).
+And then each row will have two answers, one for each team.
+It's certainly possible to write the necessary code, but the fact that I'm struggling so much to write the messy version is pretty good evidence for the importance of tidy data.</p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>page 4 in <a href="http://vita.had.co.nz/papers/tidy-data.pdf">Whickham's paper</a>:&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+  </div><!-- /.entry-content -->
+</section>
+
+    <footer>
+      <p>&copy; Tom Augspurger </p>
+    </footer>
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+          <title>DatasFrame</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="../theme/css/main.css" />
+        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+
+
+
+
+</head>
+
+<body id="index" class="home">
+    <nav>
+      <a href="..">Home | </a>
+      <a href="/archives.html">Archive | </a>
+      <a href="/categories.html">Categories | </a>
+      <a href="/pages/about.html">About | </a>
+      <a href="/feeds/all.rss.xml">RSS</a>
+    </nav>
+
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="../drafts/practical-pandas-3.html" rel="bookmark"
+         title="Permalink to Practical Pandas--Part 3">Practical Pandas--Part 3</a></h2>
+ 
+  </header>
+  <footer class="post-info">
+    <abbr class="published" title="2015-01-01T00:00:00-06:00">
+      Thu 01 January 2015
+    </abbr>
+    <address class="vcard author">
+      By           <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
+    </address>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <p>Welcome back. As a reminder:</p>
+<ul>
+<li>In <a href="http://tomaugspurger.github.io/blog/2014/08/26/practical-pandas-part-1-reading-the-data/">part 1</a> we got dataset with my cycling data from last year merged and stored in an HDF5 store</li>
+<li>In <a href="http://tomaugspurger.github.io/blog/2014/09/04/practical-pandas-part-2-more-tidying-more-data-and-merging/">part 2</a> we did some cleaning and augmented the cycling data with data from http://forecast.io. </li>
+</ul>
+<p>You can find the full source code and data at this project's <a href="https://github.com/tomaugspurger/practicalpandas">GitHub repo</a>.</p>
+<p>Today we'll use pandas, seaborn, and
+matplotlib to do some exploratory data analysis.
+For fun, we'll make some maps at the end using <a href="https://folium.readthedocs.org/en/latest/">folium</a>.</p>
+<div class="codehilite"><pre><span></span><span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>df = pd.read_hdf(os.path.join(&#39;data&#39;, &#39;cycle_store.h5&#39;), key=&#39;with_weather&#39;)
+df.head()
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time</th>
+      <th>ride_time_secs</th>
+      <th>stopped_time_secs</th>
+      <th>latitude</th>
+      <th>longitude</th>
+      <th>elevation_feet</th>
+      <th>distance_miles</th>
+      <th>speed_mph</th>
+      <th>pace_secs</th>
+      <th>average_speed_mph</th>
+      <th>...</th>
+      <th>icon</th>
+      <th>precipIntensity</th>
+      <th>precipProbability</th>
+      <th>precipType</th>
+      <th>pressure</th>
+      <th>summary</th>
+      <th>temperature</th>
+      <th>visibility</th>
+      <th>windBearing</th>
+      <th>windSpeed</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2013-08-01 12:07:10</td>
+      <td>1.1</td>
+      <td>0</td>
+      <td>41.703753</td>
+      <td>-91.609892</td>
+      <td>963</td>
+      <td>0.00</td>
+      <td>2.88</td>
+      <td>1251</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>clear-day</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>1017.62</td>
+      <td>Clear</td>
+      <td>61.62</td>
+      <td>8.89</td>
+      <td>282</td>
+      <td>2.77</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2013-08-01 12:07:17</td>
+      <td>8.2</td>
+      <td>0</td>
+      <td>41.703825</td>
+      <td>-91.609835</td>
+      <td>852</td>
+      <td>0.01</td>
+      <td>2.88</td>
+      <td>1251</td>
+      <td>2.56</td>
+      <td>...</td>
+      <td>clear-day</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>1017.62</td>
+      <td>Clear</td>
+      <td>61.62</td>
+      <td>8.89</td>
+      <td>282</td>
+      <td>2.77</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2013-08-01 12:07:22</td>
+      <td>13.2</td>
+      <td>0</td>
+      <td>41.703858</td>
+      <td>-91.609814</td>
+      <td>789</td>
+      <td>0.01</td>
+      <td>2.88</td>
+      <td>1251</td>
+      <td>2.27</td>
+      <td>...</td>
+      <td>clear-day</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>1017.62</td>
+      <td>Clear</td>
+      <td>61.62</td>
+      <td>8.89</td>
+      <td>282</td>
+      <td>2.77</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2013-08-01 12:07:27</td>
+      <td>18.2</td>
+      <td>0</td>
+      <td>41.703943</td>
+      <td>-91.610090</td>
+      <td>787</td>
+      <td>0.02</td>
+      <td>6.60</td>
+      <td>546</td>
+      <td>4.70</td>
+      <td>...</td>
+      <td>clear-day</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>1017.62</td>
+      <td>Clear</td>
+      <td>61.62</td>
+      <td>8.89</td>
+      <td>282</td>
+      <td>2.77</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2013-08-01 12:07:40</td>
+      <td>31.2</td>
+      <td>0</td>
+      <td>41.704381</td>
+      <td>-91.610258</td>
+      <td>788</td>
+      <td>0.06</td>
+      <td>9.50</td>
+      <td>379</td>
+      <td>6.37</td>
+      <td>...</td>
+      <td>clear-day</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>1017.62</td>
+      <td>Clear</td>
+      <td>61.62</td>
+      <td>8.89</td>
+      <td>282</td>
+      <td>2.77</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 30 columns</p>
+</div>
+
+<p>Upon further inspection, it looks like some of our rows are duplicated.</p>
+<div class="codehilite"><pre><span></span>df.duplicated().sum()
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>2
+</pre></div>
+
+
+<p>The problem is actually a bit more severe than that. The app I used to collect the data sometimes records multiple observations per second, but only reports the results at the second frequency.</p>
+<div class="codehilite"><pre><span></span>df.time.duplicated().sum()
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>114
+</pre></div>
+
+
+<p>What to do here? We could drop change the frequency to micro- or nano-second resolution, and add, say, a half-second onto the duplicated observations.</p>
+<p>Since this is just for fun though, I'm going to do the easy thing and throw out the duplicates (in real life you'll want to make sure this doesn't affect your analysis).
+Then we can set the <code>time</code> column to be our index, which will make our later analysis a bit simpler.</p>
+<div class="codehilite"><pre><span></span>df = df.drop_duplicates(subset=[&#39;time&#39;]).set_index(&#39;time&#39;)
+df.index.is_unique
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>True
+</pre></div>
+
+
+<p>Because of a <a href="https://github.com/pydata/pandas/issues/8189">bug</a> in pandas, we lost our timzone information when we filled in our missing values. Until that's fixed we'll have to manually add back the timezone info and convert. The actual values stored were UTC (which is good practice whenever you have timezone-aware timestamps), it just doesn't <em>know</em> that it's UTC.</p>
+<div class="codehilite"><pre><span></span>df = df.tz_localize(&#39;UTC&#39;).tz_convert(&#39;US/Central&#39;)
+df.head()
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ride_time_secs</th>
+      <th>stopped_time_secs</th>
+      <th>latitude</th>
+      <th>longitude</th>
+      <th>elevation_feet</th>
+      <th>distance_miles</th>
+      <th>speed_mph</th>
+      <th>pace_secs</th>
+      <th>average_speed_mph</th>
+      <th>average_pace_secs</th>
+      <th>...</th>
+      <th>icon</th>
+      <th>precipIntensity</th>
+      <th>precipProbability</th>
+      <th>precipType</th>
+      <th>pressure</th>
+      <th>summary</th>
+      <th>temperature</th>
+      <th>visibility</th>
+      <th>windBearing</th>
+      <th>windSpeed</th>
+    </tr>
+    <tr>
+      <th>time</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2013-08-01 07:07:10-05:00</th>
+      <td>1.1</td>
+      <td>0</td>
+      <td>41.703753</td>
+      <td>-91.609892</td>
+      <td>963</td>
+      <td>0.00</td>
+      <td>2.88</td>
+      <td>1251</td>
+      <td>0.00</td>
+      <td>0</td>
+      <td>...</td>
+      <td>clear-day</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>1017.62</td>
+      <td>Clear</td>
+      <td>61.62</td>
+      <td>8.89</td>
+      <td>282</td>
+      <td>2.77</td>
+    </tr>
+    <tr>
+      <th>2013-08-01 07:07:17-05:00</th>
+      <td>8.2</td>
+      <td>0</td>
+      <td>41.703825</td>
+      <td>-91.609835</td>
+      <td>852</td>
+      <td>0.01</td>
+      <td>2.88</td>
+      <td>1251</td>
+      <td>2.56</td>
+      <td>1407</td>
+      <td>...</td>
+      <td>clear-day</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>1017.62</td>
+      <td>Clear</td>
+      <td>61.62</td>
+      <td>8.89</td>
+      <td>282</td>
+      <td>2.77</td>
+    </tr>
+    <tr>
+      <th>2013-08-01 07:07:22-05:00</th>
+      <td>13.2</td>
+      <td>0</td>
+      <td>41.703858</td>
+      <td>-91.609814</td>
+      <td>789</td>
+      <td>0.01</td>
+      <td>2.88</td>
+      <td>1251</td>
+      <td>2.27</td>
+      <td>1587</td>
+      <td>...</td>
+      <td>clear-day</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>1017.62</td>
+      <td>Clear</td>
+      <td>61.62</td>
+      <td>8.89</td>
+      <td>282</td>
+      <td>2.77</td>
+    </tr>
+    <tr>
+      <th>2013-08-01 07:07:27-05:00</th>
+      <td>18.2</td>
+      <td>0</td>
+      <td>41.703943</td>
+      <td>-91.610090</td>
+      <td>787</td>
+      <td>0.02</td>
+      <td>6.60</td>
+      <td>546</td>
+      <td>4.70</td>
+      <td>767</td>
+      <td>...</td>
+      <td>clear-day</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>1017.62</td>
+      <td>Clear</td>
+      <td>61.62</td>
+      <td>8.89</td>
+      <td>282</td>
+      <td>2.77</td>
+    </tr>
+    <tr>
+      <th>2013-08-01 07:07:40-05:00</th>
+      <td>31.2</td>
+      <td>0</td>
+      <td>41.704381</td>
+      <td>-91.610258</td>
+      <td>788</td>
+      <td>0.06</td>
+      <td>9.50</td>
+      <td>379</td>
+      <td>6.37</td>
+      <td>566</td>
+      <td>...</td>
+      <td>clear-day</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>1017.62</td>
+      <td>Clear</td>
+      <td>61.62</td>
+      <td>8.89</td>
+      <td>282</td>
+      <td>2.77</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 29 columns</p>
+</div>
+
+<h3>Timelines</h3>
+<p>We'll store the <strong>time</strong> part of the <code>DatetimeIndex</code> in a column called <code>time</code>.</p>
+<div class="codehilite"><pre><span></span>df[&#39;time&#39;] = df.index.time
+</pre></div>
+
+
+<p>With these, let's plot how far along I was in my ride (<code>distance_miles</code>) at the time of day.</p>
+<div class="codehilite"><pre><span></span>ax = df.plot(x=&#39;time&#39;, y=&#39;distance_miles&#39;)
+</pre></div>
+
+
+<p><img alt="png" src="pp03_files/pp03_15_0.png" /></p>
+<p>There's a couple problems. First of all, the data are split into morning and afternoon.
+Let's create a new, boolean, column indicating whether the ride took place in the morning or afternoon.</p>
+<div class="codehilite"><pre><span></span>df[&#39;is_morning&#39;] = df.time &lt; datetime.time(12)
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>ax = df[df.is_morning].plot(x=&#39;time&#39;, y=&#39;distance_miles&#39;)
+</pre></div>
+
+
+<p><img alt="png" src="pp03_files/pp03_18_0.png" /></p>
+<p>Better, but this still isn't quite what we want. When we call <code>.plot(x=..., y=...)</code> the data are sorted before being plotted. This means that an observation from one ride gets mixed up with another. So we'll need to group by ride, and <em>then</em> plot.</p>
+<div class="codehilite"><pre><span></span>fig, ax = plt.subplots(figsize=(12, 5))
+axes = df[df.is_morning].groupby(df.ride_id).plot(x=&#39;time&#39;,
+                                                  y=&#39;distance_miles&#39;,
+                                                  color=&#39;k&#39;,
+                                                  ax=ax,
+                                                  legend=False)
+</pre></div>
+
+
+<p><img alt="png" src="pp03_files/pp03_20_0.png" /></p>
+<p>Much better. Groupby is one of the most powerful operations in pandas, and it pays to understand it well. Here's the same thing for the evening.</p>
+<div class="codehilite"><pre><span></span>fig, ax = plt.subplots(figsize=(12, 5))
+axes = df[~df.is_morning].groupby(df.ride_id).plot(x=&#39;time&#39;,
+                                                   y=&#39;distance_miles&#39;,
+                                                   color=&#39;k&#39;,
+                                                   ax=ax,
+                                                   legend=False)
+</pre></div>
+
+
+<p><img alt="png" src="pp03_files/pp03_22_0.png" /></p>
+<p>Fun. The horizontal distance is the length of time it took me to make the ride. The starting point on the horizontal axis conveys the time that I set out.
+I like this chart because it also conveys the start time of each ride.
+The plot shows that the morning ride typically took longer, but we can verify that.</p>
+<div class="codehilite"><pre><span></span>ride_time = df.groupby([&#39;ride_id&#39;, &#39;is_morning&#39;])[&#39;ride_time_secs&#39;].agg(&#39;max&#39;)
+mean_time = ride_time.groupby(level=1).mean().rename(
+    index={True: &#39;morning&#39;, False: &#39;evening&#39;})
+mean_time / 60
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>is_morning
+evening    30.761667
+morning    29.362716
+Name: ride_time_secs, dtype: float64
+</pre></div>
+
+
+<p>So the morning ride is typically shorter! But I think I know what's going on. We were misleading with our plot earlier since the range of the horizontal axis weren't identical. Always check the axis!</p>
+<p>At risk of <a href="https://groups.google.com/forum/#!topic/ggplot2/tImExPZg61o">raising the ire</a> of Hadley Whickham, we'll plot these on the same plot, with a secondary x-axis. (I think its OK in this case since the second is just a transformation – a 10 hour or so shift – of the first).</p>
+<p>We'll plot evening first, use matplotlib's <code>twinx</code> method, and plot the morning on the second axes.</p>
+<div class="codehilite"><pre><span></span>fig, ax = plt.subplots()
+
+morning_color = sns.xkcd_rgb[&#39;amber&#39;]
+evening_color = sns.xkcd_rgb[&#39;dusty purple&#39;]
+
+_ = df[~df.is_morning].groupby(df.ride_id).plot(x=&#39;time&#39;, y=&#39;distance_miles&#39;,
+    color=evening_color, figsize=(12, 5),
+    ax=ax, alpha=.9, grid=False, legend=False)
+ax2 = ax.twiny()
+_ = df[df.is_morning].groupby(df.ride_id).plot(x=&#39;time&#39;, y=&#39;distance_miles&#39;,
+    color=morning_color, figsize=(12, 5),
+    ax=ax2, alpha=.9, grid=False, legend=False)
+
+# Create fake lines for our custom legend.
+morning_legend = plt.Line2D([0], [0], color=morning_color)
+evening_legend = plt.Line2D([0], [0], color=evening_color)
+
+ax.legend([morning_legend, evening_legend], [&#39;Morning&#39;, &#39;Evening&#39;]);
+</pre></div>
+
+
+<p>There's a bit of boilerplate at the end. pandas tries to add a legend element for each ride ID. It doesn't know that we only care whether it's morning or evening. So instead we just fake it, creating two lines thate are invisible, and labeling them appropriately.</p>
+<p>Anyway, we've accomplished our original goal. The steeper slope on the evening rides show that they typically took me less time. I guess I wasn't too excited to get to school in the morning. The joys of being a grad student.</p>
+<p>I'm sure I'm not the only one noticing that long evening ride sticking out from the rest. Let's note it's ride ID and follow up. We need the <code>ride_id</code> so groupby that. It's the longest ride so take the <code>max</code> of the distance. And we want the <code>ride_id</code> of the maximum distance, so take the <code>argmax</code> of that. These last three sentances can be beautifully chained together into a single line that reads like poetry.</p>
+<div class="codehilite"><pre><span></span>long_ride_id = df.groupby(&#39;ride_id&#39;)[&#39;distance_miles&#39;].max().argmax()
+long_ride_id
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>22
+</pre></div>
+
+
+<h3>Cartography</h3>
+<p>We'll use <a href="https://github.com/wrobstory/folium">Folium</a> to do a bit of map plotting.
+If you're using python3 (like I am) you'll need to use <a href="https://github.com/wrobstory/folium/pull/21">this pull request</a> from <a href="https://github.com/tbicr">tbicr</a>,
+or just clone the master of <a href="https://github.com/tomaugspurger/folium">my fork</a>, where I've merged the changes.</p>
+<p>Since this is a practical pandas post, and not an intro to <code>folium</code>, I won't delve into the details here. The basics are that we initialize a <code>Map</code> with some coordinates and tiles, and then add <code>line</code>s to that map. The <code>line</code>s will come from the latitude and longitude columns of our DataFrame.</p>
+<p>Here's a small helper function from <a href="https://github.com/birdage">birdage</a> to <a href="http://nbviewer.ipython.org/github/birdage/folium/blob/arrow_marker/examples/test_folium_wms.ipynb">inline</a> the map in the notebook. This allows it to be viewable (and interactive) on nbviewer. For the blog post I'm linking them to `</p>
+<div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">inline_map</span><span class="p">(</span><span class="nb">map</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Embeds the HTML source of the map directly into the IPython notebook.</span>
+
+<span class="sd">    This method will not work if the map depends on any files (json data). Also this uses</span>
+<span class="sd">    the HTML5 srcdoc attribute, which may not be supported in all browsers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">HTML</span>
+    <span class="nb">map</span><span class="o">.</span><span class="n">_build_map</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="s1">&#39;&lt;iframe srcdoc=&quot;{srcdoc}&quot; style=&quot;width: 100%; height: 510px; border: none&quot;&gt;&lt;/iframe&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">srcdoc</span><span class="o">=</span><span class="nb">map</span><span class="o">.</span><span class="n">HTML</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&amp;quot;&#39;</span><span class="p">)))</span>
+</pre></div>
+
+
+<p>I've plotted two rides, a hopefully representative ride (#42) and the long ride from above.</p>
+<div class="codehilite"><pre><span></span><span class="kn">import</span> <span class="nn">folium</span>
+<span class="c1"># folium.initialize_notebook()</span>
+
+<span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">mp</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">),</span> <span class="n">tiles</span><span class="o">=</span><span class="s1">&#39;OpenStreetMap&#39;</span><span class="p">,</span> <span class="n">zoom_start</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">mp</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">locations</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">ride_id</span> <span class="o">==</span> <span class="mi">42</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<span class="n">mp</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">locations</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">ride_id</span> <span class="o">==</span> <span class="n">long_ride_id</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+        <span class="n">line_color</span><span class="o">=</span><span class="s1">&#39;#800026&#39;</span><span class="p">)</span>
+<span class="c1"># inline_map(mp)</span>
+<span class="n">mp</span>
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>---------------------------------------------------------------------------
+
+NameError                                 Traceback (most recent call last)
+
+&lt;ipython-input-1-d4ec59e60878&gt; in &lt;module&gt;()
+      2 # folium.initialize_notebook()
+      3 
+----&gt; 4 lat, lon = df[[&#39;latitude&#39;, &#39;longitude&#39;]].mean()
+      5 mp = folium.Map(location=(lat, lon), tiles=&#39;OpenStreetMap&#39;, zoom_start=13)
+      6 mp.line(locations=df.loc[df.ride_id == 42, [&#39;latitude&#39;, &#39;longitude&#39;]].values)
+
+
+NameError: name &#39;df&#39; is not defined
+</pre></div>
+
+
+<p>So you pan around a bit, it looks like the GPS receiver on my phone was just going crazy.
+But without visualizing the data (as a map), there'd be no way to know that.</p>
+<p>For fun, we can plot all the rides.</p>
+<div class="codehilite"><pre><span></span>mp_all = folium.Map(location=(lat, lon), tiles=&#39;OpenStreetMap&#39;, zoom_start=13)
+
+for ride_id in df.ride_id.unique():
+    mp_all.line(locations=df.loc[df.ride_id == ride_id, [&#39;latitude&#39;, &#39;longitude&#39;]].values,
+            line_weight=1, line_color=&#39;#111&#39;, line_opacity=.3)
+
+inline_map(mp_all)
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>---------------------------------------------------------------------------
+
+NameError                                 Traceback (most recent call last)
+
+&lt;ipython-input-2-0bdff5ff6344&gt; in &lt;module&gt;()
+----&gt; 1 mp_all = folium.Map(location=(lat, lon), tiles=&#39;OpenStreetMap&#39;, zoom_start=13)
+      2 
+      3 for ride_id in df.ride_id.unique():
+      4     mp_all.line(locations=df.loc[df.ride_id == ride_id, [&#39;latitude&#39;, &#39;longitude&#39;]].values,
+      5             line_weight=1, line_color=&#39;#111&#39;, line_opacity=.3)
+
+
+NameError: name &#39;lat&#39; is not defined
+</pre></div>
+
+
+<p>You can barely make out that I changed my path partway through the year to take Old Hospital Road instead of the North Ridge Trail (North boundry of my path).</p>
+<p>Folium is cool; you should check it out (really, just use anything made by <a href="https://github.com/wrobstory/">Rob</a>).</p>
+  </div><!-- /.entry-content -->
+</section>
+
+    <footer>
+      <p>&copy; Tom Augspurger </p>
+    </footer>
+  </main>
+
+</body>
+</html>

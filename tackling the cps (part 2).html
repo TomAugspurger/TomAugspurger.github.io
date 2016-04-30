@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+          <title>DatasFrame</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="./theme/css/main.css" />
+        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+
+
+
+
+</head>
+
+<body id="index" class="home">
+    <nav>
+      <a href=".">Home | </a>
+      <a href="/archives.html">Archive | </a>
+      <a href="/categories.html">Categories | </a>
+      <a href="/pages/about.html">About | </a>
+      <a href="/feeds/all.rss.xml">RSS</a>
+    </nav>
+
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="./tackling the cps (part 2).html" rel="bookmark"
+         title="Permalink to Tacking the CPS (Part 2)">Tacking the CPS (Part 2)</a></h2>
+ 
+  </header>
+  <footer class="post-info">
+    <abbr class="published" title="2014-02-04T12:00:00-06:00">
+      Tue 04 February 2014
+    </abbr>
+    <address class="vcard author">
+      By           <a class="url fn" href="./author/tom-augspurger.html">Tom Augspurger</a>
+    </address>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <p>We downloaded two types of files last time:</p>
+<ul>
+<li>CPS monthly tables: a fixed-width format text file with the actual data</li>
+<li>Data Dictionaries: a text file describing the layout of the monthly tables</li>
+</ul>
+<p>Our goal is to parse the monthly tables. Here's the first two lines from the unzipped January 1994 file:</p>
+<div class="codehilite"><pre><span></span>/V/H/U/t/D/C/monthly head -n <span class="m">2</span> cpsb9401
+<span class="m">881605952390</span> <span class="m">2</span>  286-1 2201-1 <span class="m">1</span> <span class="m">1</span> 1-1 <span class="m">1</span> 5-1-1-1  <span class="m">22436991</span> <span class="m">1</span> <span class="m">2</span> <span class="m">1</span> <span class="m">6</span> <span class="m">194</span> 2A61 -1 <span class="m">2</span> 2-1-1-1-1 <span class="m">363</span> 1-15240115 3-1 <span class="m">4</span> <span class="m">0</span> 1-1 <span class="m">2</span> 1-1660 <span class="m">1</span> <span class="m">2</span> <span class="m">2</span> <span class="m">2</span> <span class="m">6</span> <span class="m">236</span> <span class="m">2</span> 8-1 <span class="m">0</span> 1-1 <span class="m">1</span> <span class="m">1</span> <span class="m">1</span> <span class="m">2</span> <span class="m">1</span> <span class="m">2</span> <span class="m">57</span> <span class="m">57</span> <span class="m">57</span> <span class="m">1</span> 0-1 <span class="m">2</span> <span class="m">5</span> 3-1-1 2-1-1-1-1-1 2-1-1-1-1-1-1-1-1-1-1-1 -1-1-1-1-1-1-1-1-1-1-1 -1-1  169-1-1-1-1-1-1-1-1-1-1-1-1-1-1 -1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1 -1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1 2-1 <span class="m">0</span> 4-1-1-1-1-1-1 -1-1-1 <span class="m">0</span> <span class="m">1</span> 2-1-1-1-1-1-1-1-1-1 -1 -1-1-1 -1 -1-1-1 0-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1 0-1-1-1-1-1  -1  -1  -1  0-1-1      0-1-1-1      -1      0-1-1-1-1-1-1-1-1 2-1-1-1-1  <span class="m">22436991</span>        -1         <span class="m">0</span>  <span class="m">22436991</span>  22422317-1         <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">1</span> 0-1 <span class="m">050</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">011</span> <span class="m">0</span> <span class="m">0</span> 0-1-1-1-1 <span class="m">0</span> <span class="m">0</span> 0-1-1-1-1-1-1 1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1 <span class="m">1</span> <span class="m">1</span> <span class="m">1</span> <span class="m">1</span> <span class="m">1</span> <span class="m">1</span> <span class="m">1</span> <span class="m">1</span> <span class="m">1</span> <span class="m">1</span> 1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1 <span class="m">1</span> <span class="m">1</span> 1-1-1-1
+<span class="m">881605952390</span> <span class="m">2</span>  286-1 2201-1 <span class="m">1</span> <span class="m">1</span> 1-1 <span class="m">1</span> 5-1-1-1  <span class="m">22436991</span> <span class="m">1</span> <span class="m">2</span> <span class="m">1</span> <span class="m">6</span> <span class="m">194</span> 2A61 -1 <span class="m">2</span> 2-1-1-1-1 <span class="m">363</span> 1-15240115 3-1 <span class="m">4</span> <span class="m">0</span> 1-1 <span class="m">2</span> 3-1580 <span class="m">1</span> <span class="m">1</span> <span class="m">1</span> <span class="m">1</span> <span class="m">2</span> <span class="m">239</span> <span class="m">2</span> 8-1 <span class="m">0</span> 2-1 <span class="m">1</span> <span class="m">2</span> <span class="m">1</span> <span class="m">2</span> <span class="m">1</span> <span class="m">2</span> <span class="m">57</span> <span class="m">57</span> <span class="m">57</span> <span class="m">1</span> 0-1 <span class="m">1</span> <span class="m">1</span> 1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1 2-140-1-1 40-1-1-1-1 2-1 2-140-1 40-1   -1 <span class="m">2</span> <span class="m">5</span> 5-1 <span class="m">2</span> <span class="m">3</span> <span class="m">5</span> 2-1-1-1-1-1-1 -1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1 -1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1 1-118 <span class="m">1</span> <span class="m">1</span> <span class="m">1</span> 4-1-1-1 -1 1-1 <span class="m">1</span> 2-1-1-1-1-1-1-1 <span class="m">4</span> 1242705-1-1-1 -1  3-1-1 <span class="m">1</span> <span class="m">2</span> 4-1 <span class="m">1</span> 6-1 6-136-1 <span class="m">1</span> 4-110-1 <span class="m">3</span> <span class="m">1</span> <span class="m">1</span> <span class="m">1</span> 0-1-1-1-1  -1-1  -1  -1  0-1-1      0-1-1-1            -10-1-1-1-1-1-1-1-1-1-1-1-1-1  <span class="m">22436991</span>        -1         <span class="m">0</span>  <span class="m">31870604</span>  25650291-1         <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">1</span> 0-1 <span class="m">0</span> <span class="m">1</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> 0-1-1-1-1 <span class="m">0</span> 0-1 <span class="m">1</span> <span class="m">1</span> <span class="m">0</span> <span class="m">1</span> <span class="m">0</span> <span class="m">1</span> <span class="m">1</span> <span class="m">0</span> <span class="m">1</span> <span class="m">1</span> <span class="m">1</span> <span class="m">0</span> <span class="m">1</span> <span class="m">0</span> <span class="m">1</span> 1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1 <span class="m">0</span> <span class="m">0</span> 0-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1-1
+</pre></div>
+
+
+<p>Clearly, we'll need to parse the data dictionaries before being able to make sense of that.</p>
+<p>Keeping with the CPS's tradition of consistently being inconsistent, the data dictionaries don't have a consistent schema across the years. Here's a typical example for some years (this one is from January 2003):</p>
+<div class="codehilite"><pre><span></span>NAME         SIZE  DESCRIPTION                          LOCATION
+
+HRHHID          15     HOUSEHOLD IDENTIFIER   (Part 1)             (1 - 15)
+
+                   EDITED UNIVERSE: ALL HHLD&#39;s IN SAMPLE
+
+                   Part 1. See Characters 71-75 for Part 2 of the Household Identifier.
+                   Use Part 1 only for matching backward in time and use in combination
+                   with Part 2 for matching forward in time.
+</pre></div>
+
+
+<p>My goal was to extract 4 fields (<code>name</code>, <code>size</code>, <code>start</code>, <code>end</code>). Name and size could be taken directly (<code>HRHHID</code>, and <code>15</code>). <code>start</code> and <code>end</code> would be pulled from the <code>LOCATION</code> part.</p>
+<p>In <a href="https://github.com/TomAugspurger/dnwr-zlb/blob/master/data_wrangling/cps_wrangling/panel_construction/generic_data_dictionary_parser.py"><code>generic_data_dictionary_parser</code></a>, I define a class do this. The main object <code>Parser</code>, takes</p>
+<ul>
+<li><code>infile</code>: the path to a data dictionary we downloaded</li>
+<li><code>outfile</code>: path to an <a href="http://pandas.pydata.org/pandas-docs/dev/io.html#hdf5-pytables">HDF5</a> file</li>
+<li><code>style</code>: A string representing the year of the data dictionary. Different years are formatted differently, so I define a style for each (3 styles in all)</li>
+<li><code>regex</code>: This was mostly for testing. If you don't pass a <code>regex</code> it will be inferred from the style.</li>
+</ul>
+<p>The heart of the parser is a regex that matches on lines like <code>HRHHID          15     HOUSEHOLD IDENTIFIER   (Part 1)             (1 - 15)</code>, but nowhere else. After many hours, failures, and false positives, I came up with something roughly like <code>ur'[\x0c]{0,1}(\w+)[\s\t]*(\d{1,2})[\s\t]*(.*?)[\s\t]*\(*(\d+)\s*-\s*(\d+)\)*$'</code> <a href="http://regex101.com/r/uH5iH7">Here's</a> an explanation, but the gist is that</p>
+<ul>
+<li><code>\w+</code> matches words (like <code>HRHHID</code>)</li>
+<li>there's some spaces or tabs <code>[\s\t]*</code> (yes the CPS mixes spaces and tabs) between that and...</li>
+<li>size <code>\d{1,2}</code> which is 1 or two columns digits</li>
+<li>the description which we don't really care about</li>
+<li>the start and end positions <code>(*(\d+)\s*-\s*(\d+)\)*$</code> broken into two groups.</li>
+</ul>
+<p>Like I said, that's the heart of the parser. Unfortunately I had to pad the file with some 200+ more lines of code to handle special cases, formatting, and mistakes in the data dictionary itself.</p>
+<p>The end result is a nice <code>HDFStore</code>, with a parsed version of each data dictionary looking like:</p>
+<div class="codehilite"><pre><span></span>         id  length  start  end
+0    HRHHID      15      1   15
+1   HRMONTH       2     16   17
+2   HRYEAR4       4     18   21
+3  HURESPLI       2     22   23
+4   HUFINAL       3     24   26
+         ...     ...    ...  ...
+</pre></div>
+
+
+<p>This can be used as an argument pandas' <a href="http://pandas.pydata.org/pandas-docs/dev/io.html#files-with-fixed-width-columns"><code>read_fwf</code></a> parser.</p>
+<p>Next time I'll talk about actually parsing the tables and wrangling them into a usable structure. After that, we will finally get to actually analyzing the data.</p>
+  </div><!-- /.entry-content -->
+</section>
+
+    <footer>
+      <p>&copy; Tom Augspurger </p>
+    </footer>
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,1963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+          <title>DatasFrame</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="./theme/css/main.css" />
+        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+
+
+
+    <meta name="tags" content="python" />
+    <meta name="tags" content="data science" />
+    <meta name="tags" content="pandas" />
+
+</head>
+
+<body id="index" class="home">
+    <nav>
+      <a href=".">Home | </a>
+      <a href="/archives.html">Archive | </a>
+      <a href="/categories.html">Categories | </a>
+      <a href="/pages/about.html">About | </a>
+      <a href="/feeds/all.rss.xml">RSS</a>
+    </nav>
+
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="./modern-3-indexes.html" rel="bookmark"
+         title="Permalink to Modern Pandas (Part 3): Indexes">Modern Pandas (Part 3): Indexes</a></h2>
+ 
+  </header>
+  <footer class="post-info">
+    <abbr class="published" title="2016-04-11T09:00:00-05:00">
+      Mon 11 April 2016
+    </abbr>
+    <address class="vcard author">
+      By           <a class="url fn" href="./author/tom-augspurger.html">Tom Augspurger</a>
+    </address>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <hr />
+<p>This is part 3 in my series on writing modern idiomatic pandas.</p>
+<ul>
+<li><a href="modern-1.html">Modern Pandas</a></li>
+<li><a href="method-chaining.html">Method Chaining</a></li>
+<li><a href="modern-3-indexes.html">Indexes</a> (this post)</li>
+<li>Fast Pandas (forthcoming)</li>
+<li>Tidy Data (forthcoming)</li>
+<li>Visualization (forthcoming)</li>
+<li>Larger Data (forthcoming)</li>
+</ul>
+<hr />
+<p>Today we're going to be talking about pandas' <a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/api.html#index"><code>Index</code>es</a>.
+They're essential to pandas, but can be a difficult concept to grasp at first.
+I suspect this is partly because they're unlike what you'll find in SQL or R.</p>
+<p><code>Index</code>es offer</p>
+<ul>
+<li>a metadata container</li>
+<li>easy label-based row selection and assignment</li>
+<li>easy label-based alignment in operations</li>
+</ul>
+<p>One of my first tasks when analyzing a new dataset is to identify a unique identifier for each observation, and set that as the index. It could be a simple integer, or like in our <a href="modern-1.html">first post</a> it could be several columns (<code>carrier</code>, <code>origin</code> <code>dest</code>, <code>tail_num</code> <code>date</code>).</p>
+<p>To demonstrate the benefits of proper <code>Index</code> use, we'll first fetch some weather data from sensors at a bunch of airports across the US.
+See <a href="https://github.com/akrherz/iem/blob/master/scripts/asos/iem_scraper_example.py">here</a> for the example scraper I based this off of.
+Those uninterested in the details of fetching and prepping the data and <a href="#set-operations">skip past it</a>.</p>
+<p>At a high level, here's how we'll fetch the data: the sensors are broken up by "network" (states).
+We'll make one API call per state to get the list of airport IDs per network (using <code>get_ids</code> below).
+Once we have the IDs, we'll again make one call per state getting the actual observations (in <code>get_weather</code>).
+Feel free to skim the code below, I'll highlight the interesting bits.</p>
+<div class="codehilite"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s1">&#39;ticks&#39;</span><span class="p">)</span>
+
+<span class="c1"># States are broken into networks. The networks have a list of ids, each representing a station.</span>
+<span class="c1"># We will take that list of ids and pass them as query parameters to the URL we built up ealier.</span>
+<span class="n">states</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;AK AL AR AZ CA CO CT DE FL GA HI IA ID IL IN KS KY LA MA MD ME</span>
+<span class="s2"> MI MN MO MS MT NC ND NE NH NJ NM NV NY OH OK OR PA RI SC SD TN TX UT VA VT</span>
+<span class="s2"> WA WI WV WY&quot;&quot;&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+<span class="c1"># IEM has Iowa AWOS sites in its own labeled network</span>
+<span class="n">networks</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AWOS&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;{}_ASOS&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">states</span><span class="p">]</span>
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">get_weather</span><span class="p">(</span><span class="n">stations</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2014-01-01&#39;</span><span class="p">),</span>
+                <span class="n">end</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2014-01-31&#39;</span><span class="p">)):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Fetch weather data from MESONet between ``start`` and ``stop``.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;http://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?&quot;</span>
+           <span class="s2">&quot;&amp;data=tmpf&amp;data=relh&amp;data=sped&amp;data=mslp&amp;data=p01i&amp;data&quot;</span>
+           <span class="s2">&quot;=vsby&amp;data=gust_mph&amp;data=skyc1&amp;data=skyc2&amp;data=skyc3&quot;</span>
+           <span class="s2">&quot;&amp;tz=Etc/UTC&amp;format=comma&amp;latlon=no&quot;</span>
+           <span class="s2">&quot;&amp;{start:year1=%Y&amp;month1=%m&amp;day1=</span><span class="si">%d</span><span class="s2">}&quot;</span>
+           <span class="s2">&quot;&amp;{end:year2=%Y&amp;month2=%m&amp;day2=</span><span class="si">%d</span><span class="s2">}&amp;{stations}&quot;</span><span class="p">)</span>
+    <span class="n">stations</span> <span class="o">=</span> <span class="s2">&quot;&amp;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;station=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stations</span><span class="p">)</span>
+    <span class="n">weather</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">stations</span><span class="o">=</span><span class="n">stations</span><span class="p">),</span>
+                           <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">)</span>
+                 <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;valid&quot;</span><span class="p">:</span> <span class="s2">&quot;date&quot;</span><span class="p">})</span>
+                 <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">strip</span><span class="p">)</span>
+                 <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">date</span><span class="o">=</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]))</span>
+                 <span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;station&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">])</span>
+                 <span class="o">.</span><span class="n">sort_index</span><span class="p">())</span>
+    <span class="n">float_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tmpf&#39;</span><span class="p">,</span> <span class="s1">&#39;relh&#39;</span><span class="p">,</span> <span class="s1">&#39;sped&#39;</span><span class="p">,</span> <span class="s1">&#39;mslp&#39;</span><span class="p">,</span> <span class="s1">&#39;p01i&#39;</span><span class="p">,</span> <span class="s1">&#39;vsby&#39;</span><span class="p">,</span> <span class="s2">&quot;gust_mph&quot;</span><span class="p">]</span>
+    <span class="n">weather</span><span class="p">[</span><span class="n">float_cols</span><span class="p">]</span> <span class="o">=</span> <span class="n">weather</span><span class="p">[</span><span class="n">float_cols</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">weather</span>
+
+
+<span class="k">def</span> <span class="nf">get_ids</span><span class="p">(</span><span class="n">network</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Get all the airport IDs and location data within a network.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://mesonet.agron.iastate.edu/geojson/network.php?network={}&quot;</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">network</span><span class="p">))</span>
+    <span class="n">md</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">json</span><span class="o">.</span><span class="n">json_normalize</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;features&#39;</span><span class="p">])</span>
+    <span class="n">md</span><span class="p">[</span><span class="s1">&#39;network&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">network</span>
+    <span class="k">return</span> <span class="n">md</span>
+</pre></div>
+
+
+<p>There isn't too much in <code>get_weather</code> worth mentioning, just grabbing some CSV files from various URLs.
+They put metadata in the "CSV"s at the top of the file as lines prefixed by a <code>#</code>.
+Pandas will ignore these with the <code>comment='#'</code> parameter.</p>
+<p>I do want to talk briefly about the gem of a method that is <a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/generated/pandas.io.json.json_normalize.html"><code>json_normalize</code></a>  .
+The weather API returns some slightly-nested data.</p>
+<div class="codehilite"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://mesonet.agron.iastate.edu/geojson/network.php?network={}&quot;</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;AWOS&quot;</span><span class="p">))</span>
+<span class="n">js</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="n">js</span><span class="p">[</span><span class="s1">&#39;features&#39;</span><span class="p">][:</span><span class="mi">2</span><span class="p">]</span>
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>[{&#39;geometry&#39;: {&#39;coordinates&#39;: [-94.2723694444, 43.0796472222],
+   &#39;type&#39;: &#39;Point&#39;},
+  &#39;id&#39;: &#39;AXA&#39;,
+  &#39;properties&#39;: {&#39;sid&#39;: &#39;AXA&#39;, &#39;sname&#39;: &#39;ALGONA&#39;},
+  &#39;type&#39;: &#39;Feature&#39;},
+ {&#39;geometry&#39;: {&#39;coordinates&#39;: [-93.569475, 41.6878083333], &#39;type&#39;: &#39;Point&#39;},
+  &#39;id&#39;: &#39;IKV&#39;,
+  &#39;properties&#39;: {&#39;sid&#39;: &#39;IKV&#39;, &#39;sname&#39;: &#39;ANKENY&#39;},
+  &#39;type&#39;: &#39;Feature&#39;}]
+</pre></div>
+
+
+<p>If we just pass that list off to the <code>DataFrame</code> constructor, we get this.</p>
+<div class="codehilite"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">js</span><span class="p">[</span><span class="s1">&#39;features&#39;</span><span class="p">])</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>id</th>
+      <th>properties</th>
+      <th>type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>{'coordinates': [-94.2723694444, 43.0796472222...</td>
+      <td>AXA</td>
+      <td>{'sname': 'ALGONA', 'sid': 'AXA'}</td>
+      <td>Feature</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>{'coordinates': [-93.569475, 41.6878083333], '...</td>
+      <td>IKV</td>
+      <td>{'sname': 'ANKENY', 'sid': 'IKV'}</td>
+      <td>Feature</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>{'coordinates': [-95.0465277778, 41.4058805556...</td>
+      <td>AIO</td>
+      <td>{'sname': 'ATLANTIC', 'sid': 'AIO'}</td>
+      <td>Feature</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>{'coordinates': [-94.9204416667, 41.6993527778...</td>
+      <td>ADU</td>
+      <td>{'sname': 'AUDUBON', 'sid': 'ADU'}</td>
+      <td>Feature</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>{'coordinates': [-93.848575, 42.0485694444], '...</td>
+      <td>BNW</td>
+      <td>{'sname': 'BOONE MUNI', 'sid': 'BNW'}</td>
+      <td>Feature</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+
+  </tbody>
+</table>
+<p>45 rows × 4 columns</p>
+</div>
+
+<p>In general, DataFrames don't handle nested data that well.
+It's often better to normalize it somehow.
+In this case, we can "lift"
+the nested items (<code>geometry.coordinates</code>, <code>properties.sid</code>, and <code>properties.sname</code>)
+up to the top level.</p>
+<div class="codehilite"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">json</span><span class="o">.</span><span class="n">json_normalize</span><span class="p">(</span><span class="n">js</span><span class="p">[</span><span class="s1">&#39;features&#39;</span><span class="p">])</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry.coordinates</th>
+      <th>geometry.type</th>
+      <th>id</th>
+      <th>properties.sid</th>
+      <th>properties.sname</th>
+      <th>type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>[-94.2723694444, 43.0796472222]</td>
+      <td>Point</td>
+      <td>AXA</td>
+      <td>AXA</td>
+      <td>ALGONA</td>
+      <td>Feature</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>[-93.569475, 41.6878083333]</td>
+      <td>Point</td>
+      <td>IKV</td>
+      <td>IKV</td>
+      <td>ANKENY</td>
+      <td>Feature</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>[-95.0465277778, 41.4058805556]</td>
+      <td>Point</td>
+      <td>AIO</td>
+      <td>AIO</td>
+      <td>ATLANTIC</td>
+      <td>Feature</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>[-94.9204416667, 41.6993527778]</td>
+      <td>Point</td>
+      <td>ADU</td>
+      <td>ADU</td>
+      <td>AUDUBON</td>
+      <td>Feature</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>[-93.848575, 42.0485694444]</td>
+      <td>Point</td>
+      <td>BNW</td>
+      <td>BNW</td>
+      <td>BOONE MUNI</td>
+      <td>Feature</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+  </tbody>
+</table>
+<p>45 rows × 6 columns</p>
+</div>
+
+<p>Sure, it's not <em>that</em> difficult to write a quick for loop or list comprehension to extract those,
+but that gets tedious.
+If we were using the latitude and longitude data, we would want to split
+the <code>geometry.coordinates</code> column into two. But we aren't so we won't.</p>
+<p>Going back to the task, we get the airport IDs for every network (state)
+with <code>get_ids</code>. Then we pass those IDs into <code>get_weather</code> to fetch the
+actual weather data.</p>
+<div class="codehilite"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">ids</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">get_ids</span><span class="p">(</span><span class="n">network</span><span class="p">)</span> <span class="k">for</span> <span class="n">network</span> <span class="ow">in</span> <span class="n">networks</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">gr</span> <span class="o">=</span> <span class="n">ids</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;network&#39;</span><span class="p">)</span>
+
+<span class="c1"># remove the exist_ok kw in py2, or just upgrade already :)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s2">&quot;weather&quot;</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">gr</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;{}/{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">network</span><span class="p">)),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">weather</span> <span class="o">=</span> <span class="n">get_weather</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+    <span class="n">weather</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;weather/{}.csv&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+
+<span class="n">weather</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;station&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;weather/*.csv&#39;</span><span class="p">)])</span>
+
+<span class="n">weather</span><span class="o">.</span><span class="n">to_hdf</span><span class="p">(</span><span class="s2">&quot;weather.h5&quot;</span><span class="p">,</span> <span class="s2">&quot;weather&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Once that's done, we've got this dataframe</p>
+<div class="codehilite"><pre><span></span><span class="n">weather</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="s2">&quot;weather.h5&quot;</span><span class="p">,</span> <span class="s2">&quot;weather&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+
+<span class="n">weather</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>tmpf</th>
+      <th>relh</th>
+      <th>sped</th>
+      <th>mslp</th>
+      <th>p01i</th>
+      <th>vsby</th>
+      <th>gust_mph</th>
+      <th>skyc1</th>
+      <th>skyc2</th>
+      <th>skyc3</th>
+    </tr>
+    <tr>
+      <th>station</th>
+      <th>date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">01M</th>
+      <th>2014-01-01 00:15:00</th>
+      <td>33.80</td>
+      <td>85.86</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>CLR</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 00:35:00</th>
+      <td>33.44</td>
+      <td>87.11</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>CLR</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 00:55:00</th>
+      <td>32.54</td>
+      <td>90.97</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>CLR</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 01:15:00</th>
+      <td>31.82</td>
+      <td>93.65</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>CLR</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 01:35:00</th>
+      <td>32.00</td>
+      <td>92.97</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>CLR</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>OK, that was a bit of work. Here's a plot to reward ourselves.
+We'll talk more about seaborn in a later post.</p>
+<div class="codehilite"><pre><span></span><span class="n">airports</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DSM&#39;</span><span class="p">,</span> <span class="s1">&#39;ORD&#39;</span><span class="p">,</span> <span class="s1">&#39;JFK&#39;</span><span class="p">,</span> <span class="s1">&#39;PDX&#39;</span><span class="p">]</span>
+
+<span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">FacetGrid</span><span class="p">(</span><span class="n">weather</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">airports</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(),</span>
+                  <span class="n">col</span><span class="o">=</span><span class="s1">&#39;station&#39;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;station&#39;</span><span class="p">,</span> <span class="n">col_wrap</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">regplot</span><span class="p">,</span> <span class="s1">&#39;sped&#39;</span><span class="p">,</span> <span class="s1">&#39;gust_mph&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="Gust Facet" src="images/indexes_wind_gust_facet.svg" /></p>
+<p><a name="set-operations"></a></p>
+<h2>Set Operations</h2>
+<p>Indexes are set-like (technically <em>multi</em>sets, since you can have duplicates), so they support most python <code>set</code> operations. Since indexes are immutable you won't find any of the inplace <code>set</code> operations.
+One other difference is that since <code>Index</code>es are also array-like, you can't use some infix operators like <code>-</code> for <code>difference</code>. If you have a numeric index it is unclear whether you intend to perform math operations or set operations.
+You can use <code>&amp;</code> for intersection, <code>|</code> for union, and <code>^</code> for symmetric difference though, since there's no ambiguity.</p>
+<p>For example, lets find the set of airports that we have both weather and flight information on. Since <code>weather</code> had a MultiIndex of <code>airport, datetime</code>, we'll use the <code>levels</code> attribute to get at the airport data, separate from the date data.</p>
+<div class="codehilite"><pre><span></span><span class="c1"># Bring in the flights data</span>
+
+<span class="n">flights</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="s1">&#39;flights.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">)</span>
+
+<span class="n">weather_locs</span> <span class="o">=</span> <span class="n">weather</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">levels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># The `categories` attribute of a Categorical is an Index</span>
+
+<span class="n">origin_locs</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">categories</span>
+<span class="n">dest_locs</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">categories</span>
+
+<span class="n">airports</span> <span class="o">=</span> <span class="n">weather_locs</span> <span class="o">&amp;</span> <span class="n">origin_locs</span> <span class="o">&amp;</span> <span class="n">dest_locs</span>
+<span class="n">airports</span>
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>Index([&#39;ABE&#39;, &#39;ABI&#39;, &#39;ABQ&#39;, &#39;ABR&#39;, &#39;ABY&#39;, &#39;ACT&#39;, &#39;ACV&#39;, &#39;AEX&#39;, &#39;AGS&#39;, &#39;ALB&#39;,
+       ...
+       &#39;TUL&#39;, &#39;TUS&#39;, &#39;TVC&#39;, &#39;TWF&#39;, &#39;TXK&#39;, &#39;TYR&#39;, &#39;TYS&#39;, &#39;VLD&#39;, &#39;VPS&#39;, &#39;XNA&#39;],
+      dtype=&#39;object&#39;, length=267)
+</pre></div>
+
+
+<p>And we can look at the airports with either no flights or no weather information.</p>
+<div class="codehilite"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s2">&quot;Weather, no flights:</span><span class="se">\n\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">weather_locs</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">origin_locs</span> <span class="o">|</span> <span class="n">dest_locs</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Flights, no weather:</span><span class="se">\n\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">origin_locs</span> <span class="o">|</span> <span class="n">dest_locs</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">weather_locs</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Dropped Stations:</span><span class="se">\n\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">origin_locs</span> <span class="o">|</span> <span class="n">dest_locs</span><span class="p">)</span> <span class="o">^</span> <span class="n">weather_locs</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>Weather, no flights:
+     Index([&#39;01M&#39;, &#39;04V&#39;, &#39;04W&#39;, &#39;05U&#39;, &#39;06D&#39;, &#39;08D&#39;, &#39;0A9&#39;, &#39;0CO&#39;, &#39;0E0&#39;, &#39;0F2&#39;,
+       ...
+       &#39;Y50&#39;, &#39;Y51&#39;, &#39;Y63&#39;, &#39;Y70&#39;, &#39;YIP&#39;, &#39;YKM&#39;, &#39;YKN&#39;, &#39;YNG&#39;, &#39;ZPH&#39;, &#39;ZZV&#39;],
+      dtype=&#39;object&#39;, length=1909)
+
+Flights, no weather:
+     Index([&#39;ADK&#39;, &#39;ADQ&#39;, &#39;ANC&#39;, &#39;BET&#39;, &#39;BKG&#39;, &#39;BQN&#39;, &#39;BRW&#39;, &#39;CDV&#39;, &#39;CLD&#39;, &#39;FAI&#39;,
+       &#39;FCA&#39;, &#39;GUM&#39;, &#39;HNL&#39;, &#39;ITO&#39;, &#39;JNU&#39;, &#39;KOA&#39;, &#39;KTN&#39;, &#39;LIH&#39;, &#39;MQT&#39;, &#39;OGG&#39;,
+       &#39;OME&#39;, &#39;OTZ&#39;, &#39;PPG&#39;, &#39;PSE&#39;, &#39;PSG&#39;, &#39;SCC&#39;, &#39;SCE&#39;, &#39;SIT&#39;, &#39;SJU&#39;, &#39;STT&#39;,
+       &#39;STX&#39;, &#39;WRG&#39;, &#39;YAK&#39;, &#39;YUM&#39;],
+      dtype=&#39;object&#39;)
+
+Dropped Stations:
+     Index([&#39;01M&#39;, &#39;04V&#39;, &#39;04W&#39;, &#39;05U&#39;, &#39;06D&#39;, &#39;08D&#39;, &#39;0A9&#39;, &#39;0CO&#39;, &#39;0E0&#39;, &#39;0F2&#39;,
+       ...
+       &#39;Y63&#39;, &#39;Y70&#39;, &#39;YAK&#39;, &#39;YIP&#39;, &#39;YKM&#39;, &#39;YKN&#39;, &#39;YNG&#39;, &#39;YUM&#39;, &#39;ZPH&#39;, &#39;ZZV&#39;],
+      dtype=&#39;object&#39;, length=1943)
+</pre></div>
+
+
+<h1>Flavors</h1>
+<p>Pandas has many subclasses of the regular <code>Index</code>, each tailored to a specific kind of data.
+Most of the time these will be created for you automatically, so you don't have to worry about which one to choose.</p>
+<ol>
+<li><a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/generated/pandas.Index.html#pandas.Index"><code>Index</code></a></li>
+<li><code>Int64Index</code></li>
+<li><code>RangeIndex</code>: Memory-saving special case of <code>Int64Index</code></li>
+<li><code>FloatIndex</code></li>
+<li><code>DatetimeIndex</code>: Datetime64[ns] precision data</li>
+<li><code>PeriodIndex</code>: Regularly-spaced, arbitrary precision datetime data.</li>
+<li><code>TimedeltaIndex</code></li>
+<li><code>CategoricalIndex</code></li>
+<li><code>MultiIndex</code></li>
+</ol>
+<p>You will sometimes create a <code>DatetimeIndex</code> with <a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/generated/pandas.date_range.html"><code>pd.date_range</code></a> (<a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/generated/pandas.period_range.html"><code>pd.period_range</code></a> for <code>PeriodIndex</code>).
+And you'll sometimes make a <code>MultiIndex</code> directly too (I'll have an example of this in my post on performace).</p>
+<p>Some of these specialized index types are purely optimizations; others use information about the data to provide additional methods.
+And while you might occasionally work with indexes directly (like the set operations above), most of they time you'll be operating on a Series or DataFrame, which in turn makes use of its Index.</p>
+<h3>Row Slicing</h3>
+<p>We saw in <a href="modern-1.html">part one</a> that indexes great for making row  subsetting as easy as column subsetting.</p>
+<div class="codehilite"><pre><span></span><span class="n">weather</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;DSM&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>tmpf</th>
+      <th>relh</th>
+      <th>sped</th>
+      <th>mslp</th>
+      <th>p01i</th>
+      <th>vsby</th>
+      <th>gust_mph</th>
+      <th>skyc1</th>
+      <th>skyc2</th>
+      <th>skyc3</th>
+    </tr>
+    <tr>
+      <th>date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2014-01-01 00:54:00</th>
+      <td>10.94</td>
+      <td>72.79</td>
+      <td>10.3</td>
+      <td>1024.9</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>FEW</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 01:54:00</th>
+      <td>10.94</td>
+      <td>72.79</td>
+      <td>11.4</td>
+      <td>1025.4</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>OVC</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 02:54:00</th>
+      <td>10.94</td>
+      <td>72.79</td>
+      <td>8.0</td>
+      <td>1025.3</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>BKN</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 03:54:00</th>
+      <td>10.94</td>
+      <td>72.79</td>
+      <td>9.1</td>
+      <td>1025.3</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>OVC</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 04:54:00</th>
+      <td>10.04</td>
+      <td>72.69</td>
+      <td>9.1</td>
+      <td>1024.7</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>BKN</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Without indexes we'd probably resort to boolean masks.</p>
+<div class="codehilite"><pre><span></span><span class="n">weather2</span> <span class="o">=</span> <span class="n">weather</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+<span class="n">weather2</span><span class="p">[</span><span class="n">weather2</span><span class="p">[</span><span class="s1">&#39;station&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;DSM&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>station</th>
+      <th>date</th>
+      <th>tmpf</th>
+      <th>relh</th>
+      <th>sped</th>
+      <th>mslp</th>
+      <th>p01i</th>
+      <th>vsby</th>
+      <th>gust_mph</th>
+      <th>skyc1</th>
+      <th>skyc2</th>
+      <th>skyc3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>884855</th>
+      <td>DSM</td>
+      <td>2014-01-01 00:54:00</td>
+      <td>10.94</td>
+      <td>72.79</td>
+      <td>10.3</td>
+      <td>1024.9</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>FEW</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>884856</th>
+      <td>DSM</td>
+      <td>2014-01-01 01:54:00</td>
+      <td>10.94</td>
+      <td>72.79</td>
+      <td>11.4</td>
+      <td>1025.4</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>OVC</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>884857</th>
+      <td>DSM</td>
+      <td>2014-01-01 02:54:00</td>
+      <td>10.94</td>
+      <td>72.79</td>
+      <td>8.0</td>
+      <td>1025.3</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>BKN</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>884858</th>
+      <td>DSM</td>
+      <td>2014-01-01 03:54:00</td>
+      <td>10.94</td>
+      <td>72.79</td>
+      <td>9.1</td>
+      <td>1025.3</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>OVC</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>884859</th>
+      <td>DSM</td>
+      <td>2014-01-01 04:54:00</td>
+      <td>10.04</td>
+      <td>72.69</td>
+      <td>9.1</td>
+      <td>1024.7</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>NaN</td>
+      <td>BKN</td>
+      <td>M</td>
+      <td>M</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Slightly less convenient, but still doable.</p>
+<h3>Indexes for Easier Arithmetic, Analysis</h3>
+<p>It's nice to have your metadata (labels on each observation) next to you actual values. But if you store them in an array, they'll get in the way of your operations.
+Say we wanted to translate the Fahrenheit temperature to Celsius.</p>
+<div class="codehilite"><pre><span></span><span class="c1"># With indecies</span>
+<span class="n">temp</span> <span class="o">=</span> <span class="n">weather</span><span class="p">[</span><span class="s1">&#39;tmpf&#39;</span><span class="p">]</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="p">(</span><span class="n">temp</span> <span class="o">-</span> <span class="mi">32</span><span class="p">)</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">/</span> <span class="mi">9</span>
+<span class="n">c</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>tmpf</th>
+    </tr>
+    <tr>
+      <th>station</th>
+      <th>date</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">01M</th>
+      <th>2014-01-01 00:15:00</th>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 00:35:00</th>
+      <td>0.8</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 00:55:00</th>
+      <td>0.3</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 01:15:00</th>
+      <td>-0.1</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 01:35:00</th>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">ZZV</th>
+      <th>2014-01-30 19:53:00</th>
+      <td>-2.8</td>
+    </tr>
+    <tr>
+      <th>2014-01-30 20:53:00</th>
+      <td>-2.2</td>
+    </tr>
+    <tr>
+      <th>2014-01-30 21:53:00</th>
+      <td>-2.2</td>
+    </tr>
+    <tr>
+      <th>2014-01-30 22:53:00</th>
+      <td>-2.8</td>
+    </tr>
+    <tr>
+      <th>2014-01-30 23:53:00</th>
+      <td>-1.7</td>
+    </tr>
+  </tbody>
+</table>
+<p>3303647 rows × 1 columns</p>
+</div>
+
+<div class="codehilite"><pre><span></span><span class="c1"># without</span>
+<span class="n">temp2</span> <span class="o">=</span> <span class="n">weather</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()[[</span><span class="s1">&#39;station&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;tmpf&#39;</span><span class="p">]]</span>
+
+<span class="n">temp2</span><span class="p">[</span><span class="s1">&#39;tmpf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">temp2</span><span class="p">[</span><span class="s1">&#39;tmpf&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">32</span><span class="p">)</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">/</span> <span class="mi">9</span>
+<span class="n">temp2</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>station</th>
+      <th>date</th>
+      <th>tmpf</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>01M</td>
+      <td>2014-01-01 00:15:00</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>01M</td>
+      <td>2014-01-01 00:35:00</td>
+      <td>0.8</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>01M</td>
+      <td>2014-01-01 00:55:00</td>
+      <td>0.3</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>01M</td>
+      <td>2014-01-01 01:15:00</td>
+      <td>-0.1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>01M</td>
+      <td>2014-01-01 01:35:00</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Again, not terrible, but not as good.
+And, what if you had wanted to keep Fahrenheit around as well, instead of overwriting it like we did?
+Then you'd need to make a copy of everything, including the <code>station</code> and <code>date</code> columns.
+We don't have that problem, since indexes are immutable and safely shared between DataFrames / Series.</p>
+<div class="codehilite"><pre><span></span><span class="n">temp</span><span class="o">.</span><span class="n">index</span> <span class="ow">is</span> <span class="n">c</span><span class="o">.</span><span class="n">index</span>
+<span class="bp">True</span>
+</pre></div>
+
+
+<h3>Indexes for Alignment</h3>
+<p>I've saved the best for last.
+Automatic alignment, or reindexing, is fundamental to pandas.</p>
+<p>All binary operations (add, multiply, etc.) between Series/DataFrames first <em>align</em> and then proceed.</p>
+<p>Let's suppose we have hourly observations on temperature and windspeed.
+And suppose some of the observations were invalid, and not reported (simulated below by sampling from the full dataset). We'll assume the missing windspeed observations were potentially different from the missing temperature observations.</p>
+<div class="codehilite"><pre><span></span><span class="n">dsm</span> <span class="o">=</span> <span class="n">weather</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;DSM&#39;</span><span class="p">]</span>
+
+<span class="n">hourly</span> <span class="o">=</span> <span class="n">dsm</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="n">temp</span> <span class="o">=</span> <span class="n">hourly</span><span class="p">[</span><span class="s1">&#39;tmpf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+<span class="n">sped</span> <span class="o">=</span> <span class="n">hourly</span><span class="p">[</span><span class="s1">&#39;sped&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+
+<span class="n">temp</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>date
+2014-01-01 00:00:00    10.94
+2014-01-01 02:00:00    10.94
+2014-01-01 03:00:00    10.94
+2014-01-01 04:00:00    10.04
+2014-01-01 05:00:00    10.04
+Name: tmpf, dtype: float64
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span><span class="n">sped</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>date
+2014-01-01 01:00:00    11.4
+2014-01-01 02:00:00     8.0
+2014-01-01 03:00:00     9.1
+2014-01-01 04:00:00     9.1
+2014-01-01 05:00:00    10.3
+Name: sped, dtype: float64
+</pre></div>
+
+
+<p>Notice that the two indexes aren't identical.</p>
+<p>Suppose that the <code>windspeed : temperature</code> ratio is meaningful.
+When we go to compute that, pandas will automatically align the two by index label.</p>
+<div class="codehilite"><pre><span></span><span class="n">sped</span> <span class="o">/</span> <span class="n">temp</span>
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>date
+2014-01-01 00:00:00         NaN
+2014-01-01 01:00:00         NaN
+2014-01-01 02:00:00    0.731261
+2014-01-01 03:00:00    0.831810
+2014-01-01 04:00:00    0.906375
+                         ...   
+2014-01-30 13:00:00         NaN
+2014-01-30 14:00:00    0.584712
+2014-01-30 17:00:00         NaN
+2014-01-30 21:00:00         NaN
+2014-01-30 23:00:00         NaN
+dtype: float64
+</pre></div>
+
+
+<p>This lets you focus on doing the operation, rather than manually aligning things, ensuring that the arrays are the same length and in the same order.
+By deault, missing values are inserted where the two don't align.
+You can use the method version of any binary operation to specify a <code>fill_value</code></p>
+<div class="codehilite"><pre><span></span><span class="n">sped</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>date
+2014-01-01 00:00:00     0.091408
+2014-01-01 01:00:00    11.400000
+2014-01-01 02:00:00     0.731261
+2014-01-01 03:00:00     0.831810
+2014-01-01 04:00:00     0.906375
+                         ...    
+2014-01-30 13:00:00     0.027809
+2014-01-30 14:00:00     0.584712
+2014-01-30 17:00:00     0.023267
+2014-01-30 21:00:00     0.035663
+2014-01-30 23:00:00    13.700000
+dtype: float64
+</pre></div>
+
+
+<p>And since I couldn't find anywhere else to put it, I'll mention here that you can control the axis the operation is aligned along as well.</p>
+<div class="codehilite"><pre><span></span><span class="n">hourly</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">sped</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>tmpf</th>
+      <th>relh</th>
+      <th>sped</th>
+      <th>mslp</th>
+      <th>p01i</th>
+      <th>vsby</th>
+      <th>gust_mph</th>
+    </tr>
+    <tr>
+      <th>date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2014-01-01 00:00:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 01:00:00</th>
+      <td>0.959649</td>
+      <td>6.385088</td>
+      <td>1.0</td>
+      <td>89.947368</td>
+      <td>0.0</td>
+      <td>0.877193</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 02:00:00</th>
+      <td>1.367500</td>
+      <td>9.098750</td>
+      <td>1.0</td>
+      <td>128.162500</td>
+      <td>0.0</td>
+      <td>1.250000</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 03:00:00</th>
+      <td>1.202198</td>
+      <td>7.998901</td>
+      <td>1.0</td>
+      <td>112.670330</td>
+      <td>0.0</td>
+      <td>1.098901</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 04:00:00</th>
+      <td>1.103297</td>
+      <td>7.987912</td>
+      <td>1.0</td>
+      <td>112.604396</td>
+      <td>0.0</td>
+      <td>1.098901</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2014-01-30 19:00:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2014-01-30 20:00:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2014-01-30 21:00:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2014-01-30 22:00:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2014-01-30 23:00:00</th>
+      <td>1.600000</td>
+      <td>4.535036</td>
+      <td>1.0</td>
+      <td>73.970803</td>
+      <td>0.0</td>
+      <td>0.729927</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>720 rows × 7 columns</p>
+</div>
+
+<p>The non row-labeled version of our simple <code>div</code> operation is messy.</p>
+<div class="codehilite"><pre><span></span><span class="n">temp2</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+<span class="n">sped2</span> <span class="o">=</span> <span class="n">sped</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+<span class="c1"># Find rows where the operation is defined</span>
+<span class="n">common_dates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">temp2</span><span class="o">.</span><span class="n">date</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">sped2</span><span class="o">.</span><span class="n">date</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span>
+    <span class="c1"># concat to not lose date information</span>
+    <span class="n">sped2</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">sped2</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">common_dates</span><span class="p">),</span> <span class="s1">&#39;date&#39;</span><span class="p">],</span>
+    <span class="p">(</span><span class="n">sped2</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">sped2</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">common_dates</span><span class="p">),</span> <span class="s1">&#39;sped&#39;</span><span class="p">]</span> <span class="o">/</span>
+     <span class="n">temp2</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">temp2</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">common_dates</span><span class="p">),</span> <span class="s1">&#39;tmpf&#39;</span><span class="p">])],</span>
+    <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">how</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>date</th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>2014-01-01 02:00:00</td>
+      <td>0.731261</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2014-01-01 03:00:00</td>
+      <td>0.831810</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2014-01-01 04:00:00</td>
+      <td>0.906375</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2014-01-01 05:00:00</td>
+      <td>1.025896</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>2014-01-01 13:00:00</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>351</th>
+      <td>2014-01-29 23:00:00</td>
+      <td>0.535609</td>
+    </tr>
+    <tr>
+      <th>354</th>
+      <td>2014-01-30 05:00:00</td>
+      <td>0.487735</td>
+    </tr>
+    <tr>
+      <th>356</th>
+      <td>2014-01-30 09:00:00</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>357</th>
+      <td>2014-01-30 10:00:00</td>
+      <td>0.618939</td>
+    </tr>
+    <tr>
+      <th>358</th>
+      <td>2014-01-30 14:00:00</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>170 rows × 2 columns</p>
+</div>
+
+<p>And we have a bug in there. Can you spot it?
+I only grabbed the dates from <code>sped2</code> in the line <code>sped2.loc[sped2['date'].isin(common_dates), 'date']</code>.
+Really that should be <code>sped2.loc[sped2.date.isin(common_dates)] | temp2.loc[temp2.date.isin(common_dates)]</code>.
+But I think leaving the buggy version states my case even more strongly. The <code>temp / sped</code> version where pandas aligns everything is better.</p>
+<h2>Merging</h2>
+<p>There are two ways of merging DataFrames / Series in pandas.</p>
+<ol>
+<li>Relational Database style with <code>pd.merge</code></li>
+<li>Array style with <code>pd.concat</code></li>
+</ol>
+<p>Personally, I think in terms of the <code>concat</code> style.
+I learned pandas before I ever really used SQL, so it comes more naturally to me I suppose.</p>
+<h3>Concat Version</h3>
+<div class="codehilite"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">temp</span><span class="p">,</span> <span class="n">sped</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>tmpf</th>
+      <th>sped</th>
+    </tr>
+    <tr>
+      <th>date</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2014-01-01 00:00:00</th>
+      <td>10.94</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 01:00:00</th>
+      <td>NaN</td>
+      <td>11.4</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 02:00:00</th>
+      <td>10.94</td>
+      <td>8.0</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 03:00:00</th>
+      <td>10.94</td>
+      <td>9.1</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 04:00:00</th>
+      <td>10.04</td>
+      <td>9.1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>The <code>axis</code> parameter controls how the data should be stacked, <code>0</code> for vertically, <code>1</code> for horizontally.
+The <code>join</code> parameter controls the merge behavior on the shared axis, (the Index for <code>axis=1</code>). By default it's like a union of the two indexes, or an outer join.</p>
+<div class="codehilite"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">temp</span><span class="p">,</span> <span class="n">sped</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>tmpf</th>
+      <th>sped</th>
+    </tr>
+    <tr>
+      <th>date</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2014-01-01 02:00:00</th>
+      <td>10.94</td>
+      <td>8.000</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 03:00:00</th>
+      <td>10.94</td>
+      <td>9.100</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 04:00:00</th>
+      <td>10.04</td>
+      <td>9.100</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 05:00:00</th>
+      <td>10.04</td>
+      <td>10.300</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 13:00:00</th>
+      <td>8.96</td>
+      <td>13.675</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2014-01-29 23:00:00</th>
+      <td>35.96</td>
+      <td>18.200</td>
+    </tr>
+    <tr>
+      <th>2014-01-30 05:00:00</th>
+      <td>33.98</td>
+      <td>17.100</td>
+    </tr>
+    <tr>
+      <th>2014-01-30 09:00:00</th>
+      <td>35.06</td>
+      <td>16.000</td>
+    </tr>
+    <tr>
+      <th>2014-01-30 10:00:00</th>
+      <td>35.06</td>
+      <td>21.700</td>
+    </tr>
+    <tr>
+      <th>2014-01-30 14:00:00</th>
+      <td>35.06</td>
+      <td>20.500</td>
+    </tr>
+  </tbody>
+</table>
+<p>170 rows × 2 columns</p>
+</div>
+
+<h3>Merge Version</h3>
+<p>Since we're joining by index here the merge version is quite similar.</p>
+<div class="codehilite"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">temp</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(),</span> <span class="n">sped</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(),</span> <span class="n">left_index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">right_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>tmpf</th>
+      <th>sped</th>
+    </tr>
+    <tr>
+      <th>date</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2014-01-01 02:00:00</th>
+      <td>10.94</td>
+      <td>8.000</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 03:00:00</th>
+      <td>10.94</td>
+      <td>9.100</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 04:00:00</th>
+      <td>10.04</td>
+      <td>9.100</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 05:00:00</th>
+      <td>10.04</td>
+      <td>10.300</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 13:00:00</th>
+      <td>8.96</td>
+      <td>13.675</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="codehilite"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">temp</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(),</span> <span class="n">sped</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(),</span> <span class="n">left_index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">right_index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+         <span class="n">how</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>tmpf</th>
+      <th>sped</th>
+    </tr>
+    <tr>
+      <th>date</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2014-01-01 00:00:00</th>
+      <td>10.94</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 01:00:00</th>
+      <td>NaN</td>
+      <td>11.4</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 02:00:00</th>
+      <td>10.94</td>
+      <td>8.0</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 03:00:00</th>
+      <td>10.94</td>
+      <td>9.1</td>
+    </tr>
+    <tr>
+      <th>2014-01-01 04:00:00</th>
+      <td>10.04</td>
+      <td>9.1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Like I said, I typically prefer <code>concat</code> to <code>merge</code>.
+The exception here is one-to-many type joins. Let's walk through one of those,
+where we join the flight data to the weather data.
+To focus just on the merge, we'll aggregate hour weather data to be daily, rather than trying to find the closest recorded weather observation to each departure (you could do that, but it's not the focus right now). We'll then join the one <code>(airport, date)</code> record to the many <code>(airport, date, flight)</code> records.</p>
+<p>Quick tangent, to get the weather data to daily frequency, we'll need to resample (more on that in the timeseries section). The resample essentially splits the recorded values into daily buckets and computes the aggregation function on each bucket. The only wrinkle is that we have to resample <em>by station</em>, so we'll use the <code>pd.TimeGrouper</code> helper.</p>
+<div class="codehilite"><pre><span></span><span class="n">idx_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;unique_carrier&#39;</span><span class="p">,</span> <span class="s1">&#39;origin&#39;</span><span class="p">,</span> <span class="s1">&#39;dest&#39;</span><span class="p">,</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">,</span> <span class="s1">&#39;fl_num&#39;</span><span class="p">,</span> <span class="s1">&#39;fl_date&#39;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Arbitrarily break ties.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">aggfuncs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;tmpf&#39;</span><span class="p">:</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;relh&#39;</span><span class="p">:</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sped&#39;</span><span class="p">:</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;mslp&#39;</span><span class="p">:</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;p01i&#39;</span><span class="p">:</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;vsby&#39;</span><span class="p">:</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;gust_mph&#39;</span><span class="p">:</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;skyc1&#39;</span><span class="p">:</span> <span class="n">mode</span><span class="p">,</span>
+            <span class="s1">&#39;skyc2&#39;</span><span class="p">:</span> <span class="n">mode</span><span class="p">,</span> <span class="s1">&#39;skyc3&#39;</span><span class="p">:</span> <span class="n">mode</span><span class="p">}</span>
+<span class="c1"># TimeGrouper works on a DatetimeIndex, so we move `station` to the</span>
+<span class="c1"># columns and then groupby it as well.</span>
+<span class="n">daily</span> <span class="o">=</span> <span class="p">(</span><span class="n">weather</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s2">&quot;station&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">pd</span><span class="o">.</span><span class="n">TimeGrouper</span><span class="p">(</span><span class="s1">&#39;1d&#39;</span><span class="p">),</span> <span class="s2">&quot;station&quot;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">aggfuncs</span><span class="p">))</span>
+
+<span class="n">daily</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>gust_mph</th>
+      <th>vsby</th>
+      <th>sped</th>
+      <th>relh</th>
+      <th>skyc1</th>
+      <th>tmpf</th>
+      <th>skyc2</th>
+      <th>mslp</th>
+      <th>p01i</th>
+      <th>skyc3</th>
+    </tr>
+    <tr>
+      <th>date</th>
+      <th>station</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">2014-01-01</th>
+      <th>01M</th>
+      <td>NaN</td>
+      <td>9.229167</td>
+      <td>2.262500</td>
+      <td>81.117917</td>
+      <td>CLR</td>
+      <td>35.747500</td>
+      <td>M</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>04V</th>
+      <td>31.307143</td>
+      <td>9.861111</td>
+      <td>11.131944</td>
+      <td>72.697778</td>
+      <td>CLR</td>
+      <td>18.350000</td>
+      <td>M</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>04W</th>
+      <td>NaN</td>
+      <td>10.000000</td>
+      <td>3.601389</td>
+      <td>69.908056</td>
+      <td>OVC</td>
+      <td>-9.075000</td>
+      <td>M</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>05U</th>
+      <td>NaN</td>
+      <td>9.929577</td>
+      <td>3.770423</td>
+      <td>71.519859</td>
+      <td>CLR</td>
+      <td>26.321127</td>
+      <td>M</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>06D</th>
+      <td>NaN</td>
+      <td>9.576389</td>
+      <td>5.279167</td>
+      <td>73.784179</td>
+      <td>CLR</td>
+      <td>-11.388060</td>
+      <td>M</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>M</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Now that we have daily flight and weather data, we can merge.
+We'll use the <code>on</code> keyword to indicate the columns we'll merge on (this is like a <code>USING (...)</code> SQL statement), we just have to make sure the names align.</p>
+<div class="codehilite"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">flights</span><span class="p">,</span> <span class="n">daily</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;date&#39;</span><span class="p">:</span> <span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;station&#39;</span><span class="p">:</span> <span class="s1">&#39;origin&#39;</span><span class="p">}),</span>
+             <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;origin&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">idx_cols</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+
+<span class="n">m</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th>airline_id</th>
+      <th>origin_airport_id</th>
+      <th>origin_airport_seq_id</th>
+      <th>origin_city_market_id</th>
+      <th>origin_city_name</th>
+      <th>origin_state_nm</th>
+      <th>dest_airport_id</th>
+      <th>dest_airport_seq_id</th>
+      <th>dest_city_market_id</th>
+      <th>dest_city_name</th>
+      <th>...</th>
+      <th>gust_mph</th>
+      <th>vsby</th>
+      <th>sped</th>
+      <th>relh</th>
+      <th>skyc1</th>
+      <th>tmpf</th>
+      <th>skyc2</th>
+      <th>mslp</th>
+      <th>p01i</th>
+      <th>skyc3</th>
+    </tr>
+    <tr>
+      <th>unique_carrier</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>tail_num</th>
+      <th>fl_num</th>
+      <th>fl_date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">AA</th>
+      <th rowspan="5" valign="top">ABQ</th>
+      <th rowspan="5" valign="top">DFW</th>
+      <th rowspan="2" valign="top">N200AA</th>
+      <th>1090</th>
+      <th>2014-01-27</th>
+      <td>19805</td>
+      <td>10140</td>
+      <td>1014002</td>
+      <td>30140</td>
+      <td>Albuquerque, NM</td>
+      <td>New Mexico</td>
+      <td>11298</td>
+      <td>1129803</td>
+      <td>30194</td>
+      <td>Dallas/Fort Worth, TX</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>10.0</td>
+      <td>6.737500</td>
+      <td>34.267500</td>
+      <td>SCT</td>
+      <td>41.8325</td>
+      <td>M</td>
+      <td>1014.620833</td>
+      <td>0.0</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>1662</th>
+      <th>2014-01-06</th>
+      <td>19805</td>
+      <td>10140</td>
+      <td>1014002</td>
+      <td>30140</td>
+      <td>Albuquerque, NM</td>
+      <td>New Mexico</td>
+      <td>11298</td>
+      <td>1129803</td>
+      <td>30194</td>
+      <td>Dallas/Fort Worth, TX</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>10.0</td>
+      <td>9.270833</td>
+      <td>27.249167</td>
+      <td>CLR</td>
+      <td>28.7900</td>
+      <td>M</td>
+      <td>1029.016667</td>
+      <td>0.0</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>N202AA</th>
+      <th>1332</th>
+      <th>2014-01-27</th>
+      <td>19805</td>
+      <td>10140</td>
+      <td>1014002</td>
+      <td>30140</td>
+      <td>Albuquerque, NM</td>
+      <td>New Mexico</td>
+      <td>11298</td>
+      <td>1129803</td>
+      <td>30194</td>
+      <td>Dallas/Fort Worth, TX</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>10.0</td>
+      <td>6.737500</td>
+      <td>34.267500</td>
+      <td>SCT</td>
+      <td>41.8325</td>
+      <td>M</td>
+      <td>1014.620833</td>
+      <td>0.0</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">N426AA</th>
+      <th>1467</th>
+      <th>2014-01-15</th>
+      <td>19805</td>
+      <td>10140</td>
+      <td>1014002</td>
+      <td>30140</td>
+      <td>Albuquerque, NM</td>
+      <td>New Mexico</td>
+      <td>11298</td>
+      <td>1129803</td>
+      <td>30194</td>
+      <td>Dallas/Fort Worth, TX</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>10.0</td>
+      <td>6.216667</td>
+      <td>34.580000</td>
+      <td>FEW</td>
+      <td>40.2500</td>
+      <td>M</td>
+      <td>1027.800000</td>
+      <td>0.0</td>
+      <td>M</td>
+    </tr>
+    <tr>
+      <th>1662</th>
+      <th>2014-01-09</th>
+      <td>19805</td>
+      <td>10140</td>
+      <td>1014002</td>
+      <td>30140</td>
+      <td>Albuquerque, NM</td>
+      <td>New Mexico</td>
+      <td>11298</td>
+      <td>1129803</td>
+      <td>30194</td>
+      <td>Dallas/Fort Worth, TX</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>10.0</td>
+      <td>3.087500</td>
+      <td>42.162500</td>
+      <td>FEW</td>
+      <td>34.6700</td>
+      <td>M</td>
+      <td>1018.379167</td>
+      <td>0.0</td>
+      <td>M</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 40 columns</p>
+</div>
+
+<p>Since data-wrangling on its own is never the goal, let's do some quick analysis.
+Seaborn makes it easy to explore bivariate relationships.</p>
+<div class="codehilite"><pre><span></span><span class="n">m</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span><span class="o">.</span><span class="n">pipe</span><span class="p">((</span><span class="n">sns</span><span class="o">.</span><span class="n">jointplot</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">),</span> <span class="s1">&#39;sped&#39;</span><span class="p">,</span> <span class="s1">&#39;dep_delay&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="join" src="images/indexes_sped_delay_join.svg" /></p>
+<p>Looking at the various sky coverage states (I haven't found out exactly what these represent, but they seem to matter):</p>
+<div class="codehilite"><pre><span></span><span class="n">m</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;skyc1&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dep_delay</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mean</th>
+      <th>count</th>
+    </tr>
+    <tr>
+      <th>skyc1</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>M</th>
+      <td>-1.948052</td>
+      <td>77</td>
+    </tr>
+    <tr>
+      <th>CLR</th>
+      <td>11.222288</td>
+      <td>115121</td>
+    </tr>
+    <tr>
+      <th>FEW</th>
+      <td>16.863177</td>
+      <td>161727</td>
+    </tr>
+    <tr>
+      <th>SCT</th>
+      <td>17.803048</td>
+      <td>19289</td>
+    </tr>
+    <tr>
+      <th>BKN</th>
+      <td>18.638034</td>
+      <td>54030</td>
+    </tr>
+    <tr>
+      <th>OVC</th>
+      <td>21.667762</td>
+      <td>52643</td>
+    </tr>
+    <tr>
+      <th>VV</th>
+      <td>30.487008</td>
+      <td>9583</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="codehilite"><pre><span></span><span class="kn">import</span> <span class="nn">statsmodels.api</span> <span class="kn">as</span> <span class="nn">sm</span>
+</pre></div>
+
+
+<p>Statsmodels (via <a href="http://patsy.readthedocs.org/">patsy</a> can automatically convert dummy data to dummy variables in a formula with the <code>C</code> function).</p>
+<div class="codehilite"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="s1">&#39;dep_delay ~ C(skyc1) + distance + tmpf + relh + sped + mslp&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">m</span><span class="p">)</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="n">res</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</pre></div>
+
+
+<table class="simpletable">
+<caption>OLS Regression Results</caption>
+<tr>
+  <th>Dep. Variable:</th>        <td>dep_delay</td>    <th>  R-squared:         </th>  <td>   0.026</td>  
+</tr>
+<tr>
+  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th>  <td>   0.025</td>  
+</tr>
+<tr>
+  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th>  <td>   976.4</td>  
+</tr>
+<tr>
+  <th>Date:</th>             <td>Sun, 10 Apr 2016</td> <th>  Prob (F-statistic):</th>   <td>  0.00</td>   
+</tr>
+<tr>
+  <th>Time:</th>                 <td>09:02:27</td>     <th>  Log-Likelihood:    </th> <td>-2.1453e+06</td>
+</tr>
+<tr>
+  <th>No. Observations:</th>      <td>410372</td>      <th>  AIC:               </th>  <td>4.291e+06</td> 
+</tr>
+<tr>
+  <th>Df Residuals:</th>          <td>410360</td>      <th>  BIC:               </th>  <td>4.291e+06</td> 
+</tr>
+<tr>
+  <th>Df Model:</th>              <td>    11</td>      <th>                     </th>      <td> </td>     
+</tr>
+<tr>
+  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>      <td> </td>     
+</tr>
+</table>
+
+<table class="simpletable">
+<tr>
+         <td></td>            <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th> <th>[95.0% Conf. Int.]</th> 
+</tr>
+<tr>
+  <th>Intercept</th>       <td> -331.1032</td> <td>   10.828</td> <td>  -30.577</td> <td> 0.000</td> <td> -352.327  -309.880</td>
+</tr>
+<tr>
+  <th>C(skyc1)[T.CLR]</th> <td>   -4.4041</td> <td>    0.249</td> <td>  -17.662</td> <td> 0.000</td> <td>   -4.893    -3.915</td>
+</tr>
+<tr>
+  <th>C(skyc1)[T.FEW]</th> <td>   -0.7330</td> <td>    0.226</td> <td>   -3.240</td> <td> 0.001</td> <td>   -1.176    -0.290</td>
+</tr>
+<tr>
+  <th>C(skyc1)[T.M]</th>   <td>  -16.4341</td> <td>    8.681</td> <td>   -1.893</td> <td> 0.058</td> <td>  -33.448     0.580</td>
+</tr>
+<tr>
+  <th>C(skyc1)[T.OVC]</th> <td>    0.3818</td> <td>    0.281</td> <td>    1.358</td> <td> 0.174</td> <td>   -0.169     0.933</td>
+</tr>
+<tr>
+  <th>C(skyc1)[T.SCT]</th> <td>    0.8589</td> <td>    0.380</td> <td>    2.260</td> <td> 0.024</td> <td>    0.114     1.604</td>
+</tr>
+<tr>
+  <th>C(skyc1)[T.VV ]</th> <td>    8.8603</td> <td>    0.509</td> <td>   17.414</td> <td> 0.000</td> <td>    7.863     9.858</td>
+</tr>
+<tr>
+  <th>distance</th>        <td>    0.0008</td> <td>    0.000</td> <td>    6.174</td> <td> 0.000</td> <td>    0.001     0.001</td>
+</tr>
+<tr>
+  <th>tmpf</th>            <td>   -0.1841</td> <td>    0.005</td> <td>  -38.390</td> <td> 0.000</td> <td>   -0.193    -0.175</td>
+</tr>
+<tr>
+  <th>relh</th>            <td>    0.1626</td> <td>    0.004</td> <td>   38.268</td> <td> 0.000</td> <td>    0.154     0.171</td>
+</tr>
+<tr>
+  <th>sped</th>            <td>    0.6096</td> <td>    0.018</td> <td>   33.716</td> <td> 0.000</td> <td>    0.574     0.645</td>
+</tr>
+<tr>
+  <th>mslp</th>            <td>    0.3340</td> <td>    0.010</td> <td>   31.960</td> <td> 0.000</td> <td>    0.313     0.354</td>
+</tr>
+</table>
+
+<table class="simpletable">
+<tr>
+  <th>Omnibus:</th>       <td>456713.147</td> <th>  Durbin-Watson:     </th>   <td>   1.872</td>  
+</tr>
+<tr>
+  <th>Prob(Omnibus):</th>   <td> 0.000</td>   <th>  Jarque-Bera (JB):  </th> <td>76162962.824</td>
+</tr>
+<tr>
+  <th>Skew:</th>            <td> 5.535</td>   <th>  Prob(JB):          </th>   <td>    0.00</td>  
+</tr>
+<tr>
+  <th>Kurtosis:</th>        <td>68.816</td>   <th>  Cond. No.          </th>   <td>2.07e+05</td>  
+</tr>
+</table>
+
+<div class="codehilite"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">fittedvalues</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">resid</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">25</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
+</pre></div>
+
+
+<p><img alt="resid" src="images/indexes_resid_fit.png" /></p>
+<p>Those residuals should look like white noise.
+Looks like our linear model isn't flexible enough to model the delays,
+but I think that's enough for now.</p>
+<hr />
+<p>We'll talk more about indexes in the Tidy Data and Reshaping section.
+<a href="http://twitter.com/tomaugspurger">Let me know</a> if you have any feedback.
+Thanks for reading!</p>
+  </div><!-- /.entry-content -->
+</section>
+
+    <footer>
+      <p>&copy; Tom Augspurger </p>
+    </footer>
+  </main>
+
+</body>
+</html>

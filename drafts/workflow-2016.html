@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+          <title>DatasFrame</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="../theme/css/main.css" />
+        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+
+
+
+
+</head>
+
+<body id="index" class="home">
+    <nav>
+      <a href="..">Home | </a>
+      <a href="/archives.html">Archive | </a>
+      <a href="/categories.html">Categories | </a>
+      <a href="/pages/about.html">About | </a>
+      <a href="/feeds/all.rss.xml">RSS</a>
+    </nav>
+
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="../drafts/workflow-2016.html" rel="bookmark"
+         title="Permalink to Workflow 2016">Workflow 2016</a></h2>
+ 
+  </header>
+  <footer class="post-info">
+    <abbr class="published" title="2016-01-24T00:00:00-06:00">
+      Sun 24 January 2016
+    </abbr>
+    <address class="vcard author">
+      By           <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
+    </address>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <p>I'm currently working as a data scientist at a Mittera more or less doing
+consulting for our clients. They bring us their data (and hopefully some idea
+of what they want to actually <a href="data-informed"><em>accomplish</em> with their data</a>.)
+I wanted to write a bit about what my workflow looks like.
+My real motivation though is to hear how others work. This kind of thing is
+difficult to discover, and I always worry that I'm missing out on some trivial
+thing that would make my life better (like <code>cd -</code> to change to the previous
+directory).</p>
+<h1>Tools</h1>
+<p>Probably the least important section, but people seem to care.
+We're using <a href="https://aws.amazon.com/redshift/">Amazon Redshift</a> as our data
+warehouse, a reserved <a href="https://aws.amazon.com/ec2/">EC2</a> instance for compute (
+Unfortunately it's a windows instance, which can cause all kinds of pain), a bunch
+of python, a little R, pandoc / LaTeX and Make.</p>
+<h1>Project Structure</h1>
+<p>All my projects are installable as python modules.
+My template structure currently looks something like</p>
+<div class="codehilite"><pre><span></span>project/
+  README.md
+  Makefile
+  setup.py
+  setup.cfg
+  environment.yml
+  name/
+    lib.py
+    cli.py
+    paths.py
+  data/
+  results/
+  figures/
+  notebooks/
+  writing/
+  docs/
+  tests/
+</pre></div>
+
+
+<p>Some notes on the structure:
+I'm using (Windows' not as capable version of) Make for orchestrating things.
+The <code>environment.yml</code> file is for my <a href="http://conda.pydata.org/docs/">conda</a>
+environment (one project, one environment) Tim Hopper has a <a href="http://stiglerdiet.com/blog/2015/Nov/24/my-python-environment-workflow-with-conda/">nice post</a>
+on his conda workflow.</p>
+<p>Because every project is a real python package, it's pretty easy to put a command
+line interface on things.
+I use <a href="click">click</a>.
+I try to keep <code>cli.py</code> as thin as possible. All the real logic should go in <code>lib.py</code>.
+<code>lib.py</code> is typically broken into smaller pieces if it grows too large.
+A quick aside here: I've recently started using <a href="odo"><code>odo</code></a> more, which grew
+out of the <a href="blaze">blaze</a> project. I've used <code>odo</code> off and on for the past year or so.
+Recently I've learned that <a href="http://odo.readthedocs.org/en/latest/uri.html">URI Strings</a>
+are <em>great</em> for command line interfaces, and you should really use
+<a href="http://odo.readthedocs.org/en/latest/datashape.html#data-types">data types</a> to
+ensure correctness.</p>
+<p><code>paths.py</code> deserves some explanation. In the spirit of DRYness and reproducibility,
+I discover and define all my paths here. For example</p>
+<div class="codehilite"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">argparse</span> <span class="kn">import</span> <span class="n">Namespace</span>
+
+<span class="n">PKG_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span>
+<span class="n">FIG_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PKG_DIR</span><span class="p">,</span> <span class="s2">&quot;figures&quot;</span><span class="p">)</span>
+
+<span class="n">dirs</span> <span class="o">=</span> <span class="n">Namespace</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">PKG_DIR</span><span class="o">=</span><span class="n">PKG_DIR</span><span class="p">,</span> <span class="n">FIG_DIR</span><span class="o">=</span><span class="n">FIG_DIR</span><span class="p">))</span>
+</pre></div>
+
+
+<p>All of these are packaged up in a argparse Namespace, which is imported in the package's
+<code>__init__.py</code> file for easy access.</p>
+<p>I'm a fan of <a href="reproducability">reproducable research</a> (for the laziness reason mostly).</p>
+<h1>Exploring</h1>
+<p>This is split between Jupyter Notebooks, writing code in a text editor (Sublime
+on Windows, vim on my Mac), and copy-<code>%paste</code>ing that code to an IPython terminal (
+did you know you don't need the <code>%</code> sign to invoke the <code>paste</code> magic?).
+I'm still trying to find the best way forward here. The terminal convenient, but too ephemeral.
+My notebooks always get too messy with random cells and non-ordered execution state.
+I need the interactivity to develop the code and explore the data, so going straight to the
+text editor and unit tests is a non-starter.</p>
+<p>Speaking of tests, I include a <code>tests/</code> directory, but it's often empty (shame on me).
+I've really struggled with what and how much to test on these kinds of projects.
+When doing stuff for pandas, testing is paramount.
+This more exploratory, research type work is harder to test well. I'm working on it
+(I suspect that <a href="https://hypothesis.readthedocs.org/en/latest/">Hypothesis</a> could be
+combined with something like <a href="http://engarde.readthedocs.org/en/latest/">engarde</a>
+for defining constraints to generate example data; just a hunch though, haven't built
+anything yet).</p>
+<h1>Modeling</h1>
+<p>This is a vague description for what comes after the exploratory stage (not
+that that ever ends really).
+It's where I fit and persist the model or whatever I'm doing for the project.
+Not too much to say here, except for Scikit-Learn's pipelines are great.</p>
+<h1>Explaining</h1>
+<p>Another vague description that covers many things.
+We'll often provide a PDF writeup of what we did. This is woven together
+with pandoc and LaTeX.
+Sometimes we'll build dashboards or small websites or services.</p>
+<p><a href="https://github.com/gjreda/pydata2015sea/blob/master/data-informed-vs-data-driven-with-notes.pdf">data-informed</a>
+<a href="https://www.youtube.com/watch?v=7B3n-5atLxM">reproducability</a>
+<a href="http://click.pocoo.org/5/">click</a>
+<a href="http://odo.readthedocs.org/en/latest/">odo</a>
+<a href="http://blaze.pydata.org/">blaze</a></p>
+  </div><!-- /.entry-content -->
+</section>
+
+    <footer>
+      <p>&copy; Tom Augspurger </p>
+    </footer>
+  </main>
+
+</body>
+</html>

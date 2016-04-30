@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+          <title>DatasFrame</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="./theme/css/main.css" />
+        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+
+
+
+    <meta name="tags" content="python" />
+    <meta name="tags" content="data science" />
+    <meta name="tags" content="pandas" />
+
+</head>
+
+<body id="index" class="home">
+    <nav>
+      <a href=".">Home | </a>
+      <a href="/archives.html">Archive | </a>
+      <a href="/categories.html">Categories | </a>
+      <a href="/pages/about.html">About | </a>
+      <a href="/feeds/all.rss.xml">RSS</a>
+    </nav>
+
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="./modern-1.html" rel="bookmark"
+         title="Permalink to Modern Pandas (Part 1)">Modern Pandas (Part 1)</a></h2>
+ 
+  </header>
+  <footer class="post-info">
+    <abbr class="published" title="2016-03-21T09:00:00-05:00">
+      Mon 21 March 2016
+    </abbr>
+    <address class="vcard author">
+      By           <a class="url fn" href="./author/tom-augspurger.html">Tom Augspurger</a>
+    </address>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <p>This is part one in a multipart series on writing idiomatic pandas code.</p>
+<ul>
+<li><a href="modern-1.html">Modern Pandas</a> (this post)</li>
+<li><a href="method-chaining.html">Method Chaining</a></li>
+<li>Fast Pandas (forthcoming)</li>
+<li>Indexes and Tidy Data (forthcoming)</li>
+<li>Visualization (forthcoming)</li>
+<li>Larger Data (forthcoming)</li>
+</ul>
+<h1>Prior Art</h1>
+<p>There are many great resources for learning pandas. For beginners, I typically recommend <a href="https://twitter.com/gjreda">Greg Reda's</a> <a href="http://gregreda.com/2013/10/26/intro-to-pandas-data-structures/">3-part introduction</a>, especially if you're familiar with SQL. Of course, there's the pandas <a href="http://pandas.pydata.org/">documentation</a> itself. I gave <a href="https://www.youtube.com/watch?v=otCriSKVV_8">a talk</a> at PyData Seattle targeted as an introduction if you prefer video form. Wes McKinney's <a href="http://shop.oreilly.com/product/0636920023784.do">Python for Data Analysis</a> is still the goto book (and is also a really good introduction to NumPy as well). Jake VanderPlas's <a href="http://shop.oreilly.com/product/0636920034919.do">Python Data Science Handbook</a>, in early release, is great too.</p>
+<p>With all those resources (and many more that I've slighted through omission), why write another? Surely the law of diminishing returns is kicking in by now.
+Still, I thought there was room for a guide that is up to date (as of March 2016) and emphasizes idiomatic pandas code (code that is <em>pandorable</em>).
+This series probably won't be appropriate for people completely new to python
+or NumPy and pandas.
+By luck, this first post happened to cover topics that are relatively introductory,
+so read some of the linked material and come back, or <a href="https://twitter.com/tomaugspurger">let me know</a> if you
+have questions.</p>
+<h1>Get the Data</h1>
+<p>We'll be working with <a href="http://www.transtats.bts.gov/databases.asp?Mode_ID=1&amp;Mode_Desc=Aviation&amp;Subject_ID2=0">flight delay data</a> from the BTS (R users can install Hadley's <a href="https://github.com/hadley/nycflights13">NYCFlights13</a> dataset for similar data)<sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup>.</p>
+<p>You can download the full notebook backing this post <a href="https://gist.github.com/TomAugspurger/83213b5f7b21dbb52002">here</a>.</p>
+<div class="codehilite"><pre><span></span><span class="kn">import</span> <span class="nn">zipfile</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span><span class="c1"># For the blog, I&#39;ve truncated an obscenely long url.</span>
+<span class="c1"># Download the notebook if you&#39;re following along.</span>
+<span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;UserTableName=On_Time...</span>
+
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;http://www.transtats.bts.gov/DownLoad_Table.asp?Table_ID=236&amp;Has_Group=3&amp;Is_Zipped=0&#39;</span><span class="p">,</span>
+                  <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;flights.csv&quot;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">chunk</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+</pre></div>
+
+
+<p>That download returned a ZIP file.
+There's an open <a href="https://github.com/pydata/pandas/pull/12175">Pull Request</a> for automatically decompressing ZIP archives with a single CSV,
+but for now we have to extract it ourselves and then read it in.</p>
+<div class="codehilite"><pre><span></span><span class="n">zf</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="s2">&quot;flights.csv.zip&quot;</span><span class="p">)</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="n">zf</span><span class="o">.</span><span class="n">filelist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">filename</span>
+<span class="n">fp</span> <span class="o">=</span> <span class="n">zf</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="s2">&quot;FL_DATE&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>fl_date</th>
+      <th>unique_carrier</th>
+      <th>airline_id</th>
+      <th>tail_num</th>
+      <th>fl_num</th>
+      <th>origin_airport_id</th>
+      <th>origin_airport_seq_id</th>
+      <th>origin_city_market_id</th>
+      <th>origin</th>
+      <th>origin_city_name</th>
+      <th>...</th>
+      <th>cancelled</th>
+      <th>cancellation_code</th>
+      <th>diverted</th>
+      <th>distance</th>
+      <th>carrier_delay</th>
+      <th>weather_delay</th>
+      <th>nas_delay</th>
+      <th>security_delay</th>
+      <th>late_aircraft_delay</th>
+      <th>unnamed: 36</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2014-01-01</td>
+      <td>AA</td>
+      <td>19805</td>
+      <td>N338AA</td>
+      <td>1</td>
+      <td>12478</td>
+      <td>1247802</td>
+      <td>31703</td>
+      <td>JFK</td>
+      <td>New York, NY</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>2475.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2014-01-01</td>
+      <td>AA</td>
+      <td>19805</td>
+      <td>N339AA</td>
+      <td>2</td>
+      <td>12892</td>
+      <td>1289203</td>
+      <td>32575</td>
+      <td>LAX</td>
+      <td>Los Angeles, CA</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>2475.0</td>
+      <td>111.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2014-01-01</td>
+      <td>AA</td>
+      <td>19805</td>
+      <td>N335AA</td>
+      <td>3</td>
+      <td>12478</td>
+      <td>1247802</td>
+      <td>31703</td>
+      <td>JFK</td>
+      <td>New York, NY</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>2475.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2014-01-01</td>
+      <td>AA</td>
+      <td>19805</td>
+      <td>N367AA</td>
+      <td>5</td>
+      <td>11298</td>
+      <td>1129803</td>
+      <td>30194</td>
+      <td>DFW</td>
+      <td>Dallas/Fort Worth, TX</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>3784.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2014-01-01</td>
+      <td>AA</td>
+      <td>19805</td>
+      <td>N364AA</td>
+      <td>6</td>
+      <td>13830</td>
+      <td>1383002</td>
+      <td>33830</td>
+      <td>OGG</td>
+      <td>Kahului, HI</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>3711.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 37 columns</p>
+</div>
+
+<h2>Indexing</h2>
+<p>Or, <em>explicit is better than implicit</em>.
+By my count, 7 of the top-15 voted pandas questions on <a href="http://stackoverflow.com/questions/tagged/pandas?sort=votes&amp;pageSize=15">Stackoverflow</a> are about indexing. This seems as good a place as any to start.</p>
+<p>By indexing, we mean the selection of subsets of a DataFrame or Series..
+<code>DataFrames</code> (and to a lesser extent, <code>Series</code>) provide a difficult set of challenges.</p>
+<ul>
+<li>Like lists, you can index by location.</li>
+<li>Like dictionaries, you can index by label.</li>
+<li>Like NumPy arrays, you can index by boolean masks.</li>
+<li>Any of these indexers could be scalar indexes, or they could be arrays, or they could be <code>slice</code>s.</li>
+<li>Any of these should work on the index (row labels) or columns of a DataFrame.</li>
+<li>And any of these should work on Hierarchical indexes.</li>
+</ul>
+<p>The complexity of pandas' indexing is a microcosm for the complexity of the pandas API in general.
+There's a reason for the complexity (well, most of it), but that's not <em>much</em> consolation while you're learning.
+Still, all of these ways of indexing really are useful enough to justify their inclusion in the library.</p>
+<p>Brief history lesson: although it's fallen out of favor now (see below), for years the preferred method for row and/or column selection was <code>.ix</code>. Let's slice the 10th-15th rows and the first two columns.</p>
+<div class="codehilite"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">]]</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>fl_date</th>
+      <th>tail_num</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>10</th>
+      <td>2014-01-01</td>
+      <td>N3LGAA</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>2014-01-01</td>
+      <td>N368AA</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>2014-01-01</td>
+      <td>N3DDAA</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>2014-01-01</td>
+      <td>N332AA</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>2014-01-01</td>
+      <td>N327AA</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>2014-01-01</td>
+      <td>N3LBAA</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>However this simple little operation hides some complexity. What if, rather than our default <code>range(n)</code> index, we had an integer index like</p>
+<div class="codehilite"><pre><span></span><span class="n">first</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;airline_id&#39;</span><span class="p">)[[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;unique_carrier&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+<span class="n">first</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>fl_date</th>
+      <th>unique_carrier</th>
+    </tr>
+    <tr>
+      <th>airline_id</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>19393</th>
+      <td>2014-01-01</td>
+      <td>WN</td>
+    </tr>
+    <tr>
+      <th>19690</th>
+      <td>2014-01-01</td>
+      <td>HA</td>
+    </tr>
+    <tr>
+      <th>19790</th>
+      <td>2014-01-01</td>
+      <td>DL</td>
+    </tr>
+    <tr>
+      <th>19805</th>
+      <td>2014-01-01</td>
+      <td>AA</td>
+    </tr>
+    <tr>
+      <th>19930</th>
+      <td>2014-01-01</td>
+      <td>AS</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Can you predict ahead of time what our slice from above will give when passed to <code>.ix</code>?</p>
+<div class="codehilite"><pre><span></span><span class="n">first</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">]]</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>fl_date</th>
+      <th>tail_num</th>
+    </tr>
+    <tr>
+      <th>airline_id</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+</div>
+
+<p>Surprise, an empty DataFrame! Which in data analysis is rarely a good thing. What happened?</p>
+<p>We had an integer index, so the call to <code>.ix</code> used its label-based mode. It was looking for integer <em>labels</em> between 10:15 (inclusive). It didn't find any. Since we sliced a range it returned an empty DataFrame, rather than raising a KeyError.</p>
+<p>By way of contrast, suppose we had a string index, rather than integers.</p>
+<div class="codehilite"><pre><span></span><span class="n">first</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;unique_carrier&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+<span class="n">first</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">]]</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>fl_date</th>
+      <th>tail_num</th>
+    </tr>
+    <tr>
+      <th>unique_carrier</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>UA</th>
+      <td>2014-01-01</td>
+      <td>N14214</td>
+    </tr>
+    <tr>
+      <th>US</th>
+      <td>2014-01-01</td>
+      <td>N650AW</td>
+    </tr>
+    <tr>
+      <th>VX</th>
+      <td>2014-01-01</td>
+      <td>N637VA</td>
+    </tr>
+    <tr>
+      <th>WN</th>
+      <td>2014-01-01</td>
+      <td>N412WN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>And it works again! Now that we had a string index, <code>.ix</code> used its positional-mode. It looked for <em>rows</em> 10-15 (exclusive on the right).</p>
+<p>But you can't reliably predict what the outcome of the slice will be ahead of time. It's on the <em>reader</em> of the code (probably your future self) to know the dtypes so you can reckon whether <code>.ix</code> will use label indexing (returning the empty DataFrame) or positional indexing (like the last example).
+In general, methods whose behavior depends on the data, like <code>.ix</code> dispatching to label-based indexing on integer Indexes but location-based indexing on non-integer, are hard to use correctly. We've been trying to stamp them out in pandas.</p>
+<p>Since pandas 0.12, these tasks have been cleanly separated into two methods:</p>
+<ol>
+<li><code>.loc</code> for label-based indexing</li>
+<li><code>.iloc</code> for positional indexing</li>
+</ol>
+<div class="codehilite"><pre><span></span><span class="n">first</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s1">&#39;AA&#39;</span><span class="p">,</span> <span class="s1">&#39;AS&#39;</span><span class="p">,</span> <span class="s1">&#39;DL&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">]]</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>fl_date</th>
+      <th>tail_num</th>
+    </tr>
+    <tr>
+      <th>unique_carrier</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>AA</th>
+      <td>2014-01-01</td>
+      <td>N338AA</td>
+    </tr>
+    <tr>
+      <th>AS</th>
+      <td>2014-01-01</td>
+      <td>N524AS</td>
+    </tr>
+    <tr>
+      <th>DL</th>
+      <td>2014-01-01</td>
+      <td>N911DL</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="codehilite"><pre><span></span><span class="n">first</span><span class="o">.</span><span class="n">iloc</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>fl_date</th>
+      <th>airline_id</th>
+    </tr>
+    <tr>
+      <th>unique_carrier</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>AA</th>
+      <td>2014-01-01</td>
+      <td>19805</td>
+    </tr>
+    <tr>
+      <th>AS</th>
+      <td>2014-01-01</td>
+      <td>19930</td>
+    </tr>
+    <tr>
+      <th>DL</th>
+      <td>2014-01-01</td>
+      <td>19790</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p><code>.ix</code> is still around, and isn't being deprecated any time soon. Occasionally it's useful. But if you've been using <code>.ix</code> out of habit, or if you didn't know any better, maybe give <code>.loc</code> and <code>.iloc</code> a shot. For the intrepid reader, Joris Van den Bossche (a core pandas dev) <a href="https://github.com/pydata/pandas/issues/9595">compiled a great overview</a> of the pandas <code>__getitem__</code> API.
+A later post in this series will go into more detail on using Indexes effectively;
+they are useful objects in their own right, but for now we'll move on to a closely related topic.</p>
+<h2>SettingWithCopy</h2>
+<p>Pandas used to get <em>a lot</em> of questions about assignments seemingly not working. We'll take <a href="http://stackoverflow.com/q/16553298/1889400">this StackOverflow</a> question as a representative question.</p>
+<div class="codehilite"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="s1">&#39;b&#39;</span><span class="p">:[</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">40</span><span class="p">,</span><span class="mi">50</span><span class="p">]})</span>
+<span class="n">f</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>a</th>
+      <th>b</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>30</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>40</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>50</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>The user wanted to take the rows of <code>b</code> where <code>a</code> was 3 or less, and set them equal to <code>b / 10</code>
+We'll simply use boolean indexing to select those rows <code>f['a'] &lt;= 3</code>,</p>
+<div class="codehilite"><pre><span></span><span class="c1"># ignore the context manager for now</span>
+<span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">option_context</span><span class="p">(</span><span class="s1">&#39;mode.chained_assignment&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="n">f</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">3</span> <span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">10</span>
+<span class="n">f</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>a</th>
+      <th>b</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>30</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>40</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>50</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>And nothing happened. Well, something did happen, but nobody witnessed it. If an object without any references is modified, does it make a sound?</p>
+<p>The warning I silenced above with the context manager links to <a href="http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy">an explanation</a> that's quite helpful. I'll summarize the high points here.</p>
+<p>The "failure" to update <code>f</code> comes down to what's called <em>chained indexing</em>, a practice to be avoided.
+The "chained" comes from indexing multiple times, one after another, rather than one single indexing operation.
+Above we had two operations on the left-hand side, one <code>__getitem__</code> and one <code>__setitem__</code> (in python, the square brackets are syntactic sugar for <code>__getitem__</code> or <code>__setitem__</code> if it's for assignment). So <code>f[f['a'] &lt;= 3]['b']</code> becomes</p>
+<ol>
+<li><code>getitem</code>: <code>f[f['a'] &lt;= 3]</code></li>
+<li><code>setitem</code>: <code>_['b'] = ...</code>  # using <code>_</code> to represent the result of 1.</li>
+</ol>
+<p>In general, pandas can't guarantee whether that first <code>__getitem__</code> returns a view or a copy of the underlying data<sup id="fnref:2"><a class="footnote-ref" href="#fn:2" rel="footnote">2</a></sup>.
+The changes <em>will</em> be made to the thing I called <code>_</code> above, the result of the <code>__getitem__</code> in <code>1.</code>.
+But we don't know that <code>_</code> shares the same memory as our original <code>f</code>.
+And so we can't be sure that whatever changes are being made to <code>_</code> will be reflected in <code>f</code>.</p>
+<p>Done properly, you would write</p>
+<div class="codehilite"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">10</span>
+<span class="n">f</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>a</th>
+      <th>b</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>40.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>50.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Now this is all in a single call to <code>__setitem__</code> and pandas can ensure that the assignment happens properly.</p>
+<p>The rough rule is any time you see back-to-back square brackets, <code>][</code>, you're in asking for trouble. Replace that with a <code>.loc[..., ...]</code> and you'll be set.</p>
+<p>The other bit of advice is that a SettingWithCopy warning is raised when the <em>assignment</em> is made.
+The potential copy could be made earlier in your code.</p>
+<h2>Multidimensional Indexing</h2>
+<p>MultiIndexes might just be my favorite feature of pandas.
+They let you represent higher-dimensional datasets in a familiar two-dimensional table, which my brain can sometimes handle.
+Each additional level of the MultiIndex represents another dimension.
+The cost of this is somewhat harder label indexing.</p>
+<p>My very first bug report to pandas, back in <a href="https://github.com/pydata/pandas/issues/2207">November 2012</a>,
+was about indexing into a MultiIndex.
+I bring it up now because I genuinely couldn't tell whether the result I got was a bug or not.
+Also, from that bug report</p>
+<blockquote>
+<p>Sorry if this isn't actually a bug. Still very new to python. Thanks!</p>
+</blockquote>
+<p>Adorable.</p>
+<p>That operation was made much easier by <a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/whatsnew.html#multiindexing-using-slicers">this</a> addition in 2014, which lets you slice arbitrary levels of a MultiIndex..
+Let's make a MultiIndexed DataFrame to work with.</p>
+<div class="codehilite"><pre><span></span><span class="n">hdf</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;unique_carrier&#39;</span><span class="p">,</span> <span class="s1">&#39;origin&#39;</span><span class="p">,</span> <span class="s1">&#39;dest&#39;</span><span class="p">,</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">,</span> <span class="s1">&#39;fl_date&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+<span class="n">hdf</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th>airline_id</th>
+      <th>fl_num</th>
+      <th>origin_airport_id</th>
+      <th>origin_airport_seq_id</th>
+      <th>origin_city_market_id</th>
+      <th>origin_city_name</th>
+      <th>origin_state_nm</th>
+      <th>dest_airport_id</th>
+      <th>dest_airport_seq_id</th>
+      <th>dest_city_market_id</th>
+      <th>...</th>
+      <th>cancelled</th>
+      <th>cancellation_code</th>
+      <th>diverted</th>
+      <th>distance</th>
+      <th>carrier_delay</th>
+      <th>weather_delay</th>
+      <th>nas_delay</th>
+      <th>security_delay</th>
+      <th>late_aircraft_delay</th>
+      <th>unnamed: 36</th>
+    </tr>
+    <tr>
+      <th>unique_carrier</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>tail_num</th>
+      <th>fl_date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">AA</th>
+      <th rowspan="5" valign="top">ABQ</th>
+      <th rowspan="5" valign="top">DFW</th>
+      <th rowspan="2" valign="top">N200AA</th>
+      <th>2014-01-06</th>
+      <td>19805</td>
+      <td>1662</td>
+      <td>10140</td>
+      <td>1014002</td>
+      <td>30140</td>
+      <td>Albuquerque, NM</td>
+      <td>New Mexico</td>
+      <td>11298</td>
+      <td>1129803</td>
+      <td>30194</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>569.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>52.0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2014-01-27</th>
+      <td>19805</td>
+      <td>1090</td>
+      <td>10140</td>
+      <td>1014002</td>
+      <td>30140</td>
+      <td>Albuquerque, NM</td>
+      <td>New Mexico</td>
+      <td>11298</td>
+      <td>1129803</td>
+      <td>30194</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>569.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>N202AA</th>
+      <th>2014-01-27</th>
+      <td>19805</td>
+      <td>1332</td>
+      <td>10140</td>
+      <td>1014002</td>
+      <td>30140</td>
+      <td>Albuquerque, NM</td>
+      <td>New Mexico</td>
+      <td>11298</td>
+      <td>1129803</td>
+      <td>30194</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>569.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">N426AA</th>
+      <th>2014-01-09</th>
+      <td>19805</td>
+      <td>1662</td>
+      <td>10140</td>
+      <td>1014002</td>
+      <td>30140</td>
+      <td>Albuquerque, NM</td>
+      <td>New Mexico</td>
+      <td>11298</td>
+      <td>1129803</td>
+      <td>30194</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>569.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2014-01-15</th>
+      <td>19805</td>
+      <td>1467</td>
+      <td>10140</td>
+      <td>1014002</td>
+      <td>30140</td>
+      <td>Albuquerque, NM</td>
+      <td>New Mexico</td>
+      <td>11298</td>
+      <td>1129803</td>
+      <td>30194</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>569.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 32 columns</p>
+</div>
+
+<p>And just to clear up some terminology, the <em>levels</em> of a MultiIndex are the
+former column names (<code>unique_carrier</code>, <code>origin</code>...).
+The labels are the actual values in a level, (<code>'AA'</code>, <code>'ABQ'</code>, ...).
+Levels can be referred to by name or position, with 0 being the outermost level.</p>
+<p>Slicing the outermost index level is pretty easy, we just use our regular <code>.loc[row_indexer, column_indexer]</code>. We'll select the columns <code>dep_time</code> and <code>dep_delay</code> where the carrier was American Airlines, Delta, or US Airways.</p>
+<div class="codehilite"><pre><span></span><span class="n">hdf</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s1">&#39;AA&#39;</span><span class="p">,</span> <span class="s1">&#39;DL&#39;</span><span class="p">,</span> <span class="s1">&#39;US&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;dep_time&#39;</span><span class="p">,</span> <span class="s1">&#39;dep_delay&#39;</span><span class="p">]]</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+    </tr>
+    <tr>
+      <th>unique_carrier</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>tail_num</th>
+      <th>fl_date</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">AA</th>
+      <th rowspan="5" valign="top">ABQ</th>
+      <th rowspan="5" valign="top">DFW</th>
+      <th rowspan="2" valign="top">N200AA</th>
+      <th>2014-01-06</th>
+      <td>1246.0</td>
+      <td>71.0</td>
+    </tr>
+    <tr>
+      <th>2014-01-27</th>
+      <td>605.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>N202AA</th>
+      <th>2014-01-27</th>
+      <td>822.0</td>
+      <td>-13.0</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">N426AA</th>
+      <th>2014-01-09</th>
+      <td>1135.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2014-01-15</th>
+      <td>1022.0</td>
+      <td>-8.0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <th>...</th>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">US</th>
+      <th rowspan="5" valign="top">TUS</th>
+      <th rowspan="5" valign="top">PHX</th>
+      <th rowspan="2" valign="top">N824AW</th>
+      <th>2014-01-16</th>
+      <td>1900.0</td>
+      <td>-10.0</td>
+    </tr>
+    <tr>
+      <th>2014-01-20</th>
+      <td>1903.0</td>
+      <td>-7.0</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">N836AW</th>
+      <th>2014-01-08</th>
+      <td>1928.0</td>
+      <td>18.0</td>
+    </tr>
+    <tr>
+      <th>2014-01-29</th>
+      <td>1908.0</td>
+      <td>-2.0</td>
+    </tr>
+    <tr>
+      <th>N837AW</th>
+      <th>2014-01-10</th>
+      <td>1902.0</td>
+      <td>-8.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>139194 rows × 2 columns</p>
+</div>
+
+<p>So far, so good. What if you wanted to select the rows whose origin was Chicago O'Hare (<code>ORD</code>) or Des Moines International Airport<sup id="fnref:3"><a class="footnote-ref" href="#fn:3" rel="footnote">3</a></sup> (DSM).
+Well, <code>.loc</code> wants <code>[row_indexer, column_indexer]</code> so let's wrap our the two elements of our row indexer (the list of carriers and the list of origins) in a tuple to make it a single unit:</p>
+<div class="codehilite"><pre><span></span><span class="n">hdf</span><span class="o">.</span><span class="n">loc</span><span class="p">[([</span><span class="s1">&#39;AA&#39;</span><span class="p">,</span> <span class="s1">&#39;DL&#39;</span><span class="p">,</span> <span class="s1">&#39;US&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;ORD&#39;</span><span class="p">,</span> <span class="s1">&#39;DSM&#39;</span><span class="p">]),</span> <span class="p">[</span><span class="s1">&#39;dep_time&#39;</span><span class="p">,</span> <span class="s1">&#39;dep_delay&#39;</span><span class="p">]]</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+    </tr>
+    <tr>
+      <th>unique_carrier</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>tail_num</th>
+      <th>fl_date</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">AA</th>
+      <th rowspan="5" valign="top">DSM</th>
+      <th rowspan="5" valign="top">DFW</th>
+      <th rowspan="2" valign="top">N200AA</th>
+      <th>2014-01-12</th>
+      <td>603.0</td>
+      <td>-7.0</td>
+    </tr>
+    <tr>
+      <th>2014-01-17</th>
+      <td>751.0</td>
+      <td>101.0</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">N424AA</th>
+      <th>2014-01-10</th>
+      <td>1759.0</td>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>2014-01-15</th>
+      <td>1818.0</td>
+      <td>18.0</td>
+    </tr>
+    <tr>
+      <th>N426AA</th>
+      <th>2014-01-07</th>
+      <td>1835.0</td>
+      <td>35.0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <th>...</th>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">US</th>
+      <th rowspan="5" valign="top">ORD</th>
+      <th rowspan="5" valign="top">PHX</th>
+      <th>N806AW</th>
+      <th>2014-01-26</th>
+      <td>1406.0</td>
+      <td>-4.0</td>
+    </tr>
+    <tr>
+      <th>N830AW</th>
+      <th>2014-01-28</th>
+      <td>1401.0</td>
+      <td>-9.0</td>
+    </tr>
+    <tr>
+      <th>N833AW</th>
+      <th>2014-01-10</th>
+      <td>1500.0</td>
+      <td>50.0</td>
+    </tr>
+    <tr>
+      <th>N837AW</th>
+      <th>2014-01-19</th>
+      <td>1408.0</td>
+      <td>-2.0</td>
+    </tr>
+    <tr>
+      <th>N839AW</th>
+      <th>2014-01-14</th>
+      <td>1406.0</td>
+      <td>-4.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>5205 rows × 2 columns</p>
+</div>
+
+<p>Now try to do any flight from ORD or DSM, not just from those carriers.
+This used to be a pain.
+You might have to turn to the <code>.xs</code> method, or pass in <code>df.index.get_level_values(0)</code> and zip that up with the indexers your wanted, or maybe reset the index and do a boolean mask, and set the index again... ugh.</p>
+<p>But now, you can use an <code>IndexSlice</code>.</p>
+<div class="codehilite"><pre><span></span><span class="n">hdf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;ORD&#39;</span><span class="p">,</span> <span class="s1">&#39;DSM&#39;</span><span class="p">]],</span> <span class="p">[</span><span class="s1">&#39;dep_time&#39;</span><span class="p">,</span> <span class="s1">&#39;dep_delay&#39;</span><span class="p">]]</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+    </tr>
+    <tr>
+      <th>unique_carrier</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>tail_num</th>
+      <th>fl_date</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">AA</th>
+      <th rowspan="5" valign="top">DSM</th>
+      <th rowspan="5" valign="top">DFW</th>
+      <th rowspan="2" valign="top">N200AA</th>
+      <th>2014-01-12</th>
+      <td>603.0</td>
+      <td>-7.0</td>
+    </tr>
+    <tr>
+      <th>2014-01-17</th>
+      <td>751.0</td>
+      <td>101.0</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">N424AA</th>
+      <th>2014-01-10</th>
+      <td>1759.0</td>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>2014-01-15</th>
+      <td>1818.0</td>
+      <td>18.0</td>
+    </tr>
+    <tr>
+      <th>N426AA</th>
+      <th>2014-01-07</th>
+      <td>1835.0</td>
+      <td>35.0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <th>...</th>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">WN</th>
+      <th rowspan="5" valign="top">DSM</th>
+      <th rowspan="5" valign="top">MDW</th>
+      <th>N941WN</th>
+      <th>2014-01-17</th>
+      <td>1759.0</td>
+      <td>14.0</td>
+    </tr>
+    <tr>
+      <th>N943WN</th>
+      <th>2014-01-10</th>
+      <td>2229.0</td>
+      <td>284.0</td>
+    </tr>
+    <tr>
+      <th>N963WN</th>
+      <th>2014-01-22</th>
+      <td>656.0</td>
+      <td>-4.0</td>
+    </tr>
+    <tr>
+      <th>N967WN</th>
+      <th>2014-01-30</th>
+      <td>654.0</td>
+      <td>-6.0</td>
+    </tr>
+    <tr>
+      <th>N969WN</th>
+      <th>2014-01-19</th>
+      <td>1747.0</td>
+      <td>2.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>22380 rows × 2 columns</p>
+</div>
+
+<p>The <code>:</code> says include every label in this level.
+The <code>IndexSlice</code> object is just sugar for the actual python <code>slice</code> object needed to remove slice each level.</p>
+<div class="codehilite"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;ORD&#39;</span><span class="p">,</span> <span class="s1">&#39;DSM&#39;</span><span class="p">]]</span>
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span>(slice(None, None, None), [&#39;ORD&#39;, &#39;DSM&#39;])
+</pre></div>
+
+
+<p>We use <code>IndexSlice</code> since <code>hdf.loc[(:, ['ORD', 'DSM'])]</code> isn't valid python syntax.
+Now we can slice to our heart's content; all flights from O'Hare to Des Moines in the first half of January? Sure, why not?</p>
+<div class="codehilite"><pre><span></span><span class="n">hdf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[:,</span> <span class="s1">&#39;ORD&#39;</span><span class="p">,</span> <span class="s1">&#39;DSM&#39;</span><span class="p">,</span> <span class="p">:,</span> <span class="s1">&#39;2014-01-01&#39;</span><span class="p">:</span><span class="s1">&#39;2014-01-15&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="s1">&#39;dep_time&#39;</span><span class="p">,</span> <span class="s1">&#39;dep_delay&#39;</span><span class="p">,</span> <span class="s1">&#39;arr_time&#39;</span><span class="p">,</span> <span class="s1">&#39;arr_delay&#39;</span><span class="p">]]</span>
+</pre></div>
+
+
+<div>
+<table border="0" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th>dep_time</th>
+      <th>dep_delay</th>
+      <th>arr_time</th>
+      <th>arr_delay</th>
+    </tr>
+    <tr>
+      <th>unique_carrier</th>
+      <th>origin</th>
+      <th>dest</th>
+      <th>tail_num</th>
+      <th>fl_date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">EV</th>
+      <th rowspan="5" valign="top">ORD</th>
+      <th rowspan="5" valign="top">DSM</th>
+      <th>NaN</th>
+      <th>2014-01-07</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>N11121</th>
+      <th>2014-01-05</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>N11181</th>
+      <th>2014-01-12</th>
+      <td>1514.0</td>
+      <td>6.0</td>
+      <td>1625.0</td>
+      <td>-2.0</td>
+    </tr>
+    <tr>
+      <th>N11536</th>
+      <th>2014-01-10</th>
+      <td>1723.0</td>
+      <td>4.0</td>
+      <td>1853.0</td>
+      <td>19.0</td>
+    </tr>
+    <tr>
+      <th>N11539</th>
+      <th>2014-01-01</th>
+      <td>1127.0</td>
+      <td>127.0</td>
+      <td>1304.0</td>
+      <td>149.0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <th>...</th>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">UA</th>
+      <th rowspan="5" valign="top">ORD</th>
+      <th rowspan="5" valign="top">DSM</th>
+      <th>N24212</th>
+      <th>2014-01-09</th>
+      <td>2023.0</td>
+      <td>8.0</td>
+      <td>2158.0</td>
+      <td>34.0</td>
+    </tr>
+    <tr>
+      <th>N73256</th>
+      <th>2014-01-15</th>
+      <td>2019.0</td>
+      <td>4.0</td>
+      <td>2127.0</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">N78285</th>
+      <th>2014-01-07</th>
+      <td>2020.0</td>
+      <td>5.0</td>
+      <td>2136.0</td>
+      <td>12.0</td>
+    </tr>
+    <tr>
+      <th>2014-01-13</th>
+      <td>2014.0</td>
+      <td>-1.0</td>
+      <td>2114.0</td>
+      <td>-10.0</td>
+    </tr>
+    <tr>
+      <th>N841UA</th>
+      <th>2014-01-11</th>
+      <td>1825.0</td>
+      <td>20.0</td>
+      <td>1939.0</td>
+      <td>19.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>153 rows × 4 columns</p>
+</div>
+
+<p>We'll talk more about working with Indexes (including MultiIndexes) in a later post. I have an unproven thesis that they're underused because <code>IndexSlice</code> is underused, causing people to think they're more unwieldy than they actually are. But let's close out part one.</p>
+<h1>WrapUp</h1>
+<p>This first post covered Indexing, a topic that's central to pandas.
+The power provided by the DataFrame comes with some unavoidable complexities.
+Best practices (using <code>.loc</code> and <code>.iloc</code>) will spare you many a headache.
+We then toured a couple of commonly misunderstood sub-topics, setting with copy and Hierarchical Indexing.</p>
+<p>The <a href="method-chaining.html">next section</a> takes a look at using method chaining to write readable code.</p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Protip: In the chrome dev-tools go to the Network tab, right-click the request and "Copy as cURL". Paste that into http://curl.trillworks.com/ to get the request code.&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p>Shoutout to Nick Eubank who, recognizing that this is a common pain-point for newcomers worked on a <a href="https://github.com/pydata/pandas/pull/12036">branch</a> implementing Copy on Write for DataFrames. This was a huge task given the underlying challenges. I hope that this section of the series becomes outdated faster than the rest. There's a chance that a significant refactor to the pandas internals will make this issue obsolete.&#160;<a class="footnote-backref" href="#fnref:2" rev="footnote" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:3">
+<p>Yes, International. It's not all cornfields out here.&#160;<a class="footnote-backref" href="#fnref:3" rev="footnote" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+  </div><!-- /.entry-content -->
+</section>
+
+    <footer>
+      <p>&copy; Tom Augspurger </p>
+    </footer>
+  </main>
+
+</body>
+</html>
