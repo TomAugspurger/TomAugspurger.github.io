@@ -12,6 +12,7 @@
     <meta name="tags" content="python" />
     <meta name="tags" content="data science" />
     <meta name="tags" content="pandas" />
+    <meta name="tags" content="modern" />
 
 </head>
 
@@ -21,7 +22,7 @@
       <a href="/archives.html">Archive | </a>
       <a href="/categories.html">Categories | </a>
       <a href="/pages/about.html">About | </a>
-      <a href="/feeds/all.rss.xml">RSS</a>
+      <a href="https://tomaugspurger.github.io/feeds/all.rss.xml">RSS</a>
     </nav>
 
 <section id="content" class="body">
@@ -42,15 +43,18 @@
   <div class="entry-content">
     <p>This is part one in a multipart series on writing idiomatic pandas code.</p>
 <ul>
-<li><a href="modern-1.html">Modern Pandas</a> (this post)</li>
+<li><a href="modern-1.html">Modern Pandas</a></li>
 <li><a href="method-chaining.html">Method Chaining</a></li>
-<li>Fast Pandas (forthcoming)</li>
-<li>Indexes and Tidy Data (forthcoming)</li>
-<li>Visualization (forthcoming)</li>
-<li>Larger Data (forthcoming)</li>
+<li><a href="modern-3-indexes.html">Indexes</a></li>
+<li><a href="modern-4-performance.html">Fast Pandas</a></li>
+<li><a href="modern-5-tidy.html">Tidy Data</a></li>
+<li><a href="modern-6-visualization.html">Visualization</a></li>
+<li><a href="modern-7-timeseries.html">Time Series</a></li>
 </ul>
+<p><a href="http://nbviewer.jupyter.org/gist/TomAugspurger/2457b5debf072ac0318d3d14e63145d5">This post is available as a Jupyter notebook</a></p>
 <h1>Prior Art</h1>
-<p>There are many great resources for learning pandas. For beginners, I typically recommend <a href="https://twitter.com/gjreda">Greg Reda's</a> <a href="http://gregreda.com/2013/10/26/intro-to-pandas-data-structures/">3-part introduction</a>, especially if you're familiar with SQL. Of course, there's the pandas <a href="http://pandas.pydata.org/">documentation</a> itself. I gave <a href="https://www.youtube.com/watch?v=otCriSKVV_8">a talk</a> at PyData Seattle targeted as an introduction if you prefer video form. Wes McKinney's <a href="http://shop.oreilly.com/product/0636920023784.do">Python for Data Analysis</a> is still the goto book (and is also a really good introduction to NumPy as well). Jake VanderPlas's <a href="http://shop.oreilly.com/product/0636920034919.do">Python Data Science Handbook</a>, in early release, is great too.</p>
+<p>There are many great resources for learning pandas. For beginners, I typically recommend <a href="https://twitter.com/gjreda">Greg Reda's</a> <a href="http://gregreda.com/2013/10/26/intro-to-pandas-data-structures/">3-part introduction</a>, especially if you're familiar with SQL. Of course, there's the pandas <a href="http://pandas.pydata.org/">documentation</a> itself. I gave <a href="https://www.youtube.com/watch?v=otCriSKVV_8">a talk</a> at PyData Seattle targeted as an introduction if you prefer video form. Wes McKinney's <a href="http://shop.oreilly.com/product/0636920023784.do">Python for Data Analysis</a> is still the goto book (and is also a really good introduction to NumPy as well). Jake VanderPlas's <a href="http://shop.oreilly.com/product/0636920034919.do">Python Data Science Handbook</a>, in early release, is great too.
+Kevin Markham has a <a href="http://www.dataschool.io/easier-data-analysis-with-pandas/">video series</a> for beginners learning pandas.</p>
 <p>With all those resources (and many more that I've slighted through omission), why write another? Surely the law of diminishing returns is kicking in by now.
 Still, I thought there was room for a guide that is up to date (as of March 2016) and emphasizes idiomatic pandas code (code that is <em>pandorable</em>).
 This series probably won't be appropriate for people completely new to python

@@ -22,7 +22,7 @@
       <a href="/archives.html">Archive | </a>
       <a href="/categories.html">Categories | </a>
       <a href="/pages/about.html">About | </a>
-      <a href="/feeds/all.rss.xml">RSS</a>
+      <a href="https://tomaugspurger.github.io/feeds/all.rss.xml">RSS</a>
     </nav>
 
 <section id="content" class="body">
@@ -49,10 +49,10 @@
 <li><a href="modern-3-indexes.html">Indexes</a></li>
 <li><a href="modern-4-performance.html">Fast Pandas</a></li>
 <li><a href="modern-5-tidy.html">Tidy Data</a></li>
-<li><a href="modern-6-visualization.html">Visualization</a> (this post)</li>
-<li>Larger Data (forthcoming)</li>
+<li><a href="modern-6-visualization.html">Visualization</a></li>
+<li><a href="modern-7-timeseries.html">Time Series</a></li>
 </ul>
-<p><a href="http://nbviewer.jupyter.org/gist/TomAugspurger/1dc8c1a2469cef04a7d8feb5c1d5a3a8">This post is available as a Jupyter notebook</a></p>
+<p><a href="http://nbviewer.jupyter.org/gist/TomAugspurger/cd5197cef13d6103aba01abb4569d266">This post is available as a Jupyter notebook</a></p>
 <hr />
 <p>A few weeks ago, the R community went through some hand-wringing about plotting packages.
 For outsiders (like me) the details aren't that important, but some brief background might be useful so we can transfer the takeaways to Python.
@@ -68,23 +68,24 @@ For those interested in more details, start with</p>
 <li>Either system is capable of producing anything the other can</li>
 <li>ggplot2 is usually better for exploratory analysis</li>
 </ol>
-<p>Item 2 is not universally agreed upon, and it certainly isn't true for every type of chart, but I'm going to use it as fact for now.</p>
-<p>I'm not foolish enough to attempt a formal analogy here, like "matplotlib is python's base R".
+<p>Item 2 is not universally agreed upon, and it certainly isn't true for every type of chart, but we'll take it as fact for now.
+I'm not foolish enough to attempt a formal analogy here, like "matplotlib is python's base R".
 But there's at least a rough comparison:
-like ggplot2, the combination of pandas and seaborn allows for fast iteration and exploration.
+like dplyr/tidyr and ggplot2, the combination of pandas and seaborn allows for fast iteration and exploration.
 When you need to, you can "drop down" into matplotlib for further refinement.</p>
 <h1>Overview</h1>
 <p>Here's a brief sketch of the plotting landscape as of April 2016.
 For some reason, plotting tools feel a bit more personal than other parts of this series so far, so I feel the need to blanket this who discussion in a caveat: this is my personal take, shaped by my personal background and tastes.
+Also, I'm not at all an expert on visualization, just a consumer.
+For real advice, you should <a href="http://twitter.com/mbostock">listen</a> to the <a href="https://twitter.com/oceankidbilly">experts</a> in this <a href="https://twitter.com/arnicas">area</a>.
 Take this all with an extra grain or two of salt.</p>
 <h2><a href="http://matplotlib.org/">Matplotlib</a></h2>
 <p>Matplotlib is an amazing project, and is the foundation of pandas' built-in plotting and Seaborn.
-It handles everything from the integration with various drawing backends, to several APIs from drawing charts to adding and transforming individual glyphs (artists).
+It handles everything from the integration with various drawing backends, to several APIs handling drawing charts or adding and transforming individual glyphs (artists).
 I've found knowing the <a href="http://matplotlib.org/api/pyplot_api.html">pyplot API</a> useful.
-You're less likely to need things like <a href="http://matplotlib.org/users/transforms_tutorial.html">Transforms</a> or <a href="http://matplotlib.org/api/artist_api.html">artists</a>, but when you do the documentation is there.
-I'll typically start with a pandas or seaborn plot, and then make adjustments with the pyplot API.
-It's built up something of a bad reputation for being verbose.
-I think that complaint is partially valid, but also misplaced.
+You're less likely to need things like <a href="http://matplotlib.org/users/transforms_tutorial.html">Transforms</a> or <a href="http://matplotlib.org/api/artist_api.html">artists</a>, but when you do the documentation is there.</p>
+<p>Matplotlib has built up something of a bad reputation for being verbose.
+I think that complaint is valid, but misplaced.
 Matplotlib lets you control essentially anything on the figure.
 An overly-verbose API just means there's an opportunity for a higher-level, domain specific, package to exist (like seaborn for statistical graphics).</p>
 <h2><a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/visualization.html">Pandas' builtin-plotting</a></h2>
@@ -104,22 +105,23 @@ More recently they introduced a Charts API, for producing canned charts from dat
 <h2>Other Libraries</h2>
 <p>This is a (probably incomplete) list of other visualization libraries that I don't know enough about to comment on</p>
 <ul>
+<li><a href="https://plot.ly/python/">Ploty</a></li>
 <li><a href="http://lightning-viz.org/">Lightning</a></li>
 <li><a href="http://holoviews.org/">HoloViews</a></li>
 <li><a href="http://www.glueviz.org/en/stable/">Glueviz</a></li>
 <li><a href="http://vispy.org/">vispy</a></li>
 <li><a href="https://github.com/bloomberg/bqplot">bqplot</a></li>
 </ul>
-<p>It's also possible to use Javascript tools like d3 directly in the Jupyter notebook, but we won't go into those today.</p>
+<p>It's also possible to use Javascript tools like D3 directly in the Jupyter notebook, but we won't go into those today.</p>
 <h1>Examples</h1>
 <p>I do want to pause and explain the type of work I'm doing with these packages.
 The vast majority of plots I create are for exploratory analysis, helping me understand the dataset I'm working with.
 They aren't intended for the client (whoever that is) to see.
 Occasionally that exploratory plot will evolve towards a final product that will be used to explain things to the client.
-In this case I'll either polish the exploratory plot, or rewrite it in another system more suitable for the final product (in d3, say, if it needs to be an interactive document in the browser).</p>
-<p>Not that we have a feel for the overall landscape (from my point of view), let's delve into a few examples.
+In this case I'll either polish the exploratory plot, or rewrite it in another system more suitable for the final product (in D3 or Bokeh, say, if it needs to be an interactive document in the browser).</p>
+<p>Now that we have a feel for the overall landscape (from my point of view), let's delve into a few examples.
 We'll use the <code>diamonds</code> dataset from ggplot2.
-You could use Vincent Arelbundock's RDatasets to find it (<code>pd.read_csv('http://vincentarelbundock.github.io/Rdatasets/csv/ggplot2/diamonds.csv')</code>), but I wanted to checkout <a href="https://github.com/wesm/feather">feather</a>.</p>
+You could use Vincent Arelbundock's <a href="https://github.com/vincentarelbundock/Rdatasets">RDatasets package</a> to find it (<code>pd.read_csv('http://vincentarelbundock.github.io/Rdatasets/csv/ggplot2/diamonds.csv')</code>), but I wanted to checkout <a href="https://github.com/wesm/feather">feather</a>.</p>
 <div class="codehilite"><pre><span></span><span class="o">%</span><span class="n">load_ext</span> <span class="n">rpy2</span><span class="o">.</span><span class="n">ipython</span>
 </pre></div>
 
@@ -272,7 +274,7 @@ Here's an example of the charts API.</p>
 
 <p>It's not clear to me where the scientific community will come down on Bokeh for exploratory analysis.
 The ability to share interactive graphics is compelling.
-The trend toward more and more things happening in the browser will only enhance this feature of Bokeh.</p>
+The trend towards more and more analysis and communication happening in the browser will only enhance this feature of Bokeh.</p>
 <p>Personally though, I have a lot of inertia behind matplotlib so I haven't switched to Bokeh for day-to-day exploratory analysis.</p>
 <p>I have greatly enjoyed Bokeh for building dashboards and <a href="http://bokeh.pydata.org/en/latest/docs/user_guide/interaction.html">webapps</a> with Bokeh server.
 It's still young, and I've hit <a href="http://stackoverflow.com/questions/36610328/control-bokeh-plot-state-with-http-request">some rough edges</a>, but I'm happy to put up with some awkwardness to avoid writing more javascript.</p>
@@ -349,7 +351,7 @@ Nothing major, just nice.</p>
 
 
 <p><img alt="png" src="images/vis-pairplot.png" /></p>
-<p><code>pairplot</code> is a concenince wrapper around <code>PairGrid</code>, and offers our first look at an important seaborn abstraction, the <code>Grid</code>. Seaborn <code>Grids</code> provide a link between a matplolib <code>Figure</code> with multiple <code>axes</code> and features in your dataset.</p>
+<p><code>pairplot</code> is a convenience wrapper around <code>PairGrid</code>, and offers our first look at an important seaborn abstraction, the <code>Grid</code>. <em>Seaborn <code>Grid</code>s provide a link between a matplotlib <code>Figure</code> with multiple <code>axes</code> and features in your dataset.</em></p>
 <p>There are two main ways of interacting with grids. First, seaborn provides convenience-wrapper functions like <code>pairplot</code>, that have good defaults for common tasks. If you need more flexibility, you can work with the <code>Grid</code> directly by mapping plotting functions over each axes.</p>
 <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">core</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="err">α</span><span class="o">=.</span><span class="mo">05</span><span class="p">):</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span> <span class="o">&gt;</span> <span class="n">df</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="err">α</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">df</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="err">α</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -370,7 +372,8 @@ Nothing major, just nice.</p>
 
 
 <p><img alt="png" src="images/vis-pairgrid.png" /></p>
-<p><code>FacetGrid</code> is another class for producing <code>Grid</code>s, with control over how each facet (individual axes) gets determined. <code>PairGrid</code> is a special case of faceting by each <code>(x, y)</code> combination. In this next example, we'll facet by <code>cut</code>.</p>
+<p><code>PairGrid</code> is a special case of <code>Grid</code> faceting by each <code>(x, y)</code> combination.
+Next we'll use <code>FacetGrid</code>, another class for producing <code>Grid</code>s, with control over how each facet (individual axes) gets determined. In this example, we'll facet by <code>cut</code>.</p>
 <div class="codehilite"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">FacetGrid</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="s1">&#39;cut&#39;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">1.76</span><span class="p">,</span> <span class="n">margin_titles</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">g</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">,</span> <span class="n">shade</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">flat</span><span class="p">:</span>
@@ -386,7 +389,8 @@ Nothing major, just nice.</p>
 This is a pretty common pattern when using seaborn: use a seaborn plotting method (or grid) to get a good start, and then adjust with matplotlib as needed.</p>
 <p>I <em>think</em> (not an expert on this at all) that one thing people like about the grammar of graphics is its flexibility.
 You aren't limited to a fixed set of chart types defined by the library author.
-Instead, you construct your chart by layering scales, aesthetics and geometries.</p>
+Instead, you construct your chart by layering scales, aesthetics and geometries.
+And using <code>ggplot2</code> in R is a delight.</p>
 <p>That said, I wouldn't really call what seaborn / matplotlib offer that limited.
 You can create pretty complex charts suited to your needs.</p>
 <div class="codehilite"><pre><span></span><span class="n">agged</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;cut&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
@@ -412,7 +416,7 @@ Seaborn's <a href="https://stanford.edu/~mwaskom/software/seaborn/">documentatio
 </pre></div>
 
 
-<p>For those unfamiliar with ML or scikit-learn, the basic idea is your algorithm (<code>RandomForesClassifer</code>) is trying to maximize some objective function (percent of correctly classified items in this case).
+<p>For those unfamiliar with machine learning or scikit-learn, the basic idea is your algorithm (<code>RandomForestClassifer</code>) is trying to maximize some objective function (percent of correctly classified items in this case).
 There are various <em>hyperparameters</em> that affect the fit.
 We can search this space by trying out a bunch of possible values for each parameter with the <code>GridSearchCV</code> estimator.</p>
 <div class="codehilite"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s1">&#39;titanic&#39;</span><span class="p">)</span>
@@ -450,9 +454,12 @@ We can search this space by trying out a bunch of possible values for each param
 </pre></div>
 
 
-<p>Thanks for reading!
-As always, <a href="https://twitter.com/tomaugspurger">feedback is welcome</a>.</p>
 <p><img alt="png" src="images/vis-grid-search.svg" /></p>
+<p>Thanks for reading!
+I want to reiterate at the end that this is just <em>my</em> way of doing data visualization.
+Your needs might differ, meaning you might need different tools.
+You can still use pandas to get it to the point where it's ready to be visualized!</p>
+<p>As always, <a href="https://twitter.com/tomaugspurger">feedback is welcome</a>.</p>
 <div class="footnote">
 <hr />
 <ol>

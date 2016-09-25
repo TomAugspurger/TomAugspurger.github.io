@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+          <title>DatasFrame</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="./theme/css/main.css" />
+        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+
+
+
+    <meta name="tags" content="python" />
+
+</head>
+
+<body id="index" class="home">
+    <nav>
+      <a href=".">Home | </a>
+      <a href="/archives.html">Archive | </a>
+      <a href="/categories.html">Categories | </a>
+      <a href="/pages/about.html">About | </a>
+      <a href="https://tomaugspurger.github.io/feeds/all.rss.xml">RSS</a>
+    </nav>
+
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="./intro-stitch.html" rel="bookmark"
+         title="Permalink to Introducing Stitch">Introducing Stitch</a></h2>
+ 
+  </header>
+  <footer class="post-info">
+    <abbr class="published" title="2016-08-30T12:00:00-05:00">
+      Tue 30 August 2016
+    </abbr>
+    <address class="vcard author">
+      By           <a class="url fn" href="./author/tom-augspurger.html">Tom Augspurger</a>
+    </address>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <p>Today I released <a href="https://github.com/pystitch/stitch"><code>stitch</code></a> into the wild.
+If you haven't yet, check out the <a href="https://pystitch.github.io">examples page</a> to see an example
+of what stitch does, and the <a href="https://github.com/pystitch/stitch">Github repo</a> for how to install.
+I'm using this post to explain why I wrote stitch, and some issues it tries to solve.</p>
+<h2>Why <a href="http://yihui.name/knitr/">knitr</a> / <a href="https://github.com/janschulz/knitpy">knitpy</a> / stitch / <a href="http://rmarkdown.rstudio.com">RMarkdown</a>?</h2>
+<p>Each of these tools or formats have the same high-level goal: produce reproducible, dynamic (to changes in the data) reports.
+They take some source document (typically markdown) that's a mixture of text and code
+and convert it to a destination output (HTML, PDF, docx, etc.).</p>
+<p>The main difference from something like pandoc, is that these tools actually execute
+the code and interweave the output of the code back into the document.</p>
+<p>Reproducibility is something I care very deeply about.
+My workflow when writing a report is typically</p>
+<ul>
+<li>prototype in the notebook or IPython REPL (data cleaning, modeling, visualizing, repeat)</li>
+<li>rewrite and cleanup those prototypes in a <code>.py</code> file that produces one or more outputs (figure, table, parameter, etc.)</li>
+<li>Write the prose contextualizing a figure or table in markdown</li>
+<li>Source output artifacts (figure or table) when converting the markdown to the final output</li>
+</ul>
+<p>This was fine, but had a lot of overhead, and separated the generated report from
+the code itself (which is sometimes, but not always, what you want).</p>
+<p>Stitch aims to make this a simpler process.
+You (just) write your code and results all in one file, and call</p>
+<div class="codehilite"><pre><span></span>stitch input.md -o output.pdf
+</pre></div>
+
+
+<h2>Why not Jupyter Notebooks?</h2>
+<p>A valid question, but I think misguided.
+I love the notebook, and I use it every day for exploratory research.
+That said, there's a continuum between all-text reports, and all-code reports.
+For reports that have a higher ratio of <code>text:code</code>, I prefer writing in my comfortable text-editor (yay spellcheck!) and using stitch / pandoc to compile the document.
+For reports that have more <code>code:text</code>, or that are very early on in their lifecycle, I prefer notebooks.
+Use the right tool for the job.</p>
+<p>When writing my <a href="https://leanpub.com/effective-pandas">pandas ebook</a>,
+I had to <a href="https://github.com/TomAugspurger/modern-pandas/blob/master/Makefile">jump through hoops</a> to get from notebook source to final output (epub or PDF) that looked OK.
+<a href="https://nbconvert.readthedocs.io">NBConvert</a> was essential to that workflow, and I couldn't have done without it.
+I hope that the stitch-based workflow is a bit smoother.</p>
+<p>If a tool similar to <a href="https://github.com/podoc/podoc/">podoc</a> is developed, then we can have transparent conversion between text-files with executable blocks of code and notebooks.
+Living the dream.</p>
+<h2>Why python?</h2>
+<p>While RMarkdown / knitr are great (and way more usable than stitch at this point), they're essentially only for R.
+The support for other languages (last I checked) is limited to passing a code chunk into the <code>python</code> command-line executable.
+All state is lost between code chunks.</p>
+<p><em>Stitch supports any language that implements a Jupyter kernel</em>, which is <a href="https://github.com/ipython/ipython/wiki/IPython-kernels-for-other-languages">a lot</a>.</p>
+<p>Additionally, when RStudio introduced <a href="http://rmarkdown.rstudio.com/r_notebooks.html">R Notebooks</a>, they did so with their own file format, rather than adopting the Jupyter notebook format.
+I assume that they were aware of the choice when going their own way, and made it for the right reasons.
+But for these types of tasks (things creating documents) I prefer language-agnostic tools <em>where possible</em>.
+It's certain that RMarkdown / knitr are better than stitch right now for rendering <code>.Rmd</code> files.
+It's quite likely that they will <em>always</em> be better at working with R than stitch; specialized tools exist for a reason.</p>
+<h2>Misc.</h2>
+<p>Stitch was heavily inspired by Jan Schulz's <a href="https://github.com/janschulz/knitpy">knitpy</a>, so you might
+want to check that out and see if it fits your needs better.
+Thanks to Jan for giving guidance on difficulty areas he ran into when writing knitpy.</p>
+<p>I wrote stitch in about three weeks of random nights and weekends I had free.
+I stole time that from family or maintaining pandas.
+Thanks to my wife and the pandas maintainers for picking up my slack.</p>
+<p>The three week thing isn't a boast.
+It's a testament to the rich libraries already available.
+Stitch simply would not exist if we couldn't reuse</p>
+<ul>
+<li><a href="http://pandoc.org">pandoc</a> via <a href="https://pypi.python.org/pypi/pypandoc">pypandoc</a> for parsing markdown and converting to the destination output (and for installing pandoc via conda-forge)</li>
+<li><a href="http://jupyter.readthedocs.io/en/latest/">Jupyter</a> for providing kernels as execution contexts and a <a href="https://jupyter-client.readthedocs.io">client</a> for easily communicating with them.</li>
+<li><a href="https://github.com/jgm/pandocfilters">pandocfilters</a> for wrapping code-chunk output</li>
+</ul>
+<p>And of course RMarkdown, knitr, and knitpy for proving that a library like this is useful and giving a design that works.</p>
+<p>Stitch is still extremely young.
+It could benefit from users trying it out, and letting me know what's working and what isn't.
+Please do give it a shot and let me know what you think.</p>
+  </div><!-- /.entry-content -->
+</section>
+
+    <footer>
+      <p>&copy; Tom Augspurger </p>
+    </footer>
+  </main>
+
+</body>
+</html>
