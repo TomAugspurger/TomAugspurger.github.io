@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Tue, 30 Aug 2016 00:00:00 -0500</lastBuildDate><item><title>Introducing Stitch</title><link>/introducing-stitch.html</link><description>&lt;p&gt;Today I released &lt;a href="https://github.com/pystitch/stitch"&gt;&lt;code&gt;stitch&lt;/code&gt;&lt;/a&gt; into the
+wild. If you haven't yet, check out the &lt;a href="https://pystitch.github.io"&gt;examples
+page&lt;/a&gt; to see an example of what stitch does,
+and the &lt;a href="https://github.com/pystitch/stitch"&gt;Github repo&lt;/a&gt; for how to
+install. I'm using this post to explain why I wrote stitch, and some
+issues it tries to solve.&lt;/p&gt;
+&lt;h2&gt;Why …&lt;/h2&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Tue, 30 Aug 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-08-30:/introducing-stitch.html</guid></item><item><title>Modern Pandas (Part 7): Timeseries</title><link>/modern-7-timeseries.html.html</link><description>&lt;hr&gt;
+&lt;p&gt;This is part 7 in my series on writing modern idiomatic pandas.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="modern-1-intro.md"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="method-chaining.md"&gt;Method Chaining&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-3-indexes.md"&gt;Indexes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-4-performance.md"&gt;Fast Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-5-tidy.md"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-6-visualization.md"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-7-timeseries.md"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h1&gt;Timeseries&lt;/h1&gt;
+&lt;p&gt;Pandas started out in the financial world, so naturally it has strong timeseries support.&lt;/p&gt;
+&lt;p&gt;The first half of this post will look at pandas' capabilities …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Fri, 13 May 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-05-13:/modern-7-timeseries.html.html</guid></item><item><title>Modern Pandas (Part 6): Visualization</title><link>/modern-pandas-part-6-visualization.html</link><description>&lt;hr&gt;
+&lt;p&gt;This is part 6 in my series on writing modern idiomatic pandas.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="method-chaining"&gt;Method Chaining&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-3-indexes"&gt;Indexes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-4-performance"&gt;Fast Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h1&gt;Visualization and Exploratory Analysis&lt;/h1&gt;
+&lt;p&gt;A few weeks ago, the R community went through some hand-wringing about plotting packages.
+For outsiders (like me) the details aren't that …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Thu, 28 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-28:/modern-pandas-part-6-visualization.html</guid></item><item><title>Modern Pandas (Part 5): Tidy Data</title><link>/modern-pandas-part-5-tidy-data.html</link><description>&lt;hr&gt;
+&lt;p&gt;This is part 5 in my series on writing modern idiomatic pandas.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="method-chaining"&gt;Method Chaining&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-3-indexes"&gt;Indexes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-4-performance"&gt;Fast Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h1&gt;Reshaping &amp;amp; Tidy Data&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Structuring datasets to facilitate analysis &lt;a href="http://www.jstatsoft.org/v59/i10/paper"&gt;(Wickham 2014)&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;So, you've sat down to analyze a new dataset.
+What do you do first?&lt;/p&gt;
+&lt;p&gt;In episode …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Fri, 22 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-22:/modern-pandas-part-5-tidy-data.html</guid></item><item><title>Modern Panadas (Part 3): Indexes</title><link>/modern-panadas-part-3-indexes.html</link><description>&lt;hr&gt;
+&lt;p&gt;This is part 3 in my series on writing modern idiomatic pandas.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="method-chaining"&gt;Method Chaining&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-3-indexes"&gt;Indexes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-4-performance"&gt;Fast Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;code&gt;Indexes&lt;/code&gt; can be a difficult concept to grasp at first.
+I suspect this is partly becuase they're somewhat peculiar to pandas.
+These aren't like the indexes …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 11 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-11:/modern-panadas-part-3-indexes.html</guid></item><item><title>Modern Pandas (Part 4): Performance</title><link>/modern-pandas-part-4-performance.html</link><description>&lt;hr&gt;
+&lt;p&gt;This is part 4 in my series on writing modern idiomatic pandas.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="method-chaining"&gt;Method Chaining&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-3-indexes"&gt;Indexes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-4-performance"&gt;Fast Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/wesmckinn"&gt;Wes McKinney&lt;/a&gt;, the creator of pandas, is kind of obsessed with performance. From micro-optimizations for element access, to &lt;a href="https://github.com/pydata/pandas/tree/master/pandas/src/klib"&gt;embedding&lt;/a&gt; a fast hash table inside pandas, we …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Fri, 08 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-08:/modern-pandas-part-4-performance.html</guid></item><item><title>Modern Pandas (Part 2): Method Chaining</title><link>/method-chaining.html</link><description>&lt;hr&gt;
+&lt;p&gt;This is part 2 in my series on writing modern idiomatic pandas.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="method-chaining"&gt;Method Chaining&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-3-indexes"&gt;Indexes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-4-performance"&gt;Fast Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h1&gt;Method Chaining&lt;/h1&gt;
+&lt;p&gt;Method chaining, where you call methods on an object one after another, is in vogue at the moment.
+It's always been a style of …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 04 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-04:/method-chaining.html</guid></item><item><title>Modern Pandas (Part 1)</title><link>/modern-1-intro.html</link><description>&lt;hr&gt;
+&lt;p&gt;This is part 1 in my series on writing modern idiomatic pandas.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="method-chaining"&gt;Method Chaining&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-3-indexes"&gt;Indexes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-4-performance"&gt;Fast Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h1&gt;Effective Pandas&lt;/h1&gt;
+&lt;h2&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;This series is about how to make effective use of &lt;a href="http://pandas.pydata.org"&gt;pandas&lt;/a&gt;, a data analysis library for the Python programming language.
+It's targeted at …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 21 Mar 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-03-21:/modern-1-intro.html</guid></item><item><title>dplyr and pandas</title><link>/dplry-pandas.html</link><description>&lt;p&gt;This notebook compares &lt;a href="http://pandas.pydata.org"&gt;pandas&lt;/a&gt;
+and &lt;a href="http://cran.r-project.org/web/packages/dplyr/index.html"&gt;dplyr&lt;/a&gt;.
+The comparison is just on syntax (verbage), not performance. Whether you're an R user looking to switch to pandas (or the other way around), I hope this guide will help ease the transition.&lt;/p&gt;
+&lt;p&gt;We'll work through the &lt;a href="http://cran.r-project.org/web/packages/dplyr/vignettes/introduction.html"&gt;introductory dplyr vignette&lt;/a&gt; to analyze some flight …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Thu, 16 Oct 2014 07:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2014-10-16:/dplry-pandas.html</guid><category>python, data science</category></item><item><title>Practical Pandas Part 3 - Exploratory Data Analysis</title><link>/practical-pandas-part-3-exploratory-data-analysis.html</link><description>&lt;p&gt;Welcome back. As a reminder:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;In &lt;a href="http://tomaugspurger.github.io/blog/2014/08/26/practical-pandas-part-1-reading-the-data/"&gt;part 1&lt;/a&gt; we got dataset with my cycling data from last year merged and stored in an HDF5 store&lt;/li&gt;
+&lt;li&gt;In &lt;a href="http://tomaugspurger.github.io/blog/2014/09/04/practical-pandas-part-2-more-tidying-more-data-and-merging/"&gt;part 2&lt;/a&gt; we did some cleaning and augmented the cycling data with data from http://forecast.io. &lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;You can find the full source code …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Tue, 16 Sep 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2014-09-16:/practical-pandas-part-3-exploratory-data-analysis.html</guid><category>python, data science, pandas, practical pandas</category></item><item><title>Practical Pandas Part 2 - More Tidying, More Data, and Merging</title><link>/practical-pandas-part-2-more-tidying-more-data-and-merging.html</link><description>&lt;p&gt;&lt;em&gt;This is Part 2 in the Practical Pandas Series, where I work through a data analysis problem from start to finish.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;It's a misconception that we can cleanly separate the data analysis pipeline into a linear
+sequence of steps from&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;data acqusition&lt;/li&gt;
+&lt;li&gt;data tidying&lt;/li&gt;
+&lt;li&gt;exploratory analysis&lt;/li&gt;
+&lt;li&gt;model building&lt;/li&gt;
+&lt;li&gt;production&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;As …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Thu, 04 Sep 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2014-09-04:/practical-pandas-part-2-more-tidying-more-data-and-merging.html</guid><category>python, data science, pandas, practical pandas</category></item><item><title>Practical Pandas Part 1 - Reading the Data</title><link>/practical-pandas-part-1-reading-the-data.html</link><description>&lt;p&gt;This is the first post in a series where I'll show how I use pandas on real-world datasets.&lt;/p&gt;
+&lt;p&gt;For this post, we'll look at data I collected with &lt;a href="http://abvio.com/cyclemeter/"&gt;Cyclemeter&lt;/a&gt; on
+my daily bike ride to and from school last year.
+I had to manually start and stop the tracking at …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Tue, 26 Aug 2014 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2014-08-26:/practical-pandas-part-1-reading-the-data.html</guid><category>python, data science, pandas</category></item><item><title>Using Python to tackle the CPS (Part 4)</title><link>/tackling%20the%20cps%20(part%204).html</link><description>&lt;p&gt;Last time, we got to where we'd like to have started: One file per month, with each month laid out the same.&lt;/p&gt;
+&lt;p&gt;As a reminder, the CPS interviews households 8 times over the course of 16 months. They're interviewed for 4 months, take 8 months off, and are interviewed four …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 19 May 2014 12:01:00 -0500</pubDate><guid isPermaLink="false">tag:None,2014-05-19:/tackling the cps (part 4).html</guid></item><item><title>Using Python to tackle the CPS (Part 3)</title><link>/tackling%20the%20cps%20(part%203).html</link><description>&lt;p&gt;In &lt;a href="http://tomaugspurger.github.io/blog/2014/02/04/tackling%20the%20cps%20(part%202)/"&gt;part 2&lt;/a&gt; of this series, we set the stage to parse the data files themselves.&lt;/p&gt;
+&lt;p&gt;As a reminder, we have a dictionary that looks like&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;         &lt;span class="nb"&gt;id&lt;/span&gt;  &lt;span class="n"&gt;length&lt;/span&gt;  &lt;span class="n"&gt;start&lt;/span&gt;  &lt;span class="n"&gt;end&lt;/span&gt;
+&lt;span class="mi"&gt;0&lt;/span&gt;    &lt;span class="n"&gt;HRHHID&lt;/span&gt;      &lt;span class="mi"&gt;15&lt;/span&gt;      &lt;span class="mi"&gt;1&lt;/span&gt;   &lt;span class="mi"&gt;15&lt;/span&gt;
+&lt;span class="mi"&gt;1&lt;/span&gt;   &lt;span class="n"&gt;HRMONTH&lt;/span&gt;       &lt;span class="mi"&gt;2&lt;/span&gt;     &lt;span class="mi"&gt;16&lt;/span&gt;   &lt;span class="mi"&gt;17&lt;/span&gt;
+&lt;span class="mi"&gt;2&lt;/span&gt;   &lt;span class="n"&gt;HRYEAR4&lt;/span&gt;       &lt;span class="mi"&gt;4&lt;/span&gt;     &lt;span class="mi"&gt;18&lt;/span&gt;   &lt;span class="mi"&gt;21&lt;/span&gt;
+&lt;span class="mi"&gt;3&lt;/span&gt;  &lt;span class="n"&gt;HURESPLI&lt;/span&gt;       &lt;span class="mi"&gt;2&lt;/span&gt;     &lt;span class="mi"&gt;22&lt;/span&gt;   &lt;span class="mi"&gt;23 …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 19 May 2014 12:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2014-05-19:/tackling the cps (part 3).html</guid></item><item><title>Tidy Data in Action</title><link>/Tidy%20Data%20in%20Action.html</link><description>&lt;p&gt;&lt;a href="http://had.co.nz"&gt;Hadley Whickham&lt;/a&gt; wrote a famous paper (for a certain definition of famous) about the importance of &lt;a href="http://vita.had.co.nz/papers/tidy-data.pdf"&gt;tidy data&lt;/a&gt; when doing data analysis.
+I want to talk a bit about that, using an example from a StackOverflow post, with a solution using &lt;a href="http://pandas.pydata.org"&gt;pandas&lt;/a&gt;. The principles of tidy data aren't language specific …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Thu, 27 Mar 2014 16:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2014-03-27:/Tidy Data in Action.html</guid><category>python, scripts, data science</category></item><item><title>Organizing Papers</title><link>/Organizing%20Papers.html</link><description>&lt;p&gt;As a graduate student, you read a lot of journal articles... &lt;em&gt;a lot&lt;/em&gt;.
+With the material in the articles being as difficult as it is, I didn't want to worry about organizing everything as well.
+That's why I wrote &lt;a href="https://gist.github.com/TomAugspurger/8976751"&gt;this script&lt;/a&gt; to help (I may have also been procrastinating from …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Thu, 13 Feb 2014 12:00:00 -0600</pubDate><guid isPermaLink="false">tag:None,2014-02-13:/Organizing Papers.html</guid><category>python, scripts</category></item><item><title>Using Python to tackle the CPS (Part 2)</title><link>/tackling%20the%20cps%20(part%202).html</link><description>&lt;p&gt;&lt;a href="http://tomaugspurger.github.io/blog/2014/01/27/tackling%20the%20cps/"&gt;Last time&lt;/a&gt;, we used Python to fetch some data from the &lt;a href="http://www.census.gov/cps/"&gt;Current Population Survey&lt;/a&gt;. Today, we'll work on parsing the files we just downloaded.&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;We downloaded two types of files last time:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;CPS monthly tables: a fixed-width format text file with the actual data&lt;/li&gt;
+&lt;li&gt;Data Dictionaries: a text file describing …&lt;/li&gt;&lt;/ul&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Tue, 04 Feb 2014 12:00:00 -0600</pubDate><guid isPermaLink="false">tag:None,2014-02-04:/tackling the cps (part 2).html</guid></item><item><title>Using Python to tackle the CPS</title><link>/tackling%20the%20cps.html</link><description>&lt;p&gt;The &lt;a href="http://www.census.gov/cps/"&gt;Current Population Survey&lt;/a&gt; is an important source of data for economists. It's modern form took shape in the 70's and unfortunately the data format and distribution shows its age. Some centers like &lt;a href="https://cps.ipums.org/cps/"&gt;IPUMS&lt;/a&gt; have attempted to put a nicer face on accessing the data, but they haven't done everything …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 27 Jan 2014 12:00:00 -0600</pubDate><guid isPermaLink="false">tag:None,2014-01-27:/tackling the cps.html</guid></item></channel></rss>
