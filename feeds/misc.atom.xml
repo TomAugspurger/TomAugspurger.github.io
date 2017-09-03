@@ -1,5 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame - misc</title><link href="/" rel="alternate"></link><link href="/feeds/misc.atom.xml" rel="self"></link><id>/</id><updated>2016-05-13T00:00:00-05:00</updated><entry><title>Modern Pandas (Part 7): Timeseries</title><link href="/modern-7-timeseries.html.html" rel="alternate"></link><published>2016-05-13T00:00:00-05:00</published><updated>2016-05-13T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-05-13:/modern-7-timeseries.html.html</id><summary type="html">&lt;hr&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame - misc</title><link href="/" rel="alternate"></link><link href="/feeds/misc.atom.xml" rel="self"></link><id>/</id><updated>2016-08-30T00:00:00-05:00</updated><entry><title>Introducing Stitch</title><link href="/introducing-stitch.html" rel="alternate"></link><published>2016-08-30T00:00:00-05:00</published><updated>2016-08-30T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-08-30:/introducing-stitch.html</id><summary type="html">&lt;p&gt;Today I released &lt;a href="https://github.com/pystitch/stitch"&gt;&lt;code&gt;stitch&lt;/code&gt;&lt;/a&gt; into the
+wild. If you haven't yet, check out the &lt;a href="https://pystitch.github.io"&gt;examples
+page&lt;/a&gt; to see an example of what stitch does,
+and the &lt;a href="https://github.com/pystitch/stitch"&gt;Github repo&lt;/a&gt; for how to
+install. I'm using this post to explain why I wrote stitch, and some
+issues it tries to solve.&lt;/p&gt;
+&lt;h2&gt;Why …&lt;/h2&gt;</summary><content type="html">&lt;p&gt;Today I released &lt;a href="https://github.com/pystitch/stitch"&gt;&lt;code&gt;stitch&lt;/code&gt;&lt;/a&gt; into the
+wild. If you haven't yet, check out the &lt;a href="https://pystitch.github.io"&gt;examples
+page&lt;/a&gt; to see an example of what stitch does,
+and the &lt;a href="https://github.com/pystitch/stitch"&gt;Github repo&lt;/a&gt; for how to
+install. I'm using this post to explain why I wrote stitch, and some
+issues it tries to solve.&lt;/p&gt;
+&lt;h2&gt;Why &lt;a href="http://yihui.name/knitr/"&gt;knitr&lt;/a&gt; / &lt;a href="https://github.com/janschulz/knitpy"&gt;knitpy&lt;/a&gt; / stitch / &lt;a href="http://rmarkdown.rstudio.com"&gt;RMarkdown&lt;/a&gt;?&lt;/h2&gt;
+&lt;p&gt;Each of these tools or formats have the same high-level goal: produce
+reproducible, dynamic (to changes in the data) reports. They take some
+source document (typically markdown) that's a mixture of text and code
+and convert it to a destination output (HTML, PDF, docx, etc.).&lt;/p&gt;
+&lt;p&gt;The main difference from something like pandoc, is that these tools
+actually execute the code and interweave the output of the code back
+into the document.&lt;/p&gt;
+&lt;p&gt;Reproducibility is something I care very deeply about. My workflow when
+writing a report is typically&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;prototype in the notebook or IPython REPL (data cleaning, modeling,
+    visualizing, repeat)&lt;/li&gt;
+&lt;li&gt;rewrite and cleanup those prototypes in a &lt;code&gt;.py&lt;/code&gt; file that produces
+    one or more outputs (figure, table, parameter, etc.)&lt;/li&gt;
+&lt;li&gt;Write the prose contextualizing a figure or table in markdown&lt;/li&gt;
+&lt;li&gt;Source output artifacts (figure or table) when converting the
+    markdown to the final output&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This was fine, but had a lot of overhead, and separated the generated
+report from the code itself (which is sometimes, but not always, what
+you want).&lt;/p&gt;
+&lt;p&gt;Stitch aims to make this a simpler process. You (just) write your code
+and results all in one file, and call&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;stitch input.md -o output.pdf
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Why not Jupyter Notebooks?&lt;/h2&gt;
+&lt;p&gt;A valid question, but I think misguided. I love the notebook, and I use
+it every day for exploratory research. That said, there's a continuum
+between all-text reports, and all-code reports. For reports that have a
+higher ratio of &lt;code&gt;text:code&lt;/code&gt;, I prefer writing in my comfortable
+text-editor (yay spellcheck!) and using stitch / pandoc to compile the
+document. For reports that have more &lt;code&gt;code:text&lt;/code&gt;, or that are very early
+on in their lifecycle, I prefer notebooks. Use the right tool for the
+job.&lt;/p&gt;
+&lt;p&gt;When writing my &lt;a href="https://leanpub.com/effective-pandas"&gt;pandas ebook&lt;/a&gt;, I
+had to &lt;a href="https://github.com/TomAugspurger/modern-pandas/blob/master/Makefile"&gt;jump through
+hoops&lt;/a&gt;
+to get from notebook source to final output (epub or PDF) that looked
+OK. &lt;a href="https://nbconvert.readthedocs.io"&gt;NBConvert&lt;/a&gt; was essential to that
+workflow, and I couldn't have done without it. I hope that the
+stitch-based workflow is a bit smoother.&lt;/p&gt;
+&lt;p&gt;If a tool similar to &lt;a href="https://github.com/podoc/podoc/"&gt;podoc&lt;/a&gt; is
+developed, then we can have transparent conversion between text-files
+with executable blocks of code and notebooks. Living the dream.&lt;/p&gt;
+&lt;h2&gt;Why python?&lt;/h2&gt;
+&lt;p&gt;While RMarkdown / knitr are great (and way more usable than stitch at
+this point), they're essentially only for R. The support for other
+languages (last I checked) is limited to passing a code chunk into the
+&lt;code&gt;python&lt;/code&gt; command-line executable. All state is lost between code chunks.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Stitch supports any language that implements a Jupyter kernel&lt;/em&gt;, which
+is &lt;a href="https://github.com/ipython/ipython/wiki/IPython-kernels-for-other-languages"&gt;a
+lot&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Additionally, when RStudio introduced &lt;a href="http://rmarkdown.rstudio.com/r_notebooks.html"&gt;R
+Notebooks&lt;/a&gt;, they did so
+with their own file format, rather than adopting the Jupyter notebook
+format. I assume that they were aware of the choice when going their own
+way, and made it for the right reasons. But for these types of tasks
+(things creating documents) I prefer language-agnostic tools &lt;em&gt;where
+possible&lt;/em&gt;. It's certain that RMarkdown / knitr are better than stitch
+right now for rendering &lt;code&gt;.Rmd&lt;/code&gt; files. It's quite likely that they will
+&lt;em&gt;always&lt;/em&gt; be better at working with R than stitch; specialized tools
+exist for a reason.&lt;/p&gt;
+&lt;h2&gt;Misc.&lt;/h2&gt;
+&lt;p&gt;Stitch was heavily inspired by Jan Schulz's
+&lt;a href="https://github.com/janschulz/knitpy"&gt;knitpy&lt;/a&gt;, so you might want to
+check that out and see if it fits your needs better. Thanks to Jan for
+giving guidance on difficulty areas he ran into when writing knitpy.&lt;/p&gt;
+&lt;p&gt;I wrote stitch in about three weeks of random nights and weekends I had
+free. I stole time that from family or maintaining pandas. Thanks to my
+wife and the pandas maintainers for picking up my slack.&lt;/p&gt;
+&lt;p&gt;The three week thing isn't a boast. It's a testament to the rich
+libraries already available. Stitch simply would not exist if we
+couldn't reuse&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://pandoc.org"&gt;pandoc&lt;/a&gt; via
+    &lt;a href="https://pypi.python.org/pypi/pypandoc"&gt;pypandoc&lt;/a&gt; for parsing
+    markdown and converting to the destination output (and for
+    installing pandoc via conda-forge)&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://jupyter.readthedocs.io/en/latest/"&gt;Jupyter&lt;/a&gt; for providing
+    kernels as execution contexts and a
+    &lt;a href="https://jupyter-client.readthedocs.io"&gt;client&lt;/a&gt; for easily
+    communicating with them.&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://github.com/jgm/pandocfilters"&gt;pandocfilters&lt;/a&gt; for wrapping
+    code-chunk output&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;And of course RMarkdown, knitr, and knitpy for proving that a library
+like this is useful and giving a design that works.&lt;/p&gt;
+&lt;p&gt;Stitch is still extremely young. It could benefit from users trying it
+out, and letting me know what's working and what isn't. Please do give
+it a shot and let me know what you think.&lt;/p&gt;
+&lt;p&gt;© Tom Augspurger&lt;/p&gt;</content></entry><entry><title>Modern Pandas (Part 7): Timeseries</title><link href="/modern-7-timeseries.html.html" rel="alternate"></link><published>2016-05-13T00:00:00-05:00</published><updated>2016-05-13T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-05-13:/modern-7-timeseries.html.html</id><summary type="html">&lt;hr&gt;
 &lt;p&gt;This is part 7 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro.md"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
