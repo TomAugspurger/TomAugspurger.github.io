@@ -1,389 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-        <title>DatasFrame - Articles by Tom Augspurger</title>
-        <meta charset="utf-8" />
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-        <link rel="stylesheet" href="../theme/css/main.css" />
-        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+
+  <title>
+    datas-frame
+&ndash; Posts by: Tom Augspurger  </title>
+
 </head>
 
-<body id="index" class="home">
-    <nav>
-      <a href="..">Home | </a>
-      <a href="/archives.html">Archive | </a>
-      <a href="/categories.html">Categories | </a>
-      <a href="/pages/about.html">About | </a>
-      <a href="https://tomaugspurger.github.io/feeds/all.rss.xml">RSS</a>
-    </nav>
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+&gt; Author: Tom Augspurger
+      </p>
+    </header>
 
-<section id="content">
-
-<ol id="post-list">
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../dp.html" rel="bookmark" title="Permalink to Dynamic Programming">Dynamic Programming</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2015-10-03T00:00:00-05:00"> Sat 03 October 2015 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <p>Eight months ago, Trey Causey wrote a <a href="http://thespread.us/expected-points.html">post</a> about modeling expected points in football, with an emphasis on uncertainty.
-With my twisted economist's mind, I mentioned that it seemed like dynamic programming could be used in this situation, and indeed it would feature in a future post of Trey ...</p> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../practical-pandas-1.html" rel="bookmark" title="Permalink to Practical Pandas--Part 1">Practical Pandas--Part 1</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2015-01-01T00:00:00-06:00"> Thu 01 January 2015 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <p>This is the first post in a series where I'll show how I use pandas on real-world datasets.</p>
+<article>
+  <div class="article__title">
+    <h1><a href="/practical-pandas-part-1-reading-the-data.html">Practical Pandas Part 1 - Reading the Data</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Tue 26 August 2014</p>
+ Tags:
+      <a href="/tag/python-data-science-pandas.html">#python, data science, pandas</a>    </p>
+  </div>
+  <div class="article__text">
+    <p>This is the first post in a series where I'll show how I use pandas on real-world datasets.</p>
 <p>For this post, we'll look at data I collected with <a href="http://abvio.com/cyclemeter/">Cyclemeter</a> on
 my daily bike ride to and from school last year.
-I had to manually start and stop the ...</p> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../tidy-data.html" rel="bookmark" title="Permalink to Tidy Data in Action">Tidy Data in Action</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2015-01-01T00:00:00-06:00"> Thu 01 January 2015 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <p><a href="http://had.co.nz">Hadley Whickham</a> wrote a famous paper (for a certain definition of famous) about the importance of <a href="http://vita.had.co.nz/papers/tidy-data.pdf">tidy data</a> when doing data analysis.
-I want to talk a bit about that, using an example from a StackOverflow post, with a solution using <a href="http://pandas.pydata.org">pandas</a>. The principles of tidy data aren't language ...</p> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../tackling the cps (part 4).html" rel="bookmark" title="Permalink to Tacking the CPS (part 4)">Tacking the CPS (part 4)</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2014-05-19T12:01:00-05:00"> Mon 19 May 2014 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <p>As a reminder, the CPS interviews households 8 times over the course of 16 months. They're interviewed for 4 months, take 8 months off, and are interviewed four more times. So if your first interview was in month <span class="math">\(m\)</span>, you're also interviewed in months </p>
-<div class="math">$$m + 1, m + 2, m + 3, m + 12, m + 13, m + 14, m + 15$$ ...</div><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-    
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript'; 
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../tackling the cps (part 3).html" rel="bookmark" title="Permalink to Tackling the CPS (Part 3)">Tackling the CPS (Part 3)</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2014-05-19T12:00:00-05:00"> Mon 19 May 2014 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <p>As a reminder, we have a dictionary that looks like</p>
-<div class="codehilite"><pre><span></span>         <span class="nb">id</span>  <span class="n">length</span>  <span class="n">start</span>  <span class="n">end</span>
+I had to manually start and stop the tracking at …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/tackling the cps (part 4).html">Using Python to tackle the CPS (Part 4)</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 19 May 2014</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>Last time, we got to where we'd like to have started: One file per month, with each month laid out the same.</p>
+<p>As a reminder, the CPS interviews households 8 times over the course of 16 months. They're interviewed for 4 months, take 8 months off, and are interviewed four …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/tackling the cps (part 3).html">Using Python to tackle the CPS (Part 3)</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 19 May 2014</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>In <a href="http://tomaugspurger.github.io/blog/2014/02/04/tackling%20the%20cps%20(part%202)/">part 2</a> of this series, we set the stage to parse the data files themselves.</p>
+<p>As a reminder, we have a dictionary that looks like</p>
+<div class="highlight"><pre><span></span>         <span class="nb">id</span>  <span class="n">length</span>  <span class="n">start</span>  <span class="n">end</span>
 <span class="mi">0</span>    <span class="n">HRHHID</span>      <span class="mi">15</span>      <span class="mi">1</span>   <span class="mi">15</span>
 <span class="mi">1</span>   <span class="n">HRMONTH</span>       <span class="mi">2</span>     <span class="mi">16</span>   <span class="mi">17</span>
 <span class="mi">2</span>   <span class="n">HRYEAR4</span>       <span class="mi">4</span>     <span class="mi">18</span>   <span class="mi">21</span>
-<span class="mi">3</span>  <span class="n">HURESPLI</span>       <span class="mi">2</span>     <span class="mi">22</span>   <span class="mi">23</span>
-<span class="mi">4</span>   <span class="n">HUFINAL</span>       <span class="mi">3</span>     <span class="mi">24</span>   <span class="mi">26</span>
-         <span class="o">...</span>     <span class="o">...</span>    <span class="o">...</span>  <span class="o">...</span>
-</pre></div>
+<span class="mi">3</span>  <span class="n">HURESPLI</span>       <span class="mi">2</span>     <span class="mi">22</span>   <span class="mi">23 …</span></pre></div>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/Tidy Data in Action.html">Tidy Data in Action</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Thu 27 March 2014</p>
+ Tags:
+      <a href="/tag/python-scripts-data-science.html">#python, scripts, data science</a>    </p>
+  </div>
+  <div class="article__text">
+    <p><a href="http://had.co.nz">Hadley Whickham</a> wrote a famous paper (for a certain definition of famous) about the importance of <a href="http://vita.had.co.nz/papers/tidy-data.pdf">tidy data</a> when doing data analysis.
+I want to talk a bit about that, using an example from a StackOverflow post, with a solution using <a href="http://pandas.pydata.org">pandas</a>. The principles of tidy data aren't language specific …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/Organizing Papers.html">Organizing Papers</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Thu 13 February 2014</p>
+ Tags:
+      <a href="/tag/python-scripts.html">#python, scripts</a>    </p>
+  </div>
+  <div class="article__text">
+    <p>As a graduate student, you read a lot of journal articles... <em>a lot</em>.
+With the material in the articles being as difficult as it is, I didn't want to worry about organizing everything as well.
+That's why I wrote <a href="https://gist.github.com/TomAugspurger/8976751">this script</a> to help (I may have also been procrastinating from …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/tackling the cps (part 2).html">Using Python to tackle the CPS (Part 2)</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Tue 04 February 2014</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p><a href="http://tomaugspurger.github.io/blog/2014/01/27/tackling%20the%20cps/">Last time</a>, we used Python to fetch some data from the <a href="http://www.census.gov/cps/">Current Population Survey</a>. Today, we'll work on parsing the files we just downloaded.</p>
+<hr>
+<p>We downloaded two types of files last time:</p>
+<ul>
+<li>CPS monthly tables: a fixed-width format text file with the actual data</li>
+<li>Data Dictionaries: a text file describing …</li></ul>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/tackling the cps.html">Using Python to tackle the CPS</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 27 January 2014</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>The <a href="http://www.census.gov/cps/">Current Population Survey</a> is an important source of data for economists. It's modern form took shape in the 70's and unfortunately the data format and distribution shows its age. Some centers like <a href="https://cps.ipums.org/cps/">IPUMS</a> have attempted to put a nicer face on accessing the data, but they haven't done everything …</p>
+  </div>
+</article>
+
+<div class="pagination">
+    <ul>
+        <li class="pagination__prev">
+            <a href="/author/tom-augspurger.html">&laquo;</a>
+        </li>
 
 
-<p>giving the columns of the raw CPS data files. This post ...</p> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../Quiz 10 Review.html" rel="bookmark" title="Permalink to Quiz 10 Review">Quiz 10 Review</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2014-05-01T12:00:00-05:00"> Thu 01 May 2014 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <h1>Section A01</h1>
-<p>This quiz focused on exponential smoothing. Make sure that you know about moving averages and autocorrelation too.</p>
-<h3>#1</h3>
-<p>You needed to find the biggest decline in the time series.
-You should never have to guess in stats, and I'm worried that some of you just looked at ...</p> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../Quiz 8 Review.html" rel="bookmark" title="Permalink to Quiz 9 Review">Quiz 9 Review</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2014-04-10T17:00:00-05:00"> Thu 10 April 2014 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <p>Don't forget your section number!</p>
-<h1>Section A01</h1>
-<h2>#2</h2>
-<p>Remember that for the modified best conservative model, we still care about the significance of all the predictors other than the ones that must be included.</p>
-<h2>#3</h2>
-<p>Quite a few people are still giving point estimates (just <span class="math">\(\hat{y}\)</span>) when the ...</p><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
 
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-    
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript'; 
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../Quiz 7 Review.html" rel="bookmark" title="Permalink to Quiz 8 Review">Quiz 8 Review</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2014-04-04T12:00:00-05:00"> Fri 04 April 2014 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <h2>#1</h2>
-<p>The test statistic for <span class="math">\(H_0: \beta_1 = \beta_2 = 0\)</span> is the <span class="math">\(F\)</span> statistic. It's what we'll use for when we're testing multiple parameters at once.</p>
-<p>Several people had <span class="math">\(\beta_1 = 0\)</span> <strong>or</strong> <span class="math">\(\beta_2 = 0\)</span>.
-This is wrong; it should be <strong>and</strong> not <strong>or</strong>.
-This is actually an important ...</p><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
+          <li>
+            <a  href="/author/tom-augspurger.html">1</a>
+          </li>
 
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-    
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript'; 
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../Quiz 6 Review.html" rel="bookmark" title="Permalink to Quiz 6 Review">Quiz 6 Review</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2014-03-28T12:00:00-05:00"> Fri 28 March 2014 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <p>Part <strong>b</strong> asked for a CI for the slope <span class="math">\(\beta_1\)</span>. For this one you use the formula <span class="math">\(\hat{\beta_1} \pm t^{\ast}_{n-p-1} SE(\hat{\beta_1})\)</span>. <span class="math">\(n\)</span> is the sample size and <span class="math">\(p\)</span> is the number of predictors (1 in this case).</p>
-<p>You get the <span class="math">\(\hat{\beta_1}\)</span> and <span class="math">\(SE(\hat{\beta_1})\) ...</span></p><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
 
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-    
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript'; 
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../Quiz 5 Review.html" rel="bookmark" title="Permalink to QUiz 5 Review">QUiz 5 Review</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2014-03-14T12:00:00-05:00"> Fri 14 March 2014 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <h2>Problem 1</h2>
-<p>Make sure to read the questions carefully, in particular <strong>the underlined or bold parts</strong>. For this question we wanted the <strong>statistical concept</strong> that explains why interpreting a prediction for a car with 0 City MPG is mislaeding. I agree with many of you that a negative Highway MPG ...</p> </div><!-- /.entry-content -->
-        </article></li>
-</ol><!-- /#posts-list -->
-<p class="paginator">
-        <a href="../author/tom-augspurger.html">&laquo;</a>
-    Page 2 / 3
-        <a href="../author/tom-augspurger3.html">&raquo;</a>
-</p>
-</section><!-- /#content -->
+          <li>
+            <a class="pagination__page--current" href="/author/tom-augspurger2.html">2</a>
+          </li>
 
-    <footer>
-      <p>&copy; Tom Augspurger </p>
-    </footer>
+        <li class="pagination__next">
+            <div class="pagination__next--none">&raquo;</div>
+        </li>
+    </ul>
+</div>
+
   </main>
-
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
 </body>
 </html>

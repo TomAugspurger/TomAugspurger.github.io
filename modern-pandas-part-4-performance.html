@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+<meta name="keywords" content="">
+
+  <title>
+    datas-frame
+&ndash; Modern Pandas (Part 4): Performance  </title>
+
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+      </p>
+    </header>
+
+<article>
+  <div class="article__title">
+    <h1><a href="/modern-pandas-part-4-performance.html">Modern Pandas (Part 4): Performance</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Fri 08 April 2016</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <hr>
+<p>This is part 4 in my series on writing modern idiomatic pandas.</p>
+<ul>
+<li><a href="modern-1-intro">Modern Pandas</a></li>
+<li><a href="method-chaining">Method Chaining</a></li>
+<li><a href="modern-3-indexes">Indexes</a></li>
+<li><a href="modern-4-performance">Fast Pandas</a></li>
+<li><a href="modern-5-tidy">Tidy Data</a></li>
+<li><a href="modern-6-visualization">Visualization</a></li>
+<li><a href="modern-7-timeseries">Time Series</a></li>
+</ul>
+<hr>
+<p><a href="https://twitter.com/wesmckinn">Wes McKinney</a>, the creator of pandas, is kind of obsessed with performance. From micro-optimizations for element access, to <a href="https://github.com/pydata/pandas/tree/master/pandas/src/klib">embedding</a> a fast hash table inside pandas, we all benefit from his and others' hard work.
+This post will focus mainly on making efficient use of pandas and NumPy.</p>
+<p>One thing I'll explicitly not touch on is storage formats.
+Performance is just one of many factors that go into choosing a storage format.
+Just know that pandas can talk to <a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/io.html">many formats</a>, and the format that strikes the right balance between performance, portability, data-types, metadata handling, etc., is an <a href="http://blog.cloudera.com/blog/2016/03/feather-a-fast-on-disk-format-for-data-frames-for-r-and-python-powered-by-apache-arrow/">ongoing</a> topic of discussion.</p>
+<div class="highlight"><pre><span></span><span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span>
+
+<span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MODERN_PANDAS_EPUB&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)):</span>
+    <span class="kn">import</span> <span class="nn">prep</span> <span class="c1"># noqa</span>
+
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s1">&#39;ticks&#39;</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;talk&#39;</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">max_rows</span> <span class="o">=</span> <span class="mi">10</span>
+</pre></div>
+
+
+<h2>Constructors</h2>
+<p>It's pretty common to have many similar sources (say a bunch of CSVs) that need to be combined into a single DataFrame. There are two routes to the same end:</p>
+<ol>
+<li>Initialize one DataFrame and append to that</li>
+<li>Make many smaller DataFrames and concatenate at the end</li>
+</ol>
+<p>For pandas, the second option is faster.
+DataFrame appends are expensive relative to a list append.
+Depending on the values, pandas might have to recast the data to a different type.
+And indexes are immutable, so each time you append pandas has to create an entirely new one.</p>
+<p>In the last section we downloaded a bunch of weather files, one per state, writing each to a separate CSV.
+One could imagine coming back later to read them in, using the following code.</p>
+<p>The idiomatic python way</p>
+<div class="highlight"><pre><span></span><span class="n">files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;weather/*.csv&#39;</span><span class="p">)</span>
+<span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;station&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;tmpf&#39;</span><span class="p">,</span> <span class="s1">&#39;relh&#39;</span><span class="p">,</span> <span class="s1">&#39;sped&#39;</span><span class="p">,</span> <span class="s1">&#39;mslp&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;p01i&#39;</span><span class="p">,</span> <span class="s1">&#39;vsby&#39;</span><span class="p">,</span> <span class="s1">&#39;gust_mph&#39;</span><span class="p">,</span> <span class="s1">&#39;skyc1&#39;</span><span class="p">,</span> <span class="s1">&#39;skyc2&#39;</span><span class="p">,</span> <span class="s1">&#39;skyc3&#39;</span><span class="p">]</span>
+
+<span class="c1"># init empty DataFrame, like you might for a list</span>
+<span class="n">weather</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">fp</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+    <span class="n">city</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">weather</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">city</span><span class="p">)</span>
+</pre></div>
+
+
+<p>This is pretty standard code, quite similar to building up a list of tuples, say.
+The only nitpick is that you'd probably use a list-comprehension if you were just making a list.
+But we don't have special syntax for DataFrame-comprehensions (if only), so you'd fall back to the "initialize empty container, append to said container" pattern.</p>
+<p>But there's a better, pandorable, way</p>
+<div class="highlight"><pre><span></span><span class="n">files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;weather/*.csv&#39;</span><span class="p">)</span>
+<span class="n">weather_dfs</span> <span class="o">=</span> <span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span> <span class="k">for</span> <span class="n">fp</span> <span class="ow">in</span> <span class="n">files</span><span class="p">]</span>
+<span class="n">weather</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">weather_dfs</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Subjectively this is cleaner and more beautiful.
+There's fewer lines of code.
+You don't have this extraneous detail of building an empty DataFrame.
+And objectively the pandorable way is faster, as we'll test next.</p>
+<p>We'll define two functions for building an identical DataFrame. The first <code>append_df</code>, creates an empty DataFrame and appends to it. The second, <code>concat_df</code>,  creates many DataFrames, and concatenates them at the end. We also write a short decorator that runs the functions a handful of times and records the results.</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+
+<span class="n">size_per</span> <span class="o">=</span> <span class="mi">5000</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">cols</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="s1">&#39;abcd&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">timed</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Running a microbenchmark. Never use this.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">deco</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">timings</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                <span class="n">timings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">timings</span>
+        <span class="k">return</span> <span class="n">wrapper</span>
+    <span class="k">return</span> <span class="n">deco</span>
+
+<span class="nd">@timed</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">append_df</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    The pythonic (bad) way</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">cols</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size_per</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">cols</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">df</span>
+
+<span class="nd">@timed</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">concat_df</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    The pandorabe (good) way</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">dfs</span> <span class="o">=</span> <span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size_per</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">cols</span><span class="p">)</span>
+           <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">t_append</span> <span class="o">=</span> <span class="n">append_df</span><span class="p">()</span>
+<span class="n">t_concat</span> <span class="o">=</span> <span class="n">concat_df</span><span class="p">()</span>
+
+<span class="n">timings</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;Append&quot;</span><span class="p">:</span> <span class="n">t_append</span><span class="p">,</span> <span class="s2">&quot;Concat&quot;</span><span class="p">:</span> <span class="n">t_concat</span><span class="p">})</span>
+             <span class="o">.</span><span class="n">stack</span><span class="p">()</span>
+             <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+             <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;level_1&#39;</span><span class="p">:</span> <span class="s1">&#39;Method&#39;</span><span class="p">}))</span>
+<span class="n">timings</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>level_0</th>
+      <th>Method</th>
+      <th>Time (s)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>Append</td>
+      <td>0.171326</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>Concat</td>
+      <td>0.096445</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1</td>
+      <td>Append</td>
+      <td>0.155903</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1</td>
+      <td>Concat</td>
+      <td>0.095105</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2</td>
+      <td>Append</td>
+      <td>0.155185</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;Method&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">timings</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+
+
+<p><img alt="png" src="modern_4_performance_files/modern_4_performance_6_0.png"></p>
+<h2>Datatypes</h2>
+<p>The pandas type system essentially <a href="http://docs.scipy.org/doc/numpy/reference/arrays.scalars.html">NumPy's</a> with a few extensions (<code>categorical</code>, <code>datetime64</code> with timezone, <code>timedelta64</code>).
+An advantage of the DataFrame over a 2-dimensional NumPy array is that the DataFrame can have columns of various types within a single table.
+That said, each column should have a specific dtype; you don't want to be mixing bools with ints with strings within a single column.
+For one thing, this is slow.
+It forces the column to be have an <code>object</code> dtype (the fallback python-object container type), which means you don't get any of the type-specific optimizations in pandas or NumPy.
+For another, it means you're probably violating the maxims of tidy data, which we'll discuss next time.</p>
+<p>When should you have <code>object</code> columns?
+There are a few places where the NumPy / pandas type system isn't as rich as you might like.
+There's no integer NA (at the moment anyway), so if you have any missing values, represented by <code>NaN</code>, your otherwise integer column will be floats.
+There's also no <code>date</code> dtype (distinct from <code>datetime</code>).
+Consider the needs of your application: can you treat an integer <code>1</code> as <code>1.0</code>?
+Can you treat <code>date(2016, 1, 1)</code> as <code>datetime(2016, 1, 1, 0, 0)</code>?
+In my experience, this is rarely a problem other than when writing to something with a stricter schema like a database.
+But at that point it's fine to cast to one of the less performant types, since you're just not doing numeric operations anymore.</p>
+<p>The last case of <code>object</code> dtype data is text data.
+Pandas doesn't have any fixed-width string dtypes, so you're stuck with python objects.
+There is an important exception here, and that's low-cardinality text data, for which you'll want to use the <code>category</code> dtype (see below).</p>
+<p>If you have object data (either strings or python objects) that needs to be converted, checkout the <a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/generated/pandas.to_numeric.html"><code>to_numeric</code></a>, <a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/generated/pandas.to_datetime.html"><code>to_datetime</code></a> and <a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/generated/pandas.to_timedelta.html"><code>to_timedelta</code></a> methods.</p>
+<h2>Iteration, Apply, And Vectorization</h2>
+<p>We know that <a href="https://jakevdp.github.io/blog/2014/05/09/why-python-is-slow/">"Python is slow"</a> (scare  quotes since that statement is too broad to be meaningful).
+There are various steps that can be taken to improve your code's performance from relatively simple changes, to rewriting your code in a lower-level language, to trying to parallelize it.
+And while you might have many options, there's typically an order you would proceed in.</p>
+<p>First (and I know it's cliché to say so, but still) benchmark your code.
+Make sure you actually need to spend time optimizing it.
+There are <a href="https://github.com/nvdv/vprof">many</a> <a href="https://jiffyclub.github.io/snakeviz/">options</a> <a href="https://github.com/rkern/line_profiler">for</a> <a href="https://docs.python.org/3.5/library/timeit.html">benchmarking</a> and visualizing where things are slow.</p>
+<p>Second, consider your algorithm.
+Make sure you aren't doing more work than you need to.
+A common one I see is doing a full sort on an array, just to select the <code>N</code> largest or smallest items.
+Pandas has methods for that.</p>
+<div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/347136217_T_ONTIME.csv&quot;</span><span class="p">)</span>
+<span class="n">delays</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;DEP_DELAY&#39;</span><span class="p">]</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Select the 5 largest delays</span>
+<span class="n">delays</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>112623    1480.0
+158136    1545.0
+152911    1934.0
+60246     1970.0
+59719     2755.0
+Name: DEP_DELAY, dtype: float64
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">delays</span><span class="o">.</span><span class="n">nsmallest</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>300895   -59.0
+235921   -58.0
+197897   -56.0
+332533   -56.0
+344542   -55.0
+Name: DEP_DELAY, dtype: float64
+</pre></div>
+
+
+<p>We follow up the <code>nlargest</code> or <code>nsmallest</code> with a sort (the result of <code>nlargest/smallest</code> is unordered), but it's much easier to sort 5 items that 500,000. The timings bear this out:</p>
+<div class="highlight"><pre><span></span><span class="o">%</span><span class="n">timeit</span> <span class="n">delays</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>31 ms ± 1.05 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="o">%</span><span class="n">timeit</span> <span class="n">delays</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>7.87 ms ± 113 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+</pre></div>
+
+
+<p>"Use the right algorithm" is easy to say, but harder to apply in practice since you have to actually figure out the best algorithm to use.
+That one comes down to experience.</p>
+<p>Assuming you're at a spot that needs optimizing, and you've got the correct algorithm, <em>and</em> there isn't a readily available optimized version of what you need in pandas/numpy/scipy/scikit-learn/statsmodels/..., then what?</p>
+<p>The first place to turn is probably a vectorized NumPy implementation.
+Vectorization here means operating directly on arrays, rather than looping over lists scalars.
+This is generally much less work than rewriting it in something like Cython, and you can get pretty good results just by making <em>effective</em> use of NumPy and pandas.
+While not every operation can be vectorized, many can.</p>
+<p>Let's work through an example calculating the <a href="https://en.wikipedia.org/wiki/Great-circle_distance">Great-circle distance</a> between airports.
+Grab the table of airport latitudes and longitudes from the <a href="http://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=288&amp;DB_Short_Name=Aviation%20Support%20Tables">BTS website</a> and extract it to a CSV.</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">download_airports</span>
+<span class="kn">import</span> <span class="nn">zipfile</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;data/airports.csv.zip&quot;</span><span class="p">):</span>
+    <span class="n">download_airports</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">coord</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/airports.csv.zip&quot;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;AIRPORT&#39;</span><span class="p">],</span>
+                     <span class="n">usecols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;AIRPORT&#39;</span><span class="p">,</span> <span class="s1">&#39;LATITUDE&#39;</span><span class="p">,</span> <span class="s1">&#39;LONGITUDE&#39;</span><span class="p">])</span>
+           <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+           <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+           <span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+           <span class="o">.</span><span class="n">sort_index</span><span class="p">())</span>
+
+<span class="n">coord</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>LATITUDE</th>
+      <th>LONGITUDE</th>
+    </tr>
+    <tr>
+      <th>AIRPORT</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>8F3</th>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+    </tr>
+    <tr>
+      <th>A03</th>
+      <td>58.457500</td>
+      <td>-154.023333</td>
+    </tr>
+    <tr>
+      <th>A09</th>
+      <td>60.482222</td>
+      <td>-146.582222</td>
+    </tr>
+    <tr>
+      <th>A18</th>
+      <td>63.541667</td>
+      <td>-150.993889</td>
+    </tr>
+    <tr>
+      <th>A24</th>
+      <td>59.331667</td>
+      <td>-135.896667</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>For whatever reason, suppose we're interested in all the pairwise distances (I've limited it to just a sample of 500 airports to make this manageable.
+In the real world you <em>probably</em> don't need <em>all</em> the pairwise distances and would be better off with a <a href="http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KDTree.html">tree</a>. Remember: think about what you actually need, and find the right algorithm for that).</p>
+<p>MultiIndexes have an alternative <code>from_product</code> constructor for getting the <a href="https://en.wikipedia.org/wiki/Cartesian_product">Cartesian product</a> of the arrays you pass in.
+We'll give it <code>coords.index</code> twice (to get its Cartesian product with itself).
+That gives a MultiIndex of all the combination.
+With some minor reshaping of <code>coords</code> we'll have a DataFrame with all the latitude/longitude pairs.</p>
+<div class="highlight"><pre><span></span><span class="n">idx</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_product</span><span class="p">([</span><span class="n">coord</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">coord</span><span class="o">.</span><span class="n">index</span><span class="p">],</span>
+                                 <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;origin&#39;</span><span class="p">,</span> <span class="s1">&#39;dest&#39;</span><span class="p">])</span>
+
+<span class="n">pairs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">coord</span><span class="o">.</span><span class="n">add_suffix</span><span class="p">(</span><span class="s1">&#39;_1&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;origin&#39;</span><span class="p">),</span>
+                   <span class="n">coord</span><span class="o">.</span><span class="n">add_suffix</span><span class="p">(</span><span class="s1">&#39;_2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;dest&#39;</span><span class="p">)],</span>
+                  <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">pairs</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>LATITUDE_1</th>
+      <th>LONGITUDE_1</th>
+      <th>LATITUDE_2</th>
+      <th>LONGITUDE_2</th>
+    </tr>
+    <tr>
+      <th>origin</th>
+      <th>dest</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">8F3</th>
+      <th>8F3</th>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+    </tr>
+    <tr>
+      <th>A03</th>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+      <td>58.457500</td>
+      <td>-154.023333</td>
+    </tr>
+    <tr>
+      <th>A09</th>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+      <td>60.482222</td>
+      <td>-146.582222</td>
+    </tr>
+    <tr>
+      <th>A18</th>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+      <td>63.541667</td>
+      <td>-150.993889</td>
+    </tr>
+    <tr>
+      <th>A24</th>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+      <td>59.331667</td>
+      <td>-135.896667</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="highlight"><pre><span></span><span class="n">idx</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[</span><span class="n">idx</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">idx</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>125250
+</pre></div>
+
+
+<p>We'll break that down a bit, but don't lose sight of the real target: our great-circle distance calculation.</p>
+<p>The <code>add_suffix</code> (and <code>add_prefix</code>) method is handy for quickly renaming the columns.</p>
+<div class="highlight"><pre><span></span><span class="n">coord</span><span class="o">.</span><span class="n">add_suffix</span><span class="p">(</span><span class="s1">&#39;_1&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>LATITUDE_1</th>
+      <th>LONGITUDE_1</th>
+    </tr>
+    <tr>
+      <th>AIRPORT</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>8F3</th>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+    </tr>
+    <tr>
+      <th>A03</th>
+      <td>58.457500</td>
+      <td>-154.023333</td>
+    </tr>
+    <tr>
+      <th>A09</th>
+      <td>60.482222</td>
+      <td>-146.582222</td>
+    </tr>
+    <tr>
+      <th>A18</th>
+      <td>63.541667</td>
+      <td>-150.993889</td>
+    </tr>
+    <tr>
+      <th>A24</th>
+      <td>59.331667</td>
+      <td>-135.896667</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Alternatively you could use the more general <code>.rename</code> like <code>coord.rename(columns=lambda x: x + '_1')</code>.</p>
+<p>Next, we have the <code>reindex</code>.
+Like I mentioned in the prior chapter, indexes are crucial to pandas.
+<code>.reindex</code> is all about aligning a Series or DataFrame to a given index.
+In this case we use <code>.reindex</code> to align our original DataFrame to the new
+MultiIndex of combinations.
+By default, the output will have the original value if that index label was already present, and <code>NaN</code> otherwise.
+If we just called <code>coord.reindex(idx)</code>, with no additional arguments, we'd get a DataFrame of all <code>NaN</code>s.</p>
+<div class="highlight"><pre><span></span><span class="n">coord</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>LATITUDE</th>
+      <th>LONGITUDE</th>
+    </tr>
+    <tr>
+      <th>origin</th>
+      <th>dest</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">8F3</th>
+      <th>8F3</th>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>A03</th>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>A09</th>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>A18</th>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>A24</th>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>That's because there weren't any values of <code>idx</code> that were in <code>coord.index</code>,
+which makes sense since <code>coord.index</code> is just a regular one-level Index, while <code>idx</code> is a MultiIndex.
+We use the <code>level</code> keyword to handle the transition from the original single-level Index, to the two-leveled <code>idx</code>.</p>
+<blockquote>
+<p><code>level</code> : int or name</p>
+<p>Broadcast across a level, matching Index values on the
+    passed MultiIndex level</p>
+</blockquote>
+<div class="highlight"><pre><span></span><span class="n">coord</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;dest&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>LATITUDE</th>
+      <th>LONGITUDE</th>
+    </tr>
+    <tr>
+      <th>origin</th>
+      <th>dest</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">8F3</th>
+      <th>8F3</th>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+    </tr>
+    <tr>
+      <th>A03</th>
+      <td>58.457500</td>
+      <td>-154.023333</td>
+    </tr>
+    <tr>
+      <th>A09</th>
+      <td>60.482222</td>
+      <td>-146.582222</td>
+    </tr>
+    <tr>
+      <th>A18</th>
+      <td>63.541667</td>
+      <td>-150.993889</td>
+    </tr>
+    <tr>
+      <th>A24</th>
+      <td>59.331667</td>
+      <td>-135.896667</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>If you ever need to do an operation that mixes regular single-level indexes with Multilevel Indexes, look for a level keyword argument.
+For example, all the arithmatic methods (<code>.mul</code>, <code>.add</code>, etc.) have them.</p>
+<p>This is a bit wasteful since the distance from airport <code>A</code> to <code>B</code> is the same as <code>B</code> to <code>A</code>.
+We could easily fix this with a <code>idx = idx[idx.get_level_values(0) &lt;= idx.get_level_values(1)]</code>, but we'll ignore that for now.</p>
+<p>Quick tangent, I got some... let's say skepticism, on my last piece about the value of indexes.
+Here's an alternative version for the skeptics</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span><span class="p">,</span> <span class="n">chain</span>
+<span class="n">coord2</span> <span class="o">=</span> <span class="n">coord</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">product</span><span class="p">(</span><span class="n">coord2</span><span class="o">.</span><span class="n">add_suffix</span><span class="p">(</span><span class="s1">&#39;_1&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">coord2</span><span class="o">.</span><span class="n">add_suffix</span><span class="p">(</span><span class="s1">&#39;_2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+<span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">z</span><span class="p">))</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+
+<span class="n">df2</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;origin&#39;</span><span class="p">,</span> <span class="s1">&#39;LATITUDE_1&#39;</span><span class="p">,</span> <span class="s1">&#39;LONGITUDE_1&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;dest&#39;</span><span class="p">,</span> <span class="s1">&#39;LATITUDE_1&#39;</span><span class="p">,</span> <span class="s1">&#39;LONGITUDE_2&#39;</span><span class="p">])</span>
+       <span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;origin&#39;</span><span class="p">,</span> <span class="s1">&#39;dest&#39;</span><span class="p">]))</span>
+<span class="n">df2</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>LATITUDE_1</th>
+      <th>LONGITUDE_1</th>
+      <th>LATITUDE_1</th>
+      <th>LONGITUDE_2</th>
+    </tr>
+    <tr>
+      <th>origin</th>
+      <th>dest</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">8F3</th>
+      <th>8F3</th>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+    </tr>
+    <tr>
+      <th>A03</th>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+      <td>58.457500</td>
+      <td>-154.023333</td>
+    </tr>
+    <tr>
+      <th>A09</th>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+      <td>60.482222</td>
+      <td>-146.582222</td>
+    </tr>
+    <tr>
+      <th>A18</th>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+      <td>63.541667</td>
+      <td>-150.993889</td>
+    </tr>
+    <tr>
+      <th>A24</th>
+      <td>33.623889</td>
+      <td>-101.240833</td>
+      <td>59.331667</td>
+      <td>-135.896667</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>It's also readable (it's Python after all), though a bit slower.
+To me the <code>.reindex</code> method seems more natural.
+My thought process was, "I need all the combinations of origin &amp; destination (<code>MultiIndex.from_product</code>).
+Now I need to align this original DataFrame to this new MultiIndex (<code>coords.reindex</code>)."</p>
+<p>With that diversion out of the way, let's turn back to our great-circle distance calculation.
+Our first implementation is pure python.
+The algorithm itself isn't too important, all that matters is that we're doing math operations on scalars.</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+
+<span class="k">def</span> <span class="nf">gcd_py</span><span class="p">(</span><span class="n">lat1</span><span class="p">,</span> <span class="n">lng1</span><span class="p">,</span> <span class="n">lat2</span><span class="p">,</span> <span class="n">lng2</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculate great circle distance between two points.</span>
+<span class="sd">    http://www.johndcook.com/blog/python_longitude_latitude/</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lat1, lng1, lat2, lng2: float</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    distance:</span>
+<span class="sd">      distance from ``(lat1, lng1)`` to ``(lat2, lng2)`` in kilometers.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># python2 users will have to use ascii identifiers (or upgrade)</span>
+    <span class="n">degrees_to_radians</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span>
+    <span class="err">ϕ</span><span class="mi">1</span> <span class="o">=</span> <span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">lat1</span><span class="p">)</span> <span class="o">*</span> <span class="n">degrees_to_radians</span>
+    <span class="err">ϕ</span><span class="mi">2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">lat2</span><span class="p">)</span> <span class="o">*</span> <span class="n">degrees_to_radians</span>
+
+    <span class="err">θ</span><span class="mi">1</span> <span class="o">=</span> <span class="n">lng1</span> <span class="o">*</span> <span class="n">degrees_to_radians</span>
+    <span class="err">θ</span><span class="mi">2</span> <span class="o">=</span> <span class="n">lng2</span> <span class="o">*</span> <span class="n">degrees_to_radians</span>
+
+    <span class="n">cos</span> <span class="o">=</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="err">ϕ</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="err">ϕ</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="err">θ</span><span class="mi">1</span> <span class="o">-</span> <span class="err">θ</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span>
+           <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="err">ϕ</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="err">ϕ</span><span class="mi">2</span><span class="p">))</span>
+    <span class="c1"># round to avoid precision issues on identical points causing ValueErrors</span>
+    <span class="n">cos</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">cos</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="n">arc</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">acos</span><span class="p">(</span><span class="n">cos</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">arc</span> <span class="o">*</span> <span class="mi">6373</span>  <span class="c1"># radius of earth, in kilometers</span>
+</pre></div>
+
+
+<p>The second implementation uses NumPy.
+Aside from numpy having a builtin <code>deg2rad</code> convenience function (which is probably a bit slower than multiplying by a constant $\frac{\pi}{180}$), basically all we've done is swap the <code>math</code> prefix for <code>np</code>.
+Thanks to NumPy's broadcasting, we can write code that works on scalars or arrays of conformable shape.</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">gcd_vec</span><span class="p">(</span><span class="n">lat1</span><span class="p">,</span> <span class="n">lng1</span><span class="p">,</span> <span class="n">lat2</span><span class="p">,</span> <span class="n">lng2</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculate great circle distance.</span>
+<span class="sd">    http://www.johndcook.com/blog/python_longitude_latitude/</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lat1, lng1, lat2, lng2: float or array of float</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    distance:</span>
+<span class="sd">      distance from ``(lat1, lng1)`` to ``(lat2, lng2)`` in kilometers.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># python2 users will have to use ascii identifiers</span>
+    <span class="err">ϕ</span><span class="mi">1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">lat1</span><span class="p">)</span>
+    <span class="err">ϕ</span><span class="mi">2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">lat2</span><span class="p">)</span>
+
+    <span class="err">θ</span><span class="mi">1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lng1</span><span class="p">)</span>
+    <span class="err">θ</span><span class="mi">2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lng2</span><span class="p">)</span>
+
+    <span class="n">cos</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="err">ϕ</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="err">ϕ</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="err">θ</span><span class="mi">1</span> <span class="o">-</span> <span class="err">θ</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span>
+           <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="err">ϕ</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="err">ϕ</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">arc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">cos</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">arc</span> <span class="o">*</span> <span class="mi">6373</span>
+</pre></div>
+
+
+<p>To use the python version on our DataFrame, we can either iterate...</p>
+<div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">time</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">gcd_py</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pairs</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)],</span>
+          <span class="n">index</span><span class="o">=</span><span class="n">pairs</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>CPU times: user 833 ms, sys: 12.7 ms, total: 846 ms
+Wall time: 847 ms
+
+
+
+
+
+origin  dest
+8F3     8F3         0.000000
+        A03      4744.967448
+        A09      4407.533212
+        A18      4744.593127
+        A24      3820.092688
+                    ...     
+ZZU     YUY     12643.665960
+        YYL     13687.592278
+        ZBR      4999.647307
+        ZXO     14925.531303
+        ZZU         0.000000
+Length: 250000, dtype: float64
+</pre></div>
+
+
+<p>Or use <code>DataFrame.apply</code>.</p>
+<div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">time</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">pairs</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">gcd_py</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;LATITUDE_1&#39;</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;LONGITUDE_1&#39;</span><span class="p">],</span>
+                                 <span class="n">x</span><span class="p">[</span><span class="s1">&#39;LATITUDE_2&#39;</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;LONGITUDE_2&#39;</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>CPU times: user 14.4 s, sys: 61.2 ms, total: 14.4 s
+Wall time: 14.4 s
+</pre></div>
+
+
+<p>But as you can see, you don't want to use apply, especially with <code>axis=1</code> (calling the function on each row).  It's doing a lot more work handling dtypes in the background, and trying to infer the correct output shape that are pure overhead in this case. On top of that, it has to essentially use a for loop internally.</p>
+<p>You <em>rarely</em> want to use <code>DataFrame.apply</code> and almost never should use it with <code>axis=1</code>. Better to write functions that take arrays, and pass those in directly. Like we did with the vectorized version</p>
+<div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">time</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">gcd_vec</span><span class="p">(</span><span class="n">pairs</span><span class="p">[</span><span class="s1">&#39;LATITUDE_1&#39;</span><span class="p">],</span> <span class="n">pairs</span><span class="p">[</span><span class="s1">&#39;LONGITUDE_1&#39;</span><span class="p">],</span>
+            <span class="n">pairs</span><span class="p">[</span><span class="s1">&#39;LATITUDE_2&#39;</span><span class="p">],</span> <span class="n">pairs</span><span class="p">[</span><span class="s1">&#39;LONGITUDE_2&#39;</span><span class="p">])</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>CPU times: user 31.1 ms, sys: 26.4 ms, total: 57.5 ms
+Wall time: 37.2 ms
+
+
+/Users/taugspurger/miniconda3/envs/modern-pandas/lib/python3.6/site-packages/ipykernel_launcher.py:24: RuntimeWarning: invalid value encountered in arccos
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">r</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>origin  dest
+8F3     8F3        0.000000
+        A03     4744.967484
+        A09     4407.533240
+        A18     4744.593111
+        A24     3820.092639
+dtype: float64
+</pre></div>
+
+
+<p>I try not to use the word "easy" when teaching, but that optimization was easy right?
+Why then, do I come across uses of <code>apply</code>, in my code and others', even when the vectorized version is available?
+The difficulty lies in knowing about broadcasting, and seeing where to apply it.</p>
+<p>For example, the README for <a href="https://github.com/CamDavidsonPilon/lifetimes">lifetimes</a> (by Cam Davidson Pilon, also author of <a href="https://github.com/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers">Bayesian Methods for Hackers</a>, <a href="https://github.com/CamDavidsonPilon/lifelines">lifelines</a>, and <a href="https://dataorigami.net">Data Origami</a>) used to have an example of passing <a href="https://github.com/CamDavidsonPilon/lifetimes/blob/5b4f7de0720413b6951ac0a4b0082bd50255a231/lifetimes/estimation.py#L249">this method</a> into a <code>DataFrame.apply</code>.</p>
+<div class="highlight"><pre><span></span><span class="n">data</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">bgf</span><span class="o">.</span><span class="n">conditional_expected_number_of_purchases_up_to_time</span><span class="p">(</span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s1">&#39;recency&#39;</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p>If you look at the function <a href="https://github.com/CamDavidsonPilon/lifetimes/blob/5b4f7de0720413b6951ac0a4b0082bd50255a231/lifetimes/estimation.py#L249">I linked to</a>, it's doing a fairly complicated computation involving a negative log likelihood and the Gamma function from <code>scipy.special</code>.
+But crucially, it was already vectorized.
+We were able to change the example to just pass the arrays (Series in this case) into the function, rather than applying the function to each row.</p>
+<div class="highlight"><pre><span></span><span class="n">bgf</span><span class="o">.</span><span class="n">conditional_expected_number_of_purchases_up_to_time</span><span class="p">(</span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;recency&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p>This got us another 30x speedup on the example dataset.
+I bring this up because it's very natural to have to translate an equation to code and think, "Ok now I need to apply this function to each row", so you reach for <code>DataFrame.apply</code>.
+See if you can just pass in the NumPy array or Series itself instead.</p>
+<p>Not all operations this easy to vectorize.
+Some operations are iterative by nature, and rely on the results of surrounding computations to proceed. In cases like this you can hope that one of the scientific python libraries has implemented it efficiently for you, or write your own solution using Numba / C / Cython / Fortran.</p>
+<p>Other examples take a bit more thought or knowledge to vectorize.
+Let's look at <a href="http://nbviewer.jupyter.org/github/jreback/pydata2015-london/blob/master/notebooks/idioms.ipynb">this</a>
+example, taken from Jeff Reback's PyData London talk, that groupwise normalizes a dataset by subtracting the mean and dividing by the standard deviation for each group.</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+
+<span class="k">def</span> <span class="nf">create_frame</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n_groups</span><span class="p">):</span>
+    <span class="c1"># just setup code, not benchmarking this</span>
+    <span class="n">stamps</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;20010101&#39;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;ms&#39;</span><span class="p">)</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">stamps</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>    
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n_groups</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="n">n</span><span class="p">),</span>
+                         <span class="s1">&#39;stamp&#39;</span><span class="p">:</span> <span class="n">stamps</span><span class="p">,</span>
+                         <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="n">n</span><span class="p">),</span>
+                         <span class="s1">&#39;value2&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n</span><span class="p">)})</span>
+
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">create_frame</span><span class="p">(</span><span class="mi">1000000</span><span class="p">,</span><span class="mi">10000</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">f_apply</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="c1"># Typical transform</span>
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value2</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span><span class="o">/</span><span class="n">x</span><span class="o">.</span><span class="n">std</span><span class="p">())</span>
+
+<span class="k">def</span> <span class="nf">f_unwrap</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="c1"># &quot;unwrapped&quot;</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value2</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">value2</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">v</span><span class="o">-</span><span class="n">g</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">))</span><span class="o">/</span><span class="n">g</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Timing it we see that the "unwrapped" version, get's quite a bit better performance.</p>
+<div class="highlight"><pre><span></span><span class="o">%</span><span class="n">timeit</span> <span class="n">f_apply</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>4.28 s ± 161 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="o">%</span><span class="n">timeit</span> <span class="n">f_unwrap</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>53.3 ms ± 1.97 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+</pre></div>
+
+
+<p>Pandas GroupBy objects intercept calls for common functions like mean, sum, etc. and substitutes them with optimized Cython versions.
+So the unwrapped <code>.transform(np.mean)</code> and <code>.transform(np.std)</code> are fast, while the <code>x.mean</code> and <code>x.std</code> in the <code>.apply(lambda x: x - x.mean()/x.std())</code> aren't.</p>
+<p><code>Groupby.apply</code> is always going to be around, beacuse it offers maximum flexibility. If you need to <a href="http://stackoverflow.com/q/35924126/1889400">fit a model on each group and create additional columns in the process</a>, it can handle that. It just might not be the fastest (which may be OK sometimes).</p>
+<p>This last example is admittedly niche.
+I'd like to think that there aren't too many places in pandas where the natural thing to do <code>.transform((x - x.mean()) / x.std())</code> is slower than the less obvious alternative.
+Ideally the user wouldn't have to know about GroupBy having special fast implementations of common methods.
+But that's where we are now.</p>
+<h2>Categoricals</h2>
+<p>Thanks to some great work by <a href="https://twitter.com/janschulz">Jan Schulz</a>, <a href="https://twitter.com/janschulz">Jeff Reback</a>, and others, pandas 0.15 gained a new <a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/categorical.html">Categorical</a> data type. Categoricals are nice for many reasons beyond just efficiency, but we'll focus on that here.</p>
+<p>Categoricals are an efficient way of representing data (typically strings) that have a low <em>cardinality</em>, i.e. relatively few distinct values relative to the size of the array. Internally, a Categorical stores the categories once, and an array of <code>codes</code>, which are just integers that indicate which category belongs there. Since it's cheaper to store a <code>code</code> than a <code>category</code>, we save on memory (shown next).</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">string</span>
+
+<span class="n">s</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_letters</span><span class="p">),</span> <span class="mi">100000</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;{:0.2f} KB&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">memory_usage</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>800.00 KB
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;{:0.2f} KB&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">memory_usage</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>102.98 KB
+</pre></div>
+
+
+<p>Beyond saving memory, having codes and a fixed set of categories offers up a bunch of algorithmic optimizations that pandas and others can take advantage of.</p>
+<p><a href="https://twitter.com/mrocklin">Matthew Rocklin</a> has a very nice <a href="http://matthewrocklin.com/blog/work/2015/06/18/Categoricals">post</a> on using categoricals, and optimizing code in general.</p>
+<h2>Going Further</h2>
+<p>The pandas documentation has a section on <a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/enhancingperf.html">enhancing performance</a>, focusing on using Cython or <code>numba</code> to speed up a computation. I've focused more on the lower-hanging fruit of picking the right algorithm, vectorizing your code, and using pandas or numpy more effetively. There are further optimizations availble if these aren't enough.</p>
+<h2>Summary</h2>
+<p>This post was more about how to make effective use of numpy and pandas, than writing your own highly-optimized code.
+In my day-to-day work of data analysis it's not worth the time to write and compile a cython extension.
+I'd rather rely on pandas to be fast at what matters (label lookup on large arrays, factorizations for groupbys and merges, numerics).
+If you want to learn more about what pandas does to make things fast, checkout Jeff Tratner' talk from PyData Seattle <a href="http://www.jeffreytratner.com/slides/pandas-under-the-hood-pydata-seattle-2015.pdf">talk</a> on pandas' internals.</p>
+<p>Next time we'll look at a differnt kind of optimization: using the Tidy Data principles to facilitate efficient data analysis.</p>
+  </div>
+
+</article>
+
+
+  </main>
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
+</body>
+</html>

@@ -1,43 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-          <title>DatasFrame</title>
-        <meta charset="utf-8" />
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-        <link rel="stylesheet" href="./theme/css/main.css" />
-        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
 
 
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
 
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+<meta name="keywords" content="">
+
+  <title>
+    datas-frame
+&ndash; Using Python to tackle the CPS  </title>
 
 </head>
 
-<body id="index" class="home">
-    <nav>
-      <a href=".">Home | </a>
-      <a href="/archives.html">Archive | </a>
-      <a href="/categories.html">Categories | </a>
-      <a href="/pages/about.html">About | </a>
-      <a href="https://tomaugspurger.github.io/feeds/all.rss.xml">RSS</a>
-    </nav>
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+      </p>
+    </header>
 
-<section id="content" class="body">
-  <header>
-    <h2 class="entry-title">
-      <a href="./tackling the cps.html" rel="bookmark"
-         title="Permalink to Tackling the CPS">Tackling the CPS</a></h2>
- 
-  </header>
-  <footer class="post-info">
-    <abbr class="published" title="2014-01-27T12:00:00-06:00">
-      Mon 27 January 2014
-    </abbr>
-    <address class="vcard author">
-      By           <a class="url fn" href="./author/tom-augspurger.html">Tom Augspurger</a>
-    </address>
-  </footer><!-- /.post-info -->
-  <div class="entry-content">
-    <p>Before diving in, you should know a bit about the data. I was working with the monthly microdata files from the CPS. These are used to estimate things like the unemployment rate you see reported every month. Since around 2002, about 60,000 households are interviewed 8 times each over a year. They're interviewed for 4 months, take 4 months off, and are interviewed for 4 more months after the break. Questions are asked about demographics, education, economic activity (and more).</p>
+<article>
+  <div class="article__title">
+    <h1><a href="/tackling the cps.html">Using Python to tackle the CPS</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 27 January 2014</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>The <a href="http://www.census.gov/cps/">Current Population Survey</a> is an important source of data for economists. It's modern form took shape in the 70's and unfortunately the data format and distribution shows its age. Some centers like <a href="https://cps.ipums.org/cps/">IPUMS</a> have attempted to put a nicer face on accessing the data, but they haven't done everything yet. In this series I'll describe methods I used to fetch, parse, and analyze CPS data for my second year paper. Today I'll describe fetching the data. Everything is available at the paper's <a href="https://github.com/TomAugspurger/dnwr-zlb">GitHub Repository</a>.</p>
+<p>Before diving in, you should know a bit about the data. I was working with the monthly microdata files from the CPS. These are used to estimate things like the unemployment rate you see reported every month. Since around 2002, about 60,000 households are interviewed 8 times each over a year. They're interviewed for 4 months, take 4 months off, and are interviewed for 4 more months after the break. Questions are asked about demographics, education, economic activity (and more).</p>
 <h2>Fetching the Data</h2>
 <p>This was probably the easiest part of the whole project.
 The <a href="http://www.nber.org/data/cps_basic.html">CPS website</a> has links to all the monthly files and some associated data dictionaries describing the layout of the files (more on this later).</p>
@@ -45,7 +59,7 @@ The <a href="http://www.nber.org/data/cps_basic.html">CPS website</a> has links 
 <p>If you're curious the python regex used to match those two patterns is <code>re.compile(r'cpsb\d{4}.Z|\w{3}\d{2}pub.zip|\.[ddf,asc]$')</code>. Yes that's much clearer.</p>
 <p>I used python's builtin <a href="http://docs.python.org/2/library/urllib2.html"><code>urllib2</code></a> to fetch the site contents and parse with <code>lxml</code>. You should <em>really</em> just use <a href="http://docs.python-requests.org/en/latest/">requests</a>, instead of <code>urllib2</code> but I wanted to keep dependencies for my project slim (I gave up on this hope later).</p>
 <p>A common pattern I used was to parse all of the links on a website, filter out the ones I don't want, and do something with the ones I do want. Here's an example:</p>
-<div class="codehilite"><pre><span></span><span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">ifilter</span><span class="p">(</span><span class="n">partial_matcher</span><span class="p">,</span> <span class="n">root</span><span class="o">.</span><span class="n">iterlinks</span><span class="p">()):</span>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">ifilter</span><span class="p">(</span><span class="n">partial_matcher</span><span class="p">,</span> <span class="n">root</span><span class="o">.</span><span class="n">iterlinks</span><span class="p">()):</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_fname</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">link</span>
     <span class="n">fname</span> <span class="o">=</span> <span class="n">_fname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">existing</span> <span class="o">=</span> <span class="n">_exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="n">fname</span><span class="p">))</span>
@@ -57,7 +71,7 @@ The <a href="http://www.nber.org/data/cps_basic.html">CPS website</a> has links 
 
 <p><code>root</code> is just the parsed html from <code>lxml.parse</code>. <code>iterlinks()</code> returns an iterable, which I filter through <code>partial_matcher</code>, a function that matches the filename patterns I described above. Iterators are my favorite feature of Python (not that they are exclusive to Python; I just love easy and flexible they are). The idea of having a list, filtering it, and applying a function to the ones you want is so simple, but so generally applicable. I could have even been a bit more functional and written it as <code>imap(downloader(ifilter(existing, ifilter(partial_matcher, root.iterlinks()))</code>. Lovely in its own way!</p>
 <p>I do some checking to see if the file exists (so that I can easily download new months). If it is a new month, the filename gets passed to <code>downloader</code>:</p>
-<div class="codehilite"><pre><span></span>def downloader(link, out_dir, dl_base=&quot;http://www.nber.org/cps-basic/&quot;):
+<div class="highlight"><pre><span></span>def downloader(link, out_dir, dl_base=&quot;http://www.nber.org/cps-basic/&quot;):
     &quot;&quot;&quot;
     Link is a str like cpsmar06.zip; It is both the end of the url
     and the filename to be used.
@@ -71,13 +85,35 @@ The <a href="http://www.nber.org/data/cps_basic.html">CPS website</a> has links 
 <p>This reads the data from at url and write writes it do a file.</p>
 <p>Finally, I run <a href="https://github.com/TomAugspurger/dnwr-zlb/blob/master/data_wrangling/cps_wrangling/panel_construction/renamer.py"><code>renamer.py</code></a> to clean up the file names. Just because the CPS is inconsistent doesn't mean that we have to be.</p>
 <p>In the <a href="http://tomaugspurger.github.io/blog/2014/02/04/tackling%20the%20cps%20(part%202)/">next post</a> I'll describe parsing the files we just downloaded.</p>
-  </div><!-- /.entry-content -->
-</section>
+  </div>
 
-    <footer>
-      <p>&copy; Tom Augspurger </p>
-    </footer>
+</article>
+
+
   </main>
-
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
 </body>
 </html>

@@ -1,36 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-        <title>DatasFrame</title>
-        <meta charset="utf-8" />
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-        <link rel="stylesheet" href="./theme/css/main.css" />
-        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+
+  <title>
+    datas-frame
+&ndash; Categories  </title>
+
 </head>
 
-<body id="index" class="home">
-    <nav>
-      <a href=".">Home | </a>
-      <a href="/archives.html">Archive | </a>
-      <a href="/categories.html">Categories | </a>
-      <a href="/pages/about.html">About | </a>
-      <a href="https://tomaugspurger.github.io/feeds/all.rss.xml">RSS</a>
-    </nav>
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+      </p>
+    </header>
 
-<ul>
-    <li><a href="./category/data-science.html">data science</a></li>
-    <li><a href="./category/math.html">math</a></li>
-    <li><a href="./category/misc.html">misc</a></li>
-    <li><a href="./category/pandas.html">pandas</a></li>
-    <li><a href="./category/programming-open-source.html">programming, open source</a></li>
-    <li><a href="./category/python.html">python</a></li>
-    <li><a href="./category/stats-for-strategy.html">stats for strategy</a></li>
-</ul>
+<article>
+  <div class="article__text">
+    <ul>
+      <li><a href="/category/data-science.html">data science</a> (3)</li>
+      <li><a href="/category/misc.html">misc</a> (8)</li>
+      <li><a href="/category/python.html">python</a> (4)</li>
+      <li><a href="/category/scripts.html">scripts</a> (2)</li>
+    </ul>
+  </div>
+</article>
 
-    <footer>
-      <p>&copy; Tom Augspurger </p>
-    </footer>
+
   </main>
-
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
 </body>
 </html>

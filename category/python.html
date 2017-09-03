@@ -1,144 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-        <title>DatasFrame</title>
-        <meta charset="utf-8" />
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-        <link rel="stylesheet" href="../theme/css/main.css" />
-        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+<link href="/feeds/python.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame python Category Atom" />
+
+  <title>
+    datas-frame
+&ndash; Category: python  </title>
+
 </head>
 
-<body id="index" class="home">
-    <nav>
-      <a href="..">Home | </a>
-      <a href="/archives.html">Archive | </a>
-      <a href="/categories.html">Categories | </a>
-      <a href="/pages/about.html">About | </a>
-      <a href="https://tomaugspurger.github.io/feeds/all.rss.xml">RSS</a>
-    </nav>
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+&gt; Category: python
+&brvbar; <a href="/feeds/python.atom.xml">Atom</a>
+      </p>
+    </header>
 
-<section id="content">
-
-<ol id="post-list">
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../tackling the cps (part 4).html" rel="bookmark" title="Permalink to Tacking the CPS (part 4)">Tacking the CPS (part 4)</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2014-05-19T12:01:00-05:00"> Mon 19 May 2014 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <p>As a reminder, the CPS interviews households 8 times over the course of 16 months. They're interviewed for 4 months, take 8 months off, and are interviewed four more times. So if your first interview was in month <span class="math">\(m\)</span>, you're also interviewed in months </p>
-<div class="math">$$m + 1, m + 2, m + 3, m + 12, m + 13, m + 14, m + 15$$ ...</div><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-    
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript'; 
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../tackling the cps (part 3).html" rel="bookmark" title="Permalink to Tackling the CPS (Part 3)">Tackling the CPS (Part 3)</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2014-05-19T12:00:00-05:00"> Mon 19 May 2014 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <p>As a reminder, we have a dictionary that looks like</p>
-<div class="codehilite"><pre><span></span>         <span class="nb">id</span>  <span class="n">length</span>  <span class="n">start</span>  <span class="n">end</span>
+<article>
+  <div class="article__title">
+    <h1><a href="/tackling the cps (part 4).html">Using Python to tackle the CPS (Part 4)</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 19 May 2014</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>Last time, we got to where we'd like to have started: One file per month, with each month laid out the same.</p>
+<p>As a reminder, the CPS interviews households 8 times over the course of 16 months. They're interviewed for 4 months, take 8 months off, and are interviewed four …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/tackling the cps (part 3).html">Using Python to tackle the CPS (Part 3)</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 19 May 2014</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>In <a href="http://tomaugspurger.github.io/blog/2014/02/04/tackling%20the%20cps%20(part%202)/">part 2</a> of this series, we set the stage to parse the data files themselves.</p>
+<p>As a reminder, we have a dictionary that looks like</p>
+<div class="highlight"><pre><span></span>         <span class="nb">id</span>  <span class="n">length</span>  <span class="n">start</span>  <span class="n">end</span>
 <span class="mi">0</span>    <span class="n">HRHHID</span>      <span class="mi">15</span>      <span class="mi">1</span>   <span class="mi">15</span>
 <span class="mi">1</span>   <span class="n">HRMONTH</span>       <span class="mi">2</span>     <span class="mi">16</span>   <span class="mi">17</span>
 <span class="mi">2</span>   <span class="n">HRYEAR4</span>       <span class="mi">4</span>     <span class="mi">18</span>   <span class="mi">21</span>
-<span class="mi">3</span>  <span class="n">HURESPLI</span>       <span class="mi">2</span>     <span class="mi">22</span>   <span class="mi">23</span>
-<span class="mi">4</span>   <span class="n">HUFINAL</span>       <span class="mi">3</span>     <span class="mi">24</span>   <span class="mi">26</span>
-         <span class="o">...</span>     <span class="o">...</span>    <span class="o">...</span>  <span class="o">...</span>
-</pre></div>
-
-
-<p>giving the columns of the raw CPS data files. This post ...</p> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../tackling the cps (part 2).html" rel="bookmark" title="Permalink to Tacking the CPS (Part 2)">Tacking the CPS (Part 2)</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2014-02-04T12:00:00-06:00"> Tue 04 February 2014 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <p>We downloaded two types of files last time:</p>
+<span class="mi">3</span>  <span class="n">HURESPLI</span>       <span class="mi">2</span>     <span class="mi">22</span>   <span class="mi">23 …</span></pre></div>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/tackling the cps (part 2).html">Using Python to tackle the CPS (Part 2)</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Tue 04 February 2014</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p><a href="http://tomaugspurger.github.io/blog/2014/01/27/tackling%20the%20cps/">Last time</a>, we used Python to fetch some data from the <a href="http://www.census.gov/cps/">Current Population Survey</a>. Today, we'll work on parsing the files we just downloaded.</p>
+<hr>
+<p>We downloaded two types of files last time:</p>
 <ul>
 <li>CPS monthly tables: a fixed-width format text file with the actual data</li>
-<li>Data Dictionaries: a text file describing the layout of the monthly tables</li>
-</ul>
-<p>Our goal is to parse the monthly tables. Here's the first two lines from the unzipped January ...</p> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../tackling the cps.html" rel="bookmark" title="Permalink to Tackling the CPS">Tackling the CPS</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2014-01-27T12:00:00-06:00"> Mon 27 January 2014 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <p>Before diving in, you should know a bit about the data. I was working with the monthly microdata files from the CPS. These are used to estimate things like the unemployment rate you see reported every month. Since around 2002, about 60,000 households are interviewed 8 times each over ...</p> </div><!-- /.entry-content -->
-        </article></li>
-</ol><!-- /#posts-list -->
-</section><!-- /#content -->
+<li>Data Dictionaries: a text file describing …</li></ul>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/tackling the cps.html">Using Python to tackle the CPS</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 27 January 2014</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>The <a href="http://www.census.gov/cps/">Current Population Survey</a> is an important source of data for economists. It's modern form took shape in the 70's and unfortunately the data format and distribution shows its age. Some centers like <a href="https://cps.ipums.org/cps/">IPUMS</a> have attempted to put a nicer face on accessing the data, but they haven't done everything …</p>
+  </div>
+</article>
 
-    <footer>
-      <p>&copy; Tom Augspurger </p>
-    </footer>
+<div class="pagination">
+    <ul>
+        <li class="pagination__prev">
+            <div class="pagination__prev--none">&laquo;</div>
+        </li>
+
+
+
+          <li>
+            <a class="pagination__page--current" href="/category/python.html">1</a>
+          </li>
+
+        <li class="pagination__next">
+            <div class="pagination__next--none">&raquo;</div>
+        </li>
+    </ul>
+</div>
+
   </main>
-
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
 </body>
 </html>

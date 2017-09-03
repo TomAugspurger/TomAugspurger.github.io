@@ -1,204 +1,299 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-        <title>DatasFrame</title>
-        <meta charset="utf-8" />
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-        <link rel="stylesheet" href="../theme/css/main.css" />
-        <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+<link href="/feeds/misc.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame misc Category Atom" />
+
+  <title>
+    datas-frame
+&ndash; Category: misc  </title>
+
 </head>
 
-<body id="index" class="home">
-    <nav>
-      <a href="..">Home | </a>
-      <a href="/archives.html">Archive | </a>
-      <a href="/categories.html">Categories | </a>
-      <a href="/pages/about.html">About | </a>
-      <a href="https://tomaugspurger.github.io/feeds/all.rss.xml">RSS</a>
-    </nav>
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+&gt; Category: misc
+&brvbar; <a href="/feeds/misc.atom.xml">Atom</a>
+      </p>
+    </header>
 
-<section id="content">
-
-<ol id="post-list">
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../intro-stitch.html" rel="bookmark" title="Permalink to Introducing Stitch">Introducing Stitch</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2016-08-30T12:00:00-05:00"> Tue 30 August 2016 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <p>Today I released <a href="https://github.com/pystitch/stitch"><code>stitch</code></a> into the wild.
-If you haven't yet, check out the <a href="https://pystitch.github.io">examples page</a> to see an example
-of what stitch does, and the <a href="https://github.com/pystitch/stitch">Github repo</a> for how to install.
-I'm using this post to explain why I wrote stitch, and some issues it tries to ...</p> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../modern-7-timeseries.html" rel="bookmark" title="Permalink to Modern Pandas (Part 7): Time Series">Modern Pandas (Part 7): Time Series</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2016-05-13T09:00:00-05:00"> Fri 13 May 2016 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/modern-7-timeseries.html.html">Modern Pandas (Part 7): Timeseries</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Fri 13 May 2016</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <hr>
 <p>This is part 7 in my series on writing modern idiomatic pandas.</p>
 <ul>
-<li><a href="modern-1.html">Modern Pandas</a></li>
-<li><a href="method-chaining.html">Method Chaining</a></li>
-<li><a href="modern-3-indexes.html">Indexes</a></li>
-<li><a href="modern-4-performance.html">Fast Pandas</a></li>
-<li><a href="modern-5-tidy.html">Tidy Data</a></li>
-<li><a href="modern-6-visualization.html">Visualization</a></li>
-<li><a href="modern-7-timeseries.html">Time Series</a></li>
+<li><a href="modern-1-intro.md">Modern Pandas</a></li>
+<li><a href="method-chaining.md">Method Chaining</a></li>
+<li><a href="modern-3-indexes.md">Indexes</a></li>
+<li><a href="modern-4-performance.md">Fast Pandas</a></li>
+<li><a href="modern-5-tidy.md">Tidy Data</a></li>
+<li><a href="modern-6-visualization.md">Visualization</a></li>
+<li><a href="modern-7-timeseries.md">Time Series</a></li>
 </ul>
-<p><a href="https://gist.github.com/4b42cdae8e145523aab75baedd0ddfe7">This post is available as a Jupyter notebook</a></p>
+<hr>
+<h1>Timeseries</h1>
+<p>Pandas started out in the financial world, so naturally it has strong timeseries support.</p>
+<p>The first half of this post will look at pandas' capabilities …</p>
+  </div>
+</article>
 <hr />
-<p>Pandas started out in the financial world, so naturally it has strong time series support.
-The first half ...</p> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../modern-6-visualization.html" rel="bookmark" title="Permalink to Modern Pandas (Part 6): Visualization">Modern Pandas (Part 6): Visualization</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2016-04-28T09:00:00-05:00"> Thu 28 April 2016 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/modern-pandas-part-6-visualization.html">Modern Pandas (Part 6): Visualization</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Thu 28 April 2016</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <hr>
 <p>This is part 6 in my series on writing modern idiomatic pandas.</p>
 <ul>
-<li><a href="modern-1.html">Modern Pandas</a></li>
-<li><a href="method-chaining.html">Method Chaining</a></li>
-<li><a href="modern-3-indexes.html">Indexes</a></li>
-<li><a href="modern-4-performance.html">Fast Pandas</a></li>
-<li><a href="modern-5-tidy.html">Tidy Data</a></li>
-<li><a href="modern-6-visualization.html">Visualization</a></li>
-<li><a href="modern-7-timeseries.html">Time Series</a></li>
+<li><a href="modern-1-intro">Modern Pandas</a></li>
+<li><a href="method-chaining">Method Chaining</a></li>
+<li><a href="modern-3-indexes">Indexes</a></li>
+<li><a href="modern-4-performance">Fast Pandas</a></li>
+<li><a href="modern-5-tidy">Tidy Data</a></li>
+<li><a href="modern-6-visualization">Visualization</a></li>
+<li><a href="modern-7-timeseries">Time Series</a></li>
 </ul>
-<p><a href="http://nbviewer.jupyter.org/gist/TomAugspurger/cd5197cef13d6103aba01abb4569d266">This post is available as a Jupyter notebook</a></p>
-<hr />
+<hr>
+<h1>Visualization and Exploratory Analysis</h1>
 <p>A few weeks ago, the R community went through some hand-wringing about plotting packages.
-For outsiders (like me ...</p> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../modern-5-tidy.html" rel="bookmark" title="Permalink to Modern Pandas (Part 5): Tidy Data">Modern Pandas (Part 5): Tidy Data</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2016-04-22T09:00:00-05:00"> Fri 22 April 2016 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <hr />
+For outsiders (like me) the details aren't that …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/modern-pandas-part-5-tidy-data.html">Modern Pandas (Part 5): Tidy Data</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Fri 22 April 2016</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <hr>
 <p>This is part 5 in my series on writing modern idiomatic pandas.</p>
 <ul>
-<li><a href="modern-1.html">Modern Pandas</a></li>
-<li><a href="method-chaining.html">Method Chaining</a></li>
-<li><a href="modern-3-indexes.html">Indexes</a></li>
-<li><a href="modern-4-performance.html">Fast Pandas</a></li>
-<li><a href="modern-5-tidy.html">Tidy Data</a></li>
-<li><a href="modern-6-visualization.html">Visualization</a></li>
-<li><a href="modern-7-timeseries.html">Time Series</a></li>
+<li><a href="modern-1-intro">Modern Pandas</a></li>
+<li><a href="method-chaining">Method Chaining</a></li>
+<li><a href="modern-3-indexes">Indexes</a></li>
+<li><a href="modern-4-performance">Fast Pandas</a></li>
+<li><a href="modern-5-tidy">Tidy Data</a></li>
+<li><a href="modern-6-visualization">Visualization</a></li>
+<li><a href="modern-7-timeseries">Time Series</a></li>
 </ul>
-<p><a href="http://nbviewer.jupyter.org/gist/TomAugspurger/1dc8c1a2469cef04a7d8feb5c1d5a3a8">This post is available as a Jupyter notebook</a></p>
-<hr />
-<h2>Reshaping &amp; Tidy Data</h2>
+<hr>
+<h1>Reshaping &amp; Tidy Data</h1>
 <blockquote>
 <p>Structuring datasets to facilitate analysis <a href="http://www.jstatsoft.org/v59/i10/paper">(Wickham 2014)</a></p>
 </blockquote>
-<p>So, you've sat down to analyze a ...</p> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../modern-4-performance.html" rel="bookmark" title="Permalink to Modern Pandas (Part 4): Performance">Modern Pandas (Part 4): Performance</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2016-04-18T09:00:00-05:00"> Mon 18 April 2016 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <hr />
+<p>So, you've sat down to analyze a new dataset.
+What do you do first?</p>
+<p>In episode …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/modern-panadas-part-3-indexes.html">Modern Panadas (Part 3): Indexes</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 11 April 2016</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <hr>
+<p>This is part 3 in my series on writing modern idiomatic pandas.</p>
+<ul>
+<li><a href="modern-1-intro">Modern Pandas</a></li>
+<li><a href="method-chaining">Method Chaining</a></li>
+<li><a href="modern-3-indexes">Indexes</a></li>
+<li><a href="modern-4-performance">Fast Pandas</a></li>
+<li><a href="modern-5-tidy">Tidy Data</a></li>
+<li><a href="modern-6-visualization">Visualization</a></li>
+<li><a href="modern-7-timeseries">Time Series</a></li>
+</ul>
+<hr>
+<p><code>Indexes</code> can be a difficult concept to grasp at first.
+I suspect this is partly becuase they're somewhat peculiar to pandas.
+These aren't like the indexes …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/modern-pandas-part-4-performance.html">Modern Pandas (Part 4): Performance</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Fri 08 April 2016</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <hr>
 <p>This is part 4 in my series on writing modern idiomatic pandas.</p>
 <ul>
-<li><a href="modern-1.html">Modern Pandas</a></li>
-<li><a href="method-chaining.html">Method Chaining</a></li>
-<li><a href="modern-3-indexes.html">Indexes</a></li>
-<li><a href="modern-4-performance.html">Fast Pandas</a></li>
-<li><a href="modern-5-tidy.html">Tidy Data</a></li>
-<li><a href="modern-6-visualization.html">Visualization</a></li>
-<li><a href="modern-7-timeseries.html">Time Series</a></li>
+<li><a href="modern-1-intro">Modern Pandas</a></li>
+<li><a href="method-chaining">Method Chaining</a></li>
+<li><a href="modern-3-indexes">Indexes</a></li>
+<li><a href="modern-4-performance">Fast Pandas</a></li>
+<li><a href="modern-5-tidy">Tidy Data</a></li>
+<li><a href="modern-6-visualization">Visualization</a></li>
+<li><a href="modern-7-timeseries">Time Series</a></li>
 </ul>
-<p><a href="http://nbviewer.jupyter.org/gist/TomAugspurger/2d6cb8332868e762daeadf228b6e2bbf">This post is available as a Jupyter notebook</a></p>
+<hr>
+<p><a href="https://twitter.com/wesmckinn">Wes McKinney</a>, the creator of pandas, is kind of obsessed with performance. From micro-optimizations for element access, to <a href="https://github.com/pydata/pandas/tree/master/pandas/src/klib">embedding</a> a fast hash table inside pandas, we …</p>
+  </div>
+</article>
 <hr />
-<p><a href="https://twitter.com/wesmckinn">Wes McKinney</a>, the creator of pandas, is kind of obsessed with performance. From micro-optimizations for element access, to ...</p> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../modern-3-indexes.html" rel="bookmark" title="Permalink to Modern Pandas (Part 3): Indexes">Modern Pandas (Part 3): Indexes</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2016-04-11T09:00:00-05:00"> Mon 11 April 2016 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <hr />
-<p>This is part three in my series on writing modern idiomatic pandas.</p>
+<article>
+  <div class="article__title">
+    <h1><a href="/method-chaining.html">Modern Pandas (Part 2): Method Chaining</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 04 April 2016</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <hr>
+<p>This is part 2 in my series on writing modern idiomatic pandas.</p>
 <ul>
-<li><a href="modern-1.html">Modern Pandas</a></li>
-<li><a href="method-chaining.html">Method Chaining</a></li>
-<li><a href="modern-3-indexes.html">Indexes</a></li>
-<li><a href="modern-4-performance.html">Fast Pandas</a></li>
-<li><a href="modern-5-tidy.html">Tidy Data</a></li>
-<li><a href="modern-6-visualization.html">Visualization</a></li>
-<li><a href="modern-7-timeseries.html">Time Series</a></li>
+<li><a href="modern-1-intro">Modern Pandas</a></li>
+<li><a href="method-chaining">Method Chaining</a></li>
+<li><a href="modern-3-indexes">Indexes</a></li>
+<li><a href="modern-4-performance">Fast Pandas</a></li>
+<li><a href="modern-5-tidy">Tidy Data</a></li>
+<li><a href="modern-6-visualization">Visualization</a></li>
+<li><a href="modern-7-timeseries">Time Series</a></li>
 </ul>
-<p><a href="http://nbviewer.jupyter.org/gist/TomAugspurger/3485c44524521781f50b5b6e651b33f9">This post is available as a Jupyter notebook</a></p>
+<hr>
+<h1>Method Chaining</h1>
+<p>Method chaining, where you call methods on an object one after another, is in vogue at the moment.
+It's always been a style of …</p>
+  </div>
+</article>
 <hr />
-<p>Today we're going to be talking about pandas' <a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/api.html#index"><code>Index</code>es</a>.
-They're essential to pandas, but can ...</p> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../method-chaining.html" rel="bookmark" title="Permalink to Modern Pandas (Part 2): Method Chaining">Modern Pandas (Part 2): Method Chaining</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2016-04-04T06:00:00-05:00"> Mon 04 April 2016 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <p><em>Author's Note</em></p>
-<p>Good news everyone, Wes has announced a 2nd edition of <em>Python for Data Analysis</em>!</p>
-<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">Dear Twitter friends: I have started the process of writing the 2nd edition of Python for Data Analysis -- coming late 2016 or early 2017!</p>&mdash; Wes McKinney (@wesmckinn) <a href="https://twitter.com/wesmckinn/status/715320179173888001">March 30, 2016</a></blockquote>
-
-<p><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script></p>
-<p>The first edition ...</p> </div><!-- /.entry-content -->
-        </article></li>
-        <li><article class="hentry">
-                <header> <h2 class="entry-title"><a href="../modern-1.html" rel="bookmark" title="Permalink to Modern Pandas (Part 1)">Modern Pandas (Part 1)</a></h2> </header>
-                <footer class="post-info">
-                    <abbr class="published" title="2016-03-21T09:00:00-05:00"> Mon 21 March 2016 </abbr>
-                    <address class="vcard author">By
-                        <a class="url fn" href="../author/tom-augspurger.html">Tom Augspurger</a>
-                    </address>
-                </footer><!-- /.post-info -->
-                <div class="entry-content"> <p>This is part one in a multipart series on writing idiomatic pandas code.</p>
+<article>
+  <div class="article__title">
+    <h1><a href="/modern-1-intro.html">Modern Pandas (Part 1)</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 21 March 2016</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <hr>
+<p>This is part 1 in my series on writing modern idiomatic pandas.</p>
 <ul>
-<li><a href="modern-1.html">Modern Pandas</a></li>
-<li><a href="method-chaining.html">Method Chaining</a></li>
-<li><a href="modern-3-indexes.html">Indexes</a></li>
-<li><a href="modern-4-performance.html">Fast Pandas</a></li>
-<li><a href="modern-5-tidy.html">Tidy Data</a></li>
-<li><a href="modern-6-visualization.html">Visualization</a></li>
-<li><a href="modern-7-timeseries.html">Time Series</a></li>
+<li><a href="modern-1-intro">Modern Pandas</a></li>
+<li><a href="method-chaining">Method Chaining</a></li>
+<li><a href="modern-3-indexes">Indexes</a></li>
+<li><a href="modern-4-performance">Fast Pandas</a></li>
+<li><a href="modern-5-tidy">Tidy Data</a></li>
+<li><a href="modern-6-visualization">Visualization</a></li>
+<li><a href="modern-7-timeseries">Time Series</a></li>
 </ul>
-<p><a href="http://nbviewer.jupyter.org/gist/TomAugspurger/2457b5debf072ac0318d3d14e63145d5">This post is available as a Jupyter notebook</a></p>
-<h1>Prior Art</h1>
-<p>There are many great resources for learning pandas. For beginners, I typically recommend <a href="https://twitter.com/gjreda">Greg Reda ...</a></p> </div><!-- /.entry-content -->
-        </article></li>
-</ol><!-- /#posts-list -->
-</section><!-- /#content -->
+<hr>
+<h1>Effective Pandas</h1>
+<h2>Introduction</h2>
+<p>This series is about how to make effective use of <a href="http://pandas.pydata.org">pandas</a>, a data analysis library for the Python programming language.
+It's targeted at …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/dplry-pandas.html">dplyr and pandas</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Thu 16 October 2014</p>
+ Tags:
+      <a href="/tag/python-data-science.html">#python, data science</a>    </p>
+  </div>
+  <div class="article__text">
+    <p>This notebook compares <a href="http://pandas.pydata.org">pandas</a>
+and <a href="http://cran.r-project.org/web/packages/dplyr/index.html">dplyr</a>.
+The comparison is just on syntax (verbage), not performance. Whether you're an R user looking to switch to pandas (or the other way around), I hope this guide will help ease the transition.</p>
+<p>We'll work through the <a href="http://cran.r-project.org/web/packages/dplyr/vignettes/introduction.html">introductory dplyr vignette</a> to analyze some flight …</p>
+  </div>
+</article>
 
-    <footer>
-      <p>&copy; Tom Augspurger </p>
-    </footer>
+<div class="pagination">
+    <ul>
+        <li class="pagination__prev">
+            <div class="pagination__prev--none">&laquo;</div>
+        </li>
+
+
+
+          <li>
+            <a class="pagination__page--current" href="/category/misc.html">1</a>
+          </li>
+
+        <li class="pagination__next">
+            <div class="pagination__next--none">&raquo;</div>
+        </li>
+    </ul>
+</div>
+
   </main>
-
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
 </body>
 </html>
