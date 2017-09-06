@@ -104,7 +104,7 @@ like this is useful and giving a design that works.&lt;/p&gt;
 &lt;p&gt;Stitch is still extremely young. It could benefit from users trying it
 out, and letting me know what's working and what isn't. Please do give
 it a shot and let me know what you think.&lt;/p&gt;
-&lt;p&gt;© Tom Augspurger&lt;/p&gt;</content></entry><entry><title>Modern Pandas (Part 7): Timeseries</title><link href="/modern-7-timeseries.html.html" rel="alternate"></link><published>2016-05-13T00:00:00-05:00</published><updated>2016-05-13T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-05-13:/modern-7-timeseries.html.html</id><summary type="html">&lt;hr&gt;
+&lt;p&gt;© Tom Augspurger&lt;/p&gt;</content></entry><entry><title>Modern Pandas (Part 7): Timeseries</title><link href="/modern-7-timeseries.html" rel="alternate"></link><published>2016-05-13T00:00:00-05:00</published><updated>2016-05-13T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-05-13:/modern-7-timeseries.html</id><summary type="html">&lt;hr&gt;
 &lt;p&gt;This is part 7 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro.md"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -1690,7 +1690,7 @@ I'd recommend reading the &lt;a href="http://www.statsmodels.org/dev/examples/in
 We also didn't get to talk at all about Skipper Seabold's work on VARs, but maybe some other time.&lt;/p&gt;
 &lt;p&gt;As always, &lt;a href="https://twitter.com/tomaugspurger"&gt;feedback is welcome&lt;/a&gt;.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>Modern Pandas (Part 6): Visualization</title><link href="/modern-pandas-part-6-visualization.html" rel="alternate"></link><published>2016-04-28T00:00:00-05:00</published><updated>2016-04-28T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-04-28:/modern-pandas-part-6-visualization.html</id><summary type="html">&lt;hr&gt;
+&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>Modern Pandas (Part 6): Visualization</title><link href="/modern-6-visualization.html" rel="alternate"></link><published>2016-04-28T00:00:00-05:00</published><updated>2016-04-28T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-04-28:/modern-6-visualization.html</id><summary type="html">&lt;hr&gt;
 &lt;p&gt;This is part 6 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -2274,7 +2274,7 @@ We can search this space by trying out a bunch of possible values for each param
 I want to reiterate at the end that this is just &lt;em&gt;my&lt;/em&gt; way of doing data visualization.
 Your needs might differ, meaning you might need different tools.
 You can still use pandas to get it to the point where it's ready to be visualized!&lt;/p&gt;
-&lt;p&gt;As always, &lt;a href="https://twitter.com/tomaugspurger"&gt;feedback is welcome&lt;/a&gt;.&lt;/p&gt;</content></entry><entry><title>Modern Pandas (Part 5): Tidy Data</title><link href="/modern-pandas-part-5-tidy-data.html" rel="alternate"></link><published>2016-04-22T00:00:00-05:00</published><updated>2016-04-22T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-04-22:/modern-pandas-part-5-tidy-data.html</id><summary type="html">&lt;hr&gt;
+&lt;p&gt;As always, &lt;a href="https://twitter.com/tomaugspurger"&gt;feedback is welcome&lt;/a&gt;.&lt;/p&gt;</content></entry><entry><title>Modern Pandas (Part 5): Tidy Data</title><link href="/modern-5-tidy.html" rel="alternate"></link><published>2016-04-22T00:00:00-05:00</published><updated>2016-04-22T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-04-22:/modern-5-tidy.html</id><summary type="html">&lt;hr&gt;
 &lt;p&gt;This is part 5 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -3589,7 +3589,7 @@ You could you &lt;code&gt;pd.merge&lt;/code&gt;, but I prefer &lt;code&gt;.map&l
 
 &lt;p&gt;Overall not seeing to much support for rest mattering, but we got to see some more tidy data.&lt;/p&gt;
 &lt;p&gt;That's it for today.
-Next time we'll look at data visualization.&lt;/p&gt;</content></entry><entry><title>Modern Panadas (Part 3): Indexes</title><link href="/modern-panadas-part-3-indexes.html" rel="alternate"></link><published>2016-04-11T00:00:00-05:00</published><updated>2016-04-11T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-04-11:/modern-panadas-part-3-indexes.html</id><summary type="html">&lt;hr&gt;
+Next time we'll look at data visualization.&lt;/p&gt;</content></entry><entry><title>Modern Panadas (Part 3): Indexes</title><link href="/modern-3-indexes.html" rel="alternate"></link><published>2016-04-11T00:00:00-05:00</published><updated>2016-04-11T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-04-11:/modern-3-indexes.html</id><summary type="html">&lt;hr&gt;
 &lt;p&gt;This is part 3 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -6561,7 +6561,7 @@ Name: dep_time, dtype: datetime64[ns]
 3   2014-01-01 13:07:00
 4   2014-01-01 17:53:00
 Name: dep_time, dtype: datetime64[ns]
-&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>Modern Pandas (Part 4): Performance</title><link href="/modern-pandas-part-4-performance.html" rel="alternate"></link><published>2016-04-08T00:00:00-05:00</published><updated>2016-04-08T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-04-08:/modern-pandas-part-4-performance.html</id><summary type="html">&lt;hr&gt;
+&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>Modern Pandas (Part 4): Performance</title><link href="/modern-4-performance.html" rel="alternate"></link><published>2016-04-08T00:00:00-05:00</published><updated>2016-04-08T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-04-08:/modern-4-performance.html</id><summary type="html">&lt;hr&gt;
 &lt;p&gt;This is part 4 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
