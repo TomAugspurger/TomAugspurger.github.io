@@ -67,7 +67,15 @@ think of are</p>
    locally, or on a distributed cluster.</li>
 </ol>
 <p>These aren't mutually exclusive or exhaustive, but they should serve as a nice
-starting point for our discussion.</p>
+starting point for our discussion. The extract constraint we're hitting, and the
+tools at our disposal, will guide our strategy for managing the constraints.
+Over the course of the series we'll see how we can</p>
+<ol>
+<li>Use dask to write code that looks like NumPy and pandas, but operates on
+   larger-than-RAM datasets</li>
+<li>Use dask and the asynchronous scheduler to implemented sophisticated machine
+   learning algorithms that are distributed by nature</li>
+</ol>
 <h2>Don't forget your Statistics</h2>
 <p>Statistics is a thing<sup id="fnref-*"><a class="footnote-ref" href="#fn-*">1</a></sup>. Statisticians have thought a lot about things like
 sampling, and the variance of estimators. So it's worth stating up front that
@@ -92,15 +100,14 @@ link</a>. But the gist is that, for some models anyways, having
 more data doesn't really improve the model's performance. At some point the
 learning curve levels off, and you're just wasting energy with those extra
 observations.</p>
-<p>Throughout the rest of this series, we'll assume that we're on the
-still-increasing part of the learning curve.</p>
+<p>For today, we'll assume that we're on the flat part of the learning curve.</p>
 <h2>Fit, Predict</h2>
 <p>In my experience, the first place I bump into RAM constraints is when I have a
 manageable training dataset to fit the model on, but I have to make predictions
 for a dataset that's orders of magnitude larger.</p>
 <p>To make this concrete, we'll use the (tired, but well-known) New York taxi cabs
 dataset. The goal will be to predict if the passenger tips (but that's <em>really</em>
-not the point). We'll train the data on a single month's worth of data, and
+not the point.). We'll train the data on a single month's worth of data, and
 predict on the full dataset<sup id="fnref-2"><a class="footnote-ref" href="#fn-2">2</a></sup>.</p>
 <p>First, let's load in the first month of data from disk:</p>
 <div class="highlight"><pre><span></span><span class="n">dtype</span> <span class="o">=</span> <span class="p">{</span>
@@ -114,7 +121,141 @@ predict on the full dataset<sup id="fnref-2"><a class="footnote-ref" href="#fn-2
 </pre></div>
 
 
-<p>This takes about a minute on my laptop. The dataset has about 14M rows.</p>
+<table>
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>vendor_name</th>
+      <th>Trip_Pickup_DateTime</th>
+      <th>Trip_Dropoff_DateTime</th>
+      <th>Passenger_Count</th>
+      <th>Trip_Distance</th>
+      <th>Start_Lon</th>
+      <th>Start_Lat</th>
+      <th>Rate_Code</th>
+      <th>store_and_forward</th>
+      <th>End_Lon</th>
+      <th>End_Lat</th>
+      <th>Payment_Type</th>
+      <th>Fare_Amt</th>
+      <th>surcharge</th>
+      <th>mta_tax</th>
+      <th>Tip_Amt</th>
+      <th>Tolls_Amt</th>
+      <th>Total_Amt</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>VTS</td>
+      <td>2009-01-04 02:52:00</td>
+      <td>2009-01-04 03:02:00</td>
+      <td>1</td>
+      <td>2.63</td>
+      <td>-73.991957</td>
+      <td>40.721567</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>-73.993803</td>
+      <td>40.695922</td>
+      <td>CASH</td>
+      <td>8.9</td>
+      <td>0.5</td>
+      <td>NaN</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>9.40</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>VTS</td>
+      <td>2009-01-04 03:31:00</td>
+      <td>2009-01-04 03:38:00</td>
+      <td>3</td>
+      <td>4.55</td>
+      <td>-73.982102</td>
+      <td>40.736290</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>-73.955850</td>
+      <td>40.768030</td>
+      <td>Credit</td>
+      <td>12.1</td>
+      <td>0.5</td>
+      <td>NaN</td>
+      <td>2.00</td>
+      <td>0.0</td>
+      <td>14.60</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>VTS</td>
+      <td>2009-01-03 15:43:00</td>
+      <td>2009-01-03 15:57:00</td>
+      <td>5</td>
+      <td>10.35</td>
+      <td>-74.002587</td>
+      <td>40.739748</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>-73.869983</td>
+      <td>40.770225</td>
+      <td>Credit</td>
+      <td>23.7</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>4.74</td>
+      <td>0.0</td>
+      <td>28.44</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>DDS</td>
+      <td>2009-01-01 20:52:58</td>
+      <td>2009-01-01 21:14:00</td>
+      <td>1</td>
+      <td>5.00</td>
+      <td>-73.974267</td>
+      <td>40.790955</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>-73.996558</td>
+      <td>40.731849</td>
+      <td>CREDIT</td>
+      <td>14.9</td>
+      <td>0.5</td>
+      <td>NaN</td>
+      <td>3.05</td>
+      <td>0.0</td>
+      <td>18.45</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>DDS</td>
+      <td>2009-01-24 16:18:23</td>
+      <td>2009-01-24 16:24:56</td>
+      <td>1</td>
+      <td>0.40</td>
+      <td>-74.001580</td>
+      <td>40.719382</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>-74.008378</td>
+      <td>40.720350</td>
+      <td>CASH</td>
+      <td>3.7</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>3.70</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>This takes about a minute on my laptop. The dataset has about 14M rows and fits
+comfortably into RAM.</p>
 <div class="highlight"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;Tip_Amt&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Tip_Amt&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
 
@@ -360,38 +501,32 @@ we're using S3 or gcfs as our shared file system, we'd modify the code as</p>
 </pre></div>
 
 
-<p>to load the data, and</p>
+<p>to load the data. Computing the predictions is identical:</p>
 <div class="highlight"><pre><span></span><span class="n">yhat</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pipe</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">x</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;yhat&#39;</span><span class="p">),</span>
                         <span class="n">meta</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;yhat&#39;</span><span class="p">,</span> <span class="s1">&#39;f8&#39;</span><span class="p">))</span>
-<span class="n">yhat</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="s2">&quot;s3://bucket/predictions.parq&quot;</span><span class="p">)</span>
 </pre></div>
 
 
-<p>To compute and store it. The loading took about 4 minutes on the cluster, the
-predict about 10 seconds, and the writing about 1 minute. Not bad overall.</p>
-<hr>
-<p>Scratch material to find a home for:</p>
-<h2>Axes, for Scale</h2>
-<p>Dask can "scale out" in a couple dimensions. In 
-I've found it use it useful to mentally bucket things into three groups:</p>
-<ol>
-<li>out-of-core</li>
-<li>parallel</li>
-<li>distributed</li>
-</ol>
-<p>First, parallelism. In the goal of "minimize some objective function", there are
-many opportunities to parallelize computation. At the highest-level, we may be
-using some kind grid search or ensemble method, which have embarrassing
-parallelism baked into them. We attempt two values of a hyper-parameter at the
-same time. A dask-powered machine learning library should interact well with
-libraries like <a href="http://automl.github.io/auto-sklearn/">auto-sklearn</a> and <a href="http://rhiever.github.io/tpot/">tpot</a> that use this high-level parallelism.</p>
-<p>Algorithms, too, can have parallelism.</p>
-<p>Finally, the low-level optimizers can work in parallel too.</p>
-<p>These various levels provides opportunities, but raise the specter <em>nested
-parallelism</em>.</p>
-<h2>Existing Landscape</h2>
-<p>Scikit-learn offers a a <code>partial_fit</code> API for out-of-core machine learning.
-This should probably be your first stop when attempting to scale out a model.</p>
+<p>And saving the data (say to S3) might look like</p>
+<div class="highlight"><pre><span></span><span class="n">yhat</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="s2">&quot;s3://bucket/predictions.parq&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>The loading took about 4 minutes on the cluster, the predict about 10 seconds,
+and the writing about 1 minute. Not bad overall.</p>
+<h2>Wrapup</h2>
+<p>Today, we went into detail on what's probably the first scaling problem you'll
+hit with scikit-learn: you can train your dataset in-memory, but you have to
+predict on a much larger dataset. We saw that the existing tools handle this
+case quite well. For training, we followed best-practices and did everything
+inside a <code>Pipeline</code> object. For predicting, we used <code>dask</code> to write regular
+pandas code that worked out-of-core on my laptop or on a distributed cluster.</p>
+<p>If this topic interests you, you should watch <a href="scaling sklearn">this talk</a> by
+<a href="https://twitter.com/stephenactual?lang=en">Stephen Hoover</a> on how Civis is scaling scikit-learn.</p>
+<p>In future posts we'll dig into how dask can speed up your existing pipelines by
+executing them in parallel, scikit-learn's out of core API for when your
+training dataset doesn't fit in memory, and how you can use dask to implement
+distributed machine learning algorithms.</p>
 <div class="footnote">
 <hr>
 <ol>
