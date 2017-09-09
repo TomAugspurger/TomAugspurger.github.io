@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+<meta name="keywords" content="">
+
+  <title>
+    datas-frame
+&ndash; Scalable Machine Learning (Part 1)  </title>
+
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+      </p>
+    </header>
+
+<article>
+  <div class="article__title">
+    <h1><a href="/drafts/scalable-ml-01.html">Scalable Machine Learning (Part 1)</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Tue 06 September 2016</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>The <a href="https://dask.pydata.org">dask</a> project is interested in scaling the scientific python ecosystem to
+larger datasets. My current focus is on out-of-core, parallel, and distributed
+machine learning. This series will introduce those concepts, explore what we
+have available today, and track the community's efforts to push the boundaries.</p>
+<h2>Constraints</h2>
+<p>I am (or was, anyway) an economist, and economists like to think in terms of
+constraints. In what ways are we constrained by scale? The two main ones I can
+think of are</p>
+<ol>
+<li>I'm constrained by time: I'd like to fit more models on my dataset in a given
+   amount of time. I'd like to scale out by fitting more models in parallel,
+   either on my laptop by using more cores, or on a cluster.</li>
+<li>I'm constrained by size: I can't fit my model on my entire dataset using my
+   laptop. I'd like to scale out by adopting algorithms that work in batches
+   locally, or on a distributed cluster.</li>
+</ol>
+<p>These aren't mutually exclusive or exhaustive, but they should serve as a nice
+starting point for our discussion.</p>
+<h2>Scaling, with Dask</h2>
+<p>To quote the dask docs:</p>
+<blockquote>
+<p>Dask is a flexible parallel computing library for analytic computing.</p>
+</blockquote>
+<p>It may not be immediately obvious why a library for parallel computing should
+also be great for out-of-core <em>and</em> distributed computing.</p>
+<h2>Don't forget your Statistics</h2>
+<p>Statistics is a thing<sup id="fnref-*"><a class="footnote-ref" href="#fn-*">1</a></sup>. Statisticians have thought a lot about things like
+sampling, and the variance of estimators. So it's worth stating up front that
+you may be able to just</p>
+<div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="o">*</span>
+<span class="k">FROM</span> <span class="n">dataset</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="n">random</span><span class="p">()</span>
+<span class="k">LIMIT</span> <span class="mi">10000</span><span class="p">;</span>
+</pre></div>
+
+
+<p>and fit your model on a (representative) subset of your data. The tricky thing
+is selecting how large your sample should be. The "correct" value depends on the
+complexity of your learning task, the complexity of your model, and the nature
+of your data. The best you can do here is think carefully about your problem,
+and to plot the <a href="http://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html">learning curve</a>.</p>
+<p><img alt="scikit-learn" src="http://scikit-learn.org/stable/_images/sphx_glr_plot_learning_curve_001.png"></p>
+<p><em>http://scikit-learn.org/stable/_images/sphx_glr_plot_learning_curve_001.png</em></p>
+<p>As usual, the scikit-learn developers do a great job explaining the concept, in
+addition to providing a great library. I encourage you to follow <a href="learning curve">that
+link</a>. But the gist is that, for some models anyways, having
+more data doesn't really improve the model's performance. At some point the
+learning curve levels off, and you're just wasting energy with those extra
+observations.</p>
+<p>Throughout the rest of this series, we'll assume that we're on the
+still-increasing part of the learning curve.</p>
+<h2>Fit, Predict</h2>
+<p>In my experience, the first place I bump into RAM constraints is when I have a
+manageable training dataset to fit the model on, but I have to make predictions
+for a dataset that's orders of magnitude larger.</p>
+<p>To make this concrete, we'll use the (tired, but well-known) New York taxi cabs
+dataset. The goal will be to predict if the passenger tips (but that's <em>really</em>
+not the point). We'll train the data on a single month's worth of data, and
+predict on the full dataset<sup id="fnref-2"><a class="footnote-ref" href="#fn-2">2</a></sup>.</p>
+<p>First, let's load in the first month of data from disk:</p>
+<div class="highlight"><pre><span></span><span class="n">dtype</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;vendor_name&#39;</span><span class="p">:</span> <span class="s1">&#39;category&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Payment_Type&#39;</span><span class="p">:</span> <span class="s1">&#39;category&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/yellow_tripdata_2009-01.csv&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+                 <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Trip_Pickup_DateTime&#39;</span><span class="p">,</span> <span class="s1">&#39;Trip_Dropoff_DateTime&#39;</span><span class="p">],)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<p>This takes about a minute on my laptop. The dataset has about 14M rows.</p>
+<div class="highlight"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;Tip_Amt&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Tip_Amt&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</pre></div>
+
+
+<p>This isn't a perfectly clean dataset, which is nice because it gives us a chance
+to demonstrate some of pandas' pre-processing prowess, before we hand the data
+of to scikit-learn to fit the model. Since we're operating with scale in mind,
+we'll be extremely cautions to perform <em>all</em> the data transformations inside a
+<code>Pipeline</code>. This has many benefits, but the main one for our purpose today is
+that it packages our entire task into a single python object.</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">make_pipeline</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">FunctionTransformer</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">TransformerMixin</span>
+</pre></div>
+
+
+<p>If you're unfamiliar with pipelines, check out the <a href="http://scikit-learn.org/stable/modules/pipeline.html#pipeline">scikit-learn
+docs</a>, <a href="http://zacstewart.com/2014/08/05/pipelines-of-featureunions-of-pipelines.html">this blog</a> post, and my talk from
+<a href="https://www.youtube.com/watch?v=KLPtEBokqQ0">PyData Chicago 2016</a>. The short version is that a pipeline
+consists of multiple transformers, and ends in a normal <code>Estimator</code> like
+<code>LogisticRegression</code>.</p>
+<p>I notice that there are some minor differences in the spelling on "Payment Type":</p>
+<div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">Payment_Type</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">categories</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Index([&#39;CASH&#39;, &#39;CREDIT&#39;, &#39;Cash&#39;, &#39;Credit&#39;, &#39;Dispute&#39;, &#39;No Charge&#39;], dtype=&#39;object&#39;)
+</pre></div>
+
+
+<p>We'll reconcile that by lower-casing everything with a <code>.str.lower()</code>. But resist
+the temptation to just do that imperatively inplace! We'll package it up into a
+transform:</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">payment_lowerer</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">Payment_Type</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">Payment_Type</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+</pre></div>
+
+
+<p>Later on we'll wrap this in a <a href="http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.FunctionTransformer.html"><code>FunctionTransformer</code></a></p>
+<p>Not all the columns look useful. We could have easily solved this by only
+reading in the data that we're actually going to use, but let's solve it now
+with another transformer:</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ColumnSelector</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="s2">&quot;Select `columns` from `X`&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">columns</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+</pre></div>
+
+
+<p>We can't stick datetimes in a model, so we'll extract the hour of the day and
+use that as a feature.</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">HourExtractor</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="s2">&quot;Transform each datetime64 column in `columns` to integer hours&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">columns</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">hour</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">})</span>
+</pre></div>
+
+
+<p>Likewise, we'll need to ensure the categorical (in a statistical sense) are
+categorical dtype (in a pandas sense).</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CategoricalEncoder</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="s2">&quot;Convert to Categorical with specific `categories`.&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">categories</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">categories</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">categories</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">X</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">set_categories</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span>
+</pre></div>
+
+
+<p>Finally, we'd like to scale a subset of the data. Scikit-learn has a
+<code>StandardScaler</code>, which we'll mimic here, to just operate on a subset of the
+columns.</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">StandardScaler</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="s2">&quot;Scale a subset of the columns in a DataFrame&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">columns</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="err">μ</span><span class="n">s</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="err">σ</span><span class="n">s</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="err">μ</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="err">σ</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span>
+</pre></div>
+
+
+<p>Now we can build up the pipeline:</p>
+<div class="highlight"><pre><span></span><span class="c1"># The columns at the start of the pipeline</span>
+<span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;vendor_name&#39;</span><span class="p">,</span> <span class="s1">&#39;Trip_Pickup_DateTime&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;Passenger_Count&#39;</span><span class="p">,</span> <span class="s1">&#39;Trip_Distance&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;Payment_Type&#39;</span><span class="p">,</span> <span class="s1">&#39;Fare_Amt&#39;</span><span class="p">,</span> <span class="s1">&#39;surcharge&#39;</span><span class="p">]</span>
+
+<span class="c1"># The mapping of {column: set of categories}</span>
+<span class="n">categories</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;vendor_name&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;CMT&#39;</span><span class="p">,</span> <span class="s1">&#39;DDS&#39;</span><span class="p">,</span> <span class="s1">&#39;VTS&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;Payment_Type&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;cash&#39;</span><span class="p">,</span> <span class="s1">&#39;credit&#39;</span><span class="p">,</span> <span class="s1">&#39;dispute&#39;</span><span class="p">,</span> <span class="s1">&#39;no charge&#39;</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="n">scale</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Trip_Distance&#39;</span><span class="p">,</span> <span class="s1">&#39;Fare_Amt&#39;</span><span class="p">,</span> <span class="s1">&#39;surcharge&#39;</span><span class="p">]</span>
+
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
+    <span class="n">ColumnSelector</span><span class="p">(</span><span class="n">columns</span><span class="p">),</span>
+    <span class="n">HourExtractor</span><span class="p">([</span><span class="s1">&#39;Trip_Pickup_DateTime&#39;</span><span class="p">]),</span>
+    <span class="n">FunctionTransformer</span><span class="p">(</span><span class="n">payment_lowerer</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+    <span class="n">CategoricalEncoder</span><span class="p">(</span><span class="n">categories</span><span class="p">),</span>
+    <span class="n">FunctionTransformer</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+    <span class="n">StandardScaler</span><span class="p">(</span><span class="n">scale</span><span class="p">),</span>
+    <span class="n">LogisticRegression</span><span class="p">(),</span>
+<span class="p">)</span>
+<span class="n">pipe</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>[(&#39;columnselector&#39;, &lt;__main__.ColumnSelector at 0x1a2c726d8&gt;),
+ (&#39;hourextractor&#39;, &lt;__main__.HourExtractor at 0x10dc72a90&gt;),
+ (&#39;functiontransformer-1&#39;, FunctionTransformer(accept_sparse=False,
+           func=&lt;function payment_lowerer at 0x17e0d5510&gt;, inv_kw_args=None,
+           inverse_func=None, kw_args=None, pass_y=&#39;deprecated&#39;,
+           validate=False)),
+ (&#39;categoricalencoder&#39;, &lt;__main__.CategoricalEncoder at 0x11dd72f98&gt;),
+ (&#39;functiontransformer-2&#39;, FunctionTransformer(accept_sparse=False,
+           func=&lt;function get_dummies at 0x10f43b0d0&gt;, inv_kw_args=None,
+           inverse_func=None, kw_args=None, pass_y=&#39;deprecated&#39;,
+           validate=False)),
+ (&#39;standardscaler&#39;, &lt;__main__.StandardScaler at 0x162580a90&gt;),
+ (&#39;logisticregression&#39;,
+  LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
+           intercept_scaling=1, max_iter=100, multi_class=&#39;ovr&#39;, n_jobs=1,
+           penalty=&#39;l2&#39;, random_state=None, solver=&#39;liblinear&#39;, tol=0.0001,
+           verbose=0, warm_start=False))]
+</pre></div>
+
+
+<p>So, all that pipeline scaffolding is a <em>bit</em> of extra complexity over
+imperatively updating the data or writing simple functions to transform the
+data. It'll be worth it though, when we go to predict for the entire dataset.</p>
+<p>We can fit the pipeline as normal:</p>
+<div class="highlight"><pre><span></span><span class="o">%</span><span class="n">time</span> <span class="n">pipe</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+
+
+<p>This take about a minute on my laptop. We can check the performance, but that's
+not the point.</p>
+<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">pipe</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="mf">0.9931</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">pipe</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span>
+<span class="mf">0.9931</span>
+</pre></div>
+
+
+<p>It turns out people essentially tip if and only they're paying with a card, so
+this isn't a particularly difficult task. Or perhaps more accurately, tips are
+only <em>recorded</em> when someone pays with a card.</p>
+<p>Now, to scale out to the rest of the dataset. We'll predict the probability of
+tipping for every cab ride in the dataset (bearing in mind that the full dataset
+doesn't fit in my laptop's RAM).</p>
+<p>To make things a bit easier we'll use dask, though it isn't strictly necessary
+for this section. It saves us from writing a for loop, but more importantly
+we'll be able to reuse this code when we go to scale out to a cluster. This does
+demonstrate dask's ability to scale down to a laptop and operate out-of-core on
+large datasets.</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dask.dataframe</span> <span class="kn">as</span> <span class="nn">dd</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/*.csv&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+                 <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Trip_Pickup_DateTime&#39;</span><span class="p">,</span> <span class="s1">&#39;Trip_Dropoff_DateTime&#39;</span><span class="p">],)</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;Tip_Amt&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Since scikit-learn isn't dask-aware, we can't simply call <code>pipe.predict_proba(X)</code>.
+At some point, our <code>dask.dataframe</code> would be cast to a <code>numpy.ndarray</code>, and our
+memory would blow up. Fortunately, <code>dask.dataframe</code> has a nice little escape
+hatch for dealing with functions that know how to operate on NumPy arrays, but
+not dask objects: <code>map_partitions</code>.</p>
+<div class="highlight"><pre><span></span><span class="n">yhat</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pipe</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">x</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">],</span>
+                                            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;yhat&#39;</span><span class="p">),</span>
+                        <span class="n">meta</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;yhat&#39;</span><span class="p">,</span> <span class="s1">&#39;f8&#39;</span><span class="p">))</span>
+<span class="n">yhat</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="s2">&quot;data/predictions.parq&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><code>map_partitions</code> will go through each partition in your dataframe (one per
+file), calling the function on each partition. Dask worries about stitching
+together the result (though we provide a hint with the <code>meta</code> keyword, to say
+that it's a <code>Series</code> with name <code>yhat</code> and dtype <code>f8</code>).</p>
+<p>This takes about 9 minutes to finish on my laptop.</p>
+<p>You may have noticed this, but to make it explicit: this final step can run
+out-of-core on my single laptop, or it can operate on a distributed cluster.
+This will be a common pattern throughout this series. Let's explore that now by
+setting up a small cluster. I'll use <code>dask-kubernetes</code>, but you may already have
+access to one from your business or institution.</p>
+<div class="highlight"><pre><span></span><span class="n">dask</span><span class="o">-</span><span class="n">kubernetes</span> <span class="n">create</span> <span class="n">scalable</span><span class="o">-</span><span class="n">ml</span>
+</pre></div>
+
+
+<p>This sets up a cluster with 8 workers and 54 GB of memory. Once that's up, I
+could pickle up the model and load it along with a <code>Client</code>:</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">distributed</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="kn">import</span> <span class="n">joblib</span>
+
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">joblib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;taxi-model.pkl&quot;</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s1">&#39;dask-scheduler:8786&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Depending on how your cluster is set up, specifically with respect to having a
+shared-file-system or not, the rest of the code is more-or-less identical. If
+we're using S3 or gcfs as our shared file system, we'd modify the code as</p>
+<div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;s3://bucket/yellow_tripdata_2009*.csv&quot;</span><span class="p">,</span>
+                 <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+                 <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Trip_Pickup_DateTime&#39;</span><span class="p">,</span> <span class="s1">&#39;Trip_Dropoff_DateTime&#39;</span><span class="p">],</span>
+                 <span class="n">storage_options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;anon&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">})</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">persist</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;Tip_Amt&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Tip_Amt&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+</pre></div>
+
+
+<p>to load the data, and</p>
+<div class="highlight"><pre><span></span><span class="n">yhat</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pipe</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">x</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;yhat&#39;</span><span class="p">),</span>
+                        <span class="n">meta</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;yhat&#39;</span><span class="p">,</span> <span class="s1">&#39;f8&#39;</span><span class="p">))</span>
+<span class="n">yhat</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="s2">&quot;s3://bucket/predictions.parq&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>To compute and store it. The loading took about 4 minutes on the cluster, the
+predict about 10 seconds, and the writing about 1 minute. Not bad overall.</p>
+<hr>
+<p>Scratch material to find a home for:</p>
+<h2>Axes, for Scale</h2>
+<p>Dask can "scale out" in a couple dimensions. In 
+I've found it use it useful to mentally bucket things into three groups:</p>
+<ol>
+<li>out-of-core</li>
+<li>parallel</li>
+<li>distributed</li>
+</ol>
+<p>First, parallelism. In the goal of "minimize some objective function", there are
+many opportunities to parallelize computation. At the highest-level, we may be
+using some kind grid search or ensemble method, which have embarrassing
+parallelism baked into them. We attempt two values of a hyper-parameter at the
+same time. A dask-powered machine learning library should interact well with
+libraries like <a href="http://automl.github.io/auto-sklearn/">auto-sklearn</a> and <a href="http://rhiever.github.io/tpot/">tpot</a> that use this high-level parallelism.</p>
+<p>Algorithms, too, can have parallelism.</p>
+<p>Finally, the low-level optimizers can work in parallel too.</p>
+<p>These various levels provides opportunities, but raise the specter <em>nested
+parallelism</em>.</p>
+<h2>Existing Landscape</h2>
+<p>Scikit-learn offers a a <code>partial_fit</code> API for out-of-core machine learning.
+This should probably be your first stop when attempting to scale out a model.</p>
+<div class="footnote">
+<hr>
+<ol>
+<li id="fn-*">
+<p>p &lt; .05&#160;<a class="footnote-backref" href="#fnref-*" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn-2">
+<p>This is a bad example, since there could be a time-trend or seasonality to
+the dataset. But our focus isn't on building a good model, I hope you'll
+forgive me.&#160;<a class="footnote-backref" href="#fnref-2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+  </div>
+
+</article>
+
+
+  </main>
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
+</body>
+</html>
