@@ -275,6 +275,10 @@ sense) are categorical dtype (in a pandas sense).</p>
 <p>Incidentally, my <a href="https://github.com/pandas-dev/pandas/pull/16015"><code>CategoricalDtype</code> pull
 request</a> will make this type of
 operation a bit easier to express.</p>
+<p>We need to convert to <code>CategoricalDtype</code> so that we can call <code>get_dummies</code> later
+on without worrying about missing or extra categories in a subset of the data
+throwing off our linear algebra (See my <a href="https://www.youtube.com/watch?v=KLPtEBokqQ0">talk</a> for more
+details).</p>
 <p>Finally, we'd like to scale a subset of the data. Scikit-learn has a
 <code>StandardScaler</code>, which we'll mimic here, to just operate on a subset of the
 columns.</p>
