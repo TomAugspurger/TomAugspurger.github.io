@@ -56,26 +56,20 @@ machine learning. This series will introduce those concepts, explore what we
 have available today, and track the community's efforts to push the boundaries.</p>
 <h2>Constraints</h2>
 <p>I am (or was, anyway) an economist, and economists like to think in terms of
-constraints. In what ways are we constrained by scale? The two main ones I can
-think of are</p>
+constraints. How are we constrained by scale? The two main ones I can think of
+are</p>
 <ol>
-<li>I'm constrained by time: I'd like to fit more models on my dataset in a given
-   amount of time. I'd like to scale out by fitting more models in parallel,
-   either on my laptop by using more cores, or on a cluster.</li>
 <li>I'm constrained by size: I can't fit my model on my entire dataset using my
    laptop. I'd like to scale out by adopting algorithms that work in batches
    locally, or on a distributed cluster.</li>
+<li>I'm constrained by time: I'd like to fit more models on my dataset in a given
+   amount of time. I'd like to scale out by fitting more models in parallel,
+   either on my laptop by using more cores, or on a cluster.</li>
 </ol>
 <p>These aren't mutually exclusive or exhaustive, but they should serve as a nice
-starting point for our discussion. The extract constraint we're hitting, and the
-tools at our disposal, will guide our strategy for managing the constraints.
-Over the course of the series we'll see how we can</p>
-<ol>
-<li>Use dask to write code that looks like NumPy and pandas, but operates on
-   larger-than-RAM datasets</li>
-<li>Use dask and the asynchronous scheduler to implemented sophisticated machine
-   learning algorithms that are distributed by nature</li>
-</ol>
+guide for our discussion. I'll be showing where the usual pandas + scikit-learn
+for in-memory analytics workflow breaks down, and offering solutions (some of
+which don't exist as I write this).</p>
 <h2>Don't forget your Statistics</h2>
 <p>Statistics is a thing<sup id="fnref-*"><a class="footnote-ref" href="#fn-*">1</a></sup>. Statisticians have thought a lot about things like
 sampling, and the variance of estimators. So it's worth stating up front that
@@ -93,22 +87,31 @@ complexity of your learning task, the complexity of your model, and the nature
 of your data. The best you can do here is think carefully about your problem,
 and to plot the <a href="http://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html">learning curve</a>.</p>
 <p><img alt="scikit-learn" src="http://scikit-learn.org/stable/_images/sphx_glr_plot_learning_curve_001.png"></p>
-<p><em>http://scikit-learn.org/stable/_images/sphx_glr_plot_learning_curve_001.png</em></p>
-<p>As usual, the scikit-learn developers do a great job explaining the concept, in
-addition to providing a great library. I encourage you to follow <a href="learning curve">that
-link</a>. But the gist is that, for some models anyways, having
-more data doesn't really improve the model's performance. At some point the
-learning curve levels off, and you're just wasting energy with those extra
-observations.</p>
-<p>For today, we'll assume that we're on the flat part of the learning curve.</p>
+<div style="text-align: center"> <a
+  href="http://scikit-learn.org/stable/_images/sphx_glr_plot_learning_curve_001.png"><i>source</i></a>
+</div>
+
+<p>As usual, the scikit-learn developers do a great job explaining the concept in
+addition to providing a great library. I encourage you to follow <a href="http://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html">that
+link</a>. This gist is that, for some models on some datasets
+anyways, training on additional data past a point doesn't improve the model's
+performance. At some point the learning curve levels off and you're just wasting
+time and money training on those extra observations.</p>
+<p>For today, we'll assume that we're on the flat part of the learning curve. Later
+in the series we'll explore cases where we run out of RAM before the learning
+curve levels off.</p>
 <h2>Fit, Predict</h2>
 <p>In my experience, the first place I bump into RAM constraints is when I have a
 manageable training dataset to fit the model on, but I have to make predictions
-for a dataset that's orders of magnitude larger.</p>
-<p>To make this concrete, we'll use the (tired, but well-known) New York taxi cabs
+for a dataset that's orders of magnitude larger. In these cases, I fit my model
+like normal, and predict in an out-of-core fashion. We'll see how dask allows us
+to write normal-looking code, so we don't have to worry about writing the
+batching code ourself.</p>
+<p>To make this concrete, we'll use the (tried and true) New York taxi cabs
 dataset. The goal will be to predict if the passenger tips (but that's <em>really</em>
-not the point.). We'll train the data on a single month's worth of data, and
-predict on the full dataset<sup id="fnref-2"><a class="footnote-ref" href="#fn-2">2</a></sup>.</p>
+not the point. The point is to explore a space here). We'll train the data on a
+single month's worth of data (which fits in my laptop's RAM), and predict on the
+full dataset<sup id="fnref-2"><a class="footnote-ref" href="#fn-2">2</a></sup>.</p>
 <p>First, let's load in the first month of data from disk:</p>
 <div class="highlight"><pre><span></span><span class="n">dtype</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;vendor_name&#39;</span><span class="p">:</span> <span class="s1">&#39;category&#39;</span><span class="p">,</span>
@@ -121,141 +124,39 @@ predict on the full dataset<sup id="fnref-2"><a class="footnote-ref" href="#fn-2
 </pre></div>
 
 
-<table>
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>vendor_name</th>
-      <th>Trip_Pickup_DateTime</th>
-      <th>Trip_Dropoff_DateTime</th>
-      <th>Passenger_Count</th>
-      <th>Trip_Distance</th>
-      <th>Start_Lon</th>
-      <th>Start_Lat</th>
-      <th>Rate_Code</th>
-      <th>store_and_forward</th>
-      <th>End_Lon</th>
-      <th>End_Lat</th>
-      <th>Payment_Type</th>
-      <th>Fare_Amt</th>
-      <th>surcharge</th>
-      <th>mta_tax</th>
-      <th>Tip_Amt</th>
-      <th>Tolls_Amt</th>
-      <th>Total_Amt</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>VTS</td>
-      <td>2009-01-04 02:52:00</td>
-      <td>2009-01-04 03:02:00</td>
-      <td>1</td>
-      <td>2.63</td>
-      <td>-73.991957</td>
-      <td>40.721567</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-73.993803</td>
-      <td>40.695922</td>
-      <td>CASH</td>
-      <td>8.9</td>
-      <td>0.5</td>
-      <td>NaN</td>
-      <td>0.00</td>
-      <td>0.0</td>
-      <td>9.40</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>VTS</td>
-      <td>2009-01-04 03:31:00</td>
-      <td>2009-01-04 03:38:00</td>
-      <td>3</td>
-      <td>4.55</td>
-      <td>-73.982102</td>
-      <td>40.736290</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-73.955850</td>
-      <td>40.768030</td>
-      <td>Credit</td>
-      <td>12.1</td>
-      <td>0.5</td>
-      <td>NaN</td>
-      <td>2.00</td>
-      <td>0.0</td>
-      <td>14.60</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>VTS</td>
-      <td>2009-01-03 15:43:00</td>
-      <td>2009-01-03 15:57:00</td>
-      <td>5</td>
-      <td>10.35</td>
-      <td>-74.002587</td>
-      <td>40.739748</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-73.869983</td>
-      <td>40.770225</td>
-      <td>Credit</td>
-      <td>23.7</td>
-      <td>0.0</td>
-      <td>NaN</td>
-      <td>4.74</td>
-      <td>0.0</td>
-      <td>28.44</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>DDS</td>
-      <td>2009-01-01 20:52:58</td>
-      <td>2009-01-01 21:14:00</td>
-      <td>1</td>
-      <td>5.00</td>
-      <td>-73.974267</td>
-      <td>40.790955</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-73.996558</td>
-      <td>40.731849</td>
-      <td>CREDIT</td>
-      <td>14.9</td>
-      <td>0.5</td>
-      <td>NaN</td>
-      <td>3.05</td>
-      <td>0.0</td>
-      <td>18.45</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>DDS</td>
-      <td>2009-01-24 16:18:23</td>
-      <td>2009-01-24 16:24:56</td>
-      <td>1</td>
-      <td>0.40</td>
-      <td>-74.001580</td>
-      <td>40.719382</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-74.008378</td>
-      <td>40.720350</td>
-      <td>CASH</td>
-      <td>3.7</td>
-      <td>0.0</td>
-      <td>NaN</td>
-      <td>0.00</td>
-      <td>0.0</td>
-      <td>3.70</td>
-    </tr>
-  </tbody>
-</table>
+<table> <thead> <tr style="text-align: right;"> <th></th> <th>vendor_name</th>
+  <th>Trip_Pickup_DateTime</th> <th>Trip_Dropoff_DateTime</th>
+  <th>Passenger_Count</th> <th>Trip_Distance</th> <th>Start_Lon</th>
+  <th>Start_Lat</th> <th>Rate_Code</th> <th>store_and_forward</th>
+  <th>End_Lon</th> <th>End_Lat</th> <th>Payment_Type</th> <th>Fare_Amt</th>
+  <th>surcharge</th> <th>mta_tax</th> <th>Tip_Amt</th> <th>Tolls_Amt</th>
+  <th>Total_Amt</th> </tr> </thead> <tbody> <tr> <th>0</th> <td>VTS</td>
+  <td>2009-01-04 02:52:00</td> <td>2009-01-04 03:02:00</td> <td>1</td>
+  <td>2.63</td> <td>-73.991957</td> <td>40.721567</td> <td>NaN</td> <td>NaN</td>
+  <td>-73.993803</td> <td>40.695922</td> <td>CASH</td> <td>8.9</td> <td>0.5</td>
+  <td>NaN</td> <td>0.00</td> <td>0.0</td> <td>9.40</td> </tr> <tr> <th>1</th>
+  <td>VTS</td> <td>2009-01-04 03:31:00</td> <td>2009-01-04 03:38:00</td>
+  <td>3</td> <td>4.55</td> <td>-73.982102</td> <td>40.736290</td> <td>NaN</td>
+  <td>NaN</td> <td>-73.955850</td> <td>40.768030</td> <td>Credit</td>
+  <td>12.1</td> <td>0.5</td> <td>NaN</td> <td>2.00</td> <td>0.0</td>
+  <td>14.60</td> </tr> <tr> <th>2</th> <td>VTS</td> <td>2009-01-03 15:43:00</td>
+  <td>2009-01-03 15:57:00</td> <td>5</td> <td>10.35</td> <td>-74.002587</td>
+  <td>40.739748</td> <td>NaN</td> <td>NaN</td> <td>-73.869983</td>
+  <td>40.770225</td> <td>Credit</td> <td>23.7</td> <td>0.0</td> <td>NaN</td>
+  <td>4.74</td> <td>0.0</td> <td>28.44</td> </tr> <tr> <th>3</th> <td>DDS</td>
+  <td>2009-01-01 20:52:58</td> <td>2009-01-01 21:14:00</td> <td>1</td>
+  <td>5.00</td> <td>-73.974267</td> <td>40.790955</td> <td>NaN</td> <td>NaN</td>
+  <td>-73.996558</td> <td>40.731849</td> <td>CREDIT</td> <td>14.9</td>
+  <td>0.5</td> <td>NaN</td> <td>3.05</td> <td>0.0</td> <td>18.45</td> </tr> <tr>
+  <th>4</th> <td>DDS</td> <td>2009-01-24 16:18:23</td> <td>2009-01-24
+  16:24:56</td> <td>1</td> <td>0.40</td> <td>-74.001580</td> <td>40.719382</td>
+  <td>NaN</td> <td>NaN</td> <td>-74.008378</td> <td>40.720350</td> <td>CASH</td>
+  <td>3.7</td> <td>0.0</td> <td>NaN</td> <td>0.00</td> <td>0.0</td>
+  <td>3.70</td> </tr> </tbody> </table>
 
-<p>This takes about a minute on my laptop. The dataset has about 14M rows and fits
-comfortably into RAM.</p>
+<p>This takes about a minute on my laptop. The dataset has about 14M rows. Like I
+said, the training step is going to be completely normal. We'll do the usual
+train-test split, followed by some totally normal data pre-processing:</p>
 <div class="highlight"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;Tip_Amt&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Tip_Amt&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
 
@@ -266,9 +167,10 @@ comfortably into RAM.</p>
 <p>This isn't a perfectly clean dataset, which is nice because it gives us a chance
 to demonstrate some of pandas' pre-processing prowess, before we hand the data
 of to scikit-learn to fit the model. Since we're operating with scale in mind,
-we'll be extremely cautions to perform <em>all</em> the data transformations inside a
+we'll be extremely cautious to perform <em>all</em> the data transformations inside a
 <code>Pipeline</code>. This has many benefits, but the main one for our purpose today is
-that it packages our entire task into a single python object.</p>
+that it packages our entire task into a single python object. Later on, our
+<code>predict</code> step will be a single function call.</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">make_pipeline</span>
 <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">FunctionTransformer</span>
 <span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">TransformerMixin</span>
@@ -277,10 +179,11 @@ that it packages our entire task into a single python object.</p>
 
 <p>If you're unfamiliar with pipelines, check out the <a href="http://scikit-learn.org/stable/modules/pipeline.html#pipeline">scikit-learn
 docs</a>, <a href="http://zacstewart.com/2014/08/05/pipelines-of-featureunions-of-pipelines.html">this blog</a> post, and my talk from
-<a href="https://www.youtube.com/watch?v=KLPtEBokqQ0">PyData Chicago 2016</a>. The short version is that a pipeline
-consists of multiple transformers, and ends in a normal <code>Estimator</code> like
-<code>LogisticRegression</code>.</p>
-<p>I notice that there are some minor differences in the spelling on "Payment Type":</p>
+<a href="https://www.youtube.com/watch?v=KLPtEBokqQ0">PyData Chicago 2016</a>. The short version: a pipeline consists
+of multiple steps. Each step transforms the data somehow, and the final step is
+a normal <code>Estimator</code> like <code>LogisticRegression</code>.</p>
+<p>I notice that there are some minor differences in the spelling on "Payment
+Type":</p>
 <div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">Payment_Type</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">categories</span>
 </pre></div>
 
@@ -289,18 +192,21 @@ consists of multiple transformers, and ends in a normal <code>Estimator</code> l
 </pre></div>
 
 
-<p>We'll reconcile that by lower-casing everything with a <code>.str.lower()</code>. But resist
-the temptation to just do that imperatively inplace! We'll package it up into a
-transform:</p>
+<p>We'll reconcile that by lower-casing everything with a <code>.str.lower()</code>. But
+resist the temptation to just do that imperatively inplace! We'll package it up
+into a function that will later be wrapped up in a <a href="http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.FunctionTransformer.html">FunctionTransformer</a>.</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">payment_lowerer</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">Payment_Type</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">Payment_Type</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
 </pre></div>
 
 
-<p>Later on we'll wrap this in a <a href="http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.FunctionTransformer.html"><code>FunctionTransformer</code></a></p>
+<p>I should note here that I'm using
+<a href="https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.assign.html"><code>.assign</code></a>
+to update the variables since it's implicitly copies the data. We don't want to
+be modifying the caller's data without their consent.</p>
 <p>Not all the columns look useful. We could have easily solved this by only
 reading in the data that we're actually going to use, but let's solve it now
-with another transformer:</p>
+with another simple transformer:</p>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ColumnSelector</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">):</span>
     <span class="s2">&quot;Select `columns` from `X`&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
@@ -314,8 +220,11 @@ with another transformer:</p>
 </pre></div>
 
 
-<p>We can't stick datetimes in a model, so we'll extract the hour of the day and
-use that as a feature.</p>
+<p>Under the hood, pandas stores <code>datetimes</code> like <code>Trip_Pickup_DateTime</code> as a
+64-bit integer representing the nanoseconds since some time in the 1600s. If we
+left this untransformed, scikit-learn would happily transform it to its integer
+representation, which <em>may</em> not be the most meaningful item to stick in a linear
+model for predicting tips. A better feature might the hour of the day:</p>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">HourExtractor</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">):</span>
     <span class="s2">&quot;Transform each datetime64 column in `columns` to integer hours&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
@@ -325,15 +234,29 @@ use that as a feature.</p>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">hour</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">hour</span>
+                           <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">})</span>
 </pre></div>
 
 
-<p>Likewise, we'll need to ensure the categorical (in a statistical sense) are
-categorical dtype (in a pandas sense).</p>
+<p>Likewise, we'll need to ensure the categorical variables (in a statistical
+sense) are categorical dtype (in a pandas sense).</p>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CategoricalEncoder</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">):</span>
-    <span class="s2">&quot;Convert to Categorical with specific `categories`.&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert to Categorical with specific `categories`.</span>
 
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; CategoricalEncoder({&quot;A&quot;: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]}).fit_transform(</span>
+<span class="sd">    ...     pd.DataFrame({&quot;A&quot;: [&#39;a&#39;, &#39;b&#39;, &#39;a&#39;, &#39;a&#39;]})</span>
+<span class="sd">    ... )[&#39;A&#39;]</span>
+<span class="sd">    0    a</span>
+<span class="sd">    1    b</span>
+<span class="sd">    2    a</span>
+<span class="sd">    3    a</span>
+<span class="sd">    Name: A, dtype: category</span>
+<span class="sd">    Categories (2, object): [a, b, c]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">categories</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">categories</span>
 
@@ -341,12 +264,16 @@ categorical dtype (in a pandas sense).</p>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">categories</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">X</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">set_categories</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">X</span>
 </pre></div>
 
 
+<p>Incidentally, my <a href="https://github.com/pandas-dev/pandas/pull/16015"><code>CategoricalDtype</code> pull
+request</a> will make this type of
+operation a bit easier to express.</p>
 <p>Finally, we'd like to scale a subset of the data. Scikit-learn has a
 <code>StandardScaler</code>, which we'll mimic here, to just operate on a subset of the
 columns.</p>
@@ -356,6 +283,7 @@ columns.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">columns</span>
 
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># Yes, non-ASCII symbols can be a valid identfiers in python 3</span>
         <span class="bp">self</span><span class="o">.</span><span class="err">μ</span><span class="n">s</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="err">σ</span><span class="n">s</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span>
@@ -416,14 +344,14 @@ columns.</p>
 
 <p>So, all that pipeline scaffolding is a <em>bit</em> of extra complexity over
 imperatively updating the data or writing simple functions to transform the
-data. It'll be worth it though, when we go to predict for the entire dataset.</p>
+data. It'll make our lives easier in the <code>.predict</code> step later on.</p>
 <p>We can fit the pipeline as normal:</p>
 <div class="highlight"><pre><span></span><span class="o">%</span><span class="n">time</span> <span class="n">pipe</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
 </pre></div>
 
 
-<p>This take about a minute on my laptop. We can check the performance, but that's
-not the point.</p>
+<p>This take about a minute on my laptop. We can check the accuracy (but again,
+this isn't the point)</p>
 <div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">pipe</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
 <span class="mf">0.9931</span>
 
@@ -432,17 +360,21 @@ not the point.</p>
 </pre></div>
 
 
-<p>It turns out people essentially tip if and only they're paying with a card, so
-this isn't a particularly difficult task. Or perhaps more accurately, tips are
-only <em>recorded</em> when someone pays with a card.</p>
+<p>It turns out people essentially tip if and only if they're paying with a card,
+so this isn't a particularly difficult task. Or perhaps more accurately, tips
+are only <em>recorded</em> when someone pays with a card.</p>
+<h2>Scaling Out</h2>
+<p>OK, so we've fit our model and it's been basically normal. Maybe we've been a
+overly-dogmatic about doing <em>everything</em> in a pipeline, but that's just good
+model hygiene anyway.</p>
 <p>Now, to scale out to the rest of the dataset. We'll predict the probability of
 tipping for every cab ride in the dataset (bearing in mind that the full dataset
 doesn't fit in my laptop's RAM).</p>
 <p>To make things a bit easier we'll use dask, though it isn't strictly necessary
-for this section. It saves us from writing a for loop, but more importantly
-we'll be able to reuse this code when we go to scale out to a cluster. This does
-demonstrate dask's ability to scale down to a laptop and operate out-of-core on
-large datasets.</p>
+for this section. It saves us from writing a for loop (big whoop). Additionally,
+we'll be able to reuse this code when we go to scale out to a cluster (that part
+is pretty cool, actually). Dask can scale down to a single laptop, and up to
+thousands of cores.</p>
 <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dask.dataframe</span> <span class="kn">as</span> <span class="nn">dd</span>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/*.csv&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
@@ -452,15 +384,16 @@ large datasets.</p>
 </pre></div>
 
 
-<p>Since scikit-learn isn't dask-aware, we can't simply call <code>pipe.predict_proba(X)</code>.
-At some point, our <code>dask.dataframe</code> would be cast to a <code>numpy.ndarray</code>, and our
-memory would blow up. Fortunately, <code>dask.dataframe</code> has a nice little escape
-hatch for dealing with functions that know how to operate on NumPy arrays, but
-not dask objects: <code>map_partitions</code>.</p>
+<p><code>X</code> is a <code>dask.dataframe</code>, which can be mostly be treated as a single dataframe,
+and thought of as a collection of many smaller pandas <code>DataFrames</code>.</p>
+<p>Since scikit-learn isn't dask-aware, we can't simply call
+<code>pipe.predict_proba(X)</code>. At some point, our <code>dask.dataframe</code> would be cast to a
+<code>numpy.ndarray</code>, and our memory would blow up. Fortunately, dask has a some nice
+little escape hatches for dealing with functions that know how to operate on
+NumPy arrays, but not dask objects. In this case, we'll use <code>map_partitions</code>.</p>
 <div class="highlight"><pre><span></span><span class="n">yhat</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pipe</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">x</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">],</span>
                                             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;yhat&#39;</span><span class="p">),</span>
                         <span class="n">meta</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;yhat&#39;</span><span class="p">,</span> <span class="s1">&#39;f8&#39;</span><span class="p">))</span>
-<span class="n">yhat</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="s2">&quot;data/predictions.parq&quot;</span><span class="p">)</span>
 </pre></div>
 
 
@@ -468,18 +401,34 @@ not dask objects: <code>map_partitions</code>.</p>
 file), calling the function on each partition. Dask worries about stitching
 together the result (though we provide a hint with the <code>meta</code> keyword, to say
 that it's a <code>Series</code> with name <code>yhat</code> and dtype <code>f8</code>).</p>
+<p>Now we can write it out to disk (using parquet rather than CSV, because CSVs are
+evil)</p>
+<div class="highlight"><pre><span></span><span class="n">yhat</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="s2">&quot;data/predictions.parq&quot;</span><span class="p">)</span>
+</pre></div>
+
+
 <p>This takes about 9 minutes to finish on my laptop.</p>
-<p>You may have noticed this, but to make it explicit: this final step can run
-out-of-core on my single laptop, or it can operate on a distributed cluster.
-This will be a common pattern throughout this series. Let's explore that now by
-setting up a small cluster. I'll use <code>dask-kubernetes</code>, but you may already have
-access to one from your business or institution.</p>
+<h2>Scaling Out (even further)</h2>
+<p>If 9 minutes is too long, and you happen to have a cluster sitting around, you
+can repurpose that dask code to run on the <a href="http://distributed.readthedocs.io/en/latest/">distributed scheduler</a>. I'll use
+<code>dask-kubernetes</code>, to start up a cluster but you may already have access to one
+from your business or institution.</p>
 <div class="highlight"><pre><span></span><span class="n">dask</span><span class="o">-</span><span class="n">kubernetes</span> <span class="n">create</span> <span class="n">scalable</span><span class="o">-</span><span class="n">ml</span>
 </pre></div>
 
 
-<p>This sets up a cluster with 8 workers and 54 GB of memory. Once that's up, I
-could pickle up the model and load it along with a <code>Client</code>:</p>
+<p>This sets up a cluster with 8 workers and 54 GB of memory.</p>
+<p>The next part of this post is a bit fuzzy, since your teams will probably have
+different procedures and infrastructure around persisting models. At my old job,
+I wrote a small utility for serializing a scikit-learn model along with some
+metadata about what it was trained on, before dumping it in S3. If you want to
+be fancy, you should watch <a href="https://www.youtube.com/watch?v=vKU8MWORHP8">this talk</a>
+by <a href="twitter.com/oceankidbilly">Rob Story</a> on how Stripe handles these things
+(it's a bit more sophisticated that my "dump it on S3" script).</p>
+<p>For this blog post, "shipping it to prod" consists of a <code>joblib.dump(pipe,
+"taxi-model.pkl")</code> on our laptop, and copying it to somewhere the cluster can
+load the file. Then on the cluster, we'll load it up, and create a <code>Client</code> to
+communicate with our cluster's workers.</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">distributed</span> <span class="kn">import</span> <span class="n">Client</span>
 <span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="kn">import</span> <span class="n">joblib</span>
 
@@ -490,18 +439,20 @@ could pickle up the model and load it along with a <code>Client</code>:</p>
 
 <p>Depending on how your cluster is set up, specifically with respect to having a
 shared-file-system or not, the rest of the code is more-or-less identical. If
-we're using S3 or gcfs as our shared file system, we'd modify the code as</p>
+we're using S3 or gcfs as our shared file system, we'd modify the loading code
+to read from S3, rather than our local hard drive:</p>
 <div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;s3://bucket/yellow_tripdata_2009*.csv&quot;</span><span class="p">,</span>
                  <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
                  <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Trip_Pickup_DateTime&#39;</span><span class="p">,</span> <span class="s1">&#39;Trip_Dropoff_DateTime&#39;</span><span class="p">],</span>
                  <span class="n">storage_options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;anon&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">})</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">persist</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">persist</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>  <span class="c1"># persist the dataset in distributed memory</span>
+                    <span class="c1"># across all the workers in the Dataset</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;Tip_Amt&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Tip_Amt&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
 </pre></div>
 
 
-<p>to load the data. Computing the predictions is identical:</p>
+<p>Computing the predictions is identical to our out-of-core-on-my-laptop code:</p>
 <div class="highlight"><pre><span></span><span class="n">yhat</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pipe</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">x</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;yhat&#39;</span><span class="p">),</span>
                         <span class="n">meta</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;yhat&#39;</span><span class="p">,</span> <span class="s1">&#39;f8&#39;</span><span class="p">))</span>
 </pre></div>
@@ -515,18 +466,27 @@ we're using S3 or gcfs as our shared file system, we'd modify the code as</p>
 <p>The loading took about 4 minutes on the cluster, the predict about 10 seconds,
 and the writing about 1 minute. Not bad overall.</p>
 <h2>Wrapup</h2>
-<p>Today, we went into detail on what's probably the first scaling problem you'll
-hit with scikit-learn: you can train your dataset in-memory, but you have to
-predict on a much larger dataset. We saw that the existing tools handle this
-case quite well. For training, we followed best-practices and did everything
-inside a <code>Pipeline</code> object. For predicting, we used <code>dask</code> to write regular
-pandas code that worked out-of-core on my laptop or on a distributed cluster.</p>
+<p>Today, we went into detail on what's potentially the first scaling problem
+you'll hit with scikit-learn: you can train your dataset in-memory (on a laptop,
+or a large workstation), but you have to predict on a much larger dataset.</p>
+<p>We saw that the existing tools handle this case quite well. For training, we
+followed best-practices and did everything inside a <code>Pipeline</code> object. For
+predicting, we used <code>dask</code> to write regular pandas code that worked out-of-core
+on my laptop or on a distributed cluster.</p>
 <p>If this topic interests you, you should watch <a href="scaling sklearn">this talk</a> by
-<a href="https://twitter.com/stephenactual?lang=en">Stephen Hoover</a> on how Civis is scaling scikit-learn.</p>
-<p>In future posts we'll dig into how dask can speed up your existing pipelines by
-executing them in parallel, scikit-learn's out of core API for when your
-training dataset doesn't fit in memory, and how you can use dask to implement
-distributed machine learning algorithms.</p>
+<a href="https://twitter.com/stephenactual">Stephen Hoover</a> on how Civis is scaling scikit-learn.</p>
+<p>In future posts we'll dig into</p>
+<ul>
+<li>how dask can speed up your existing pipelines by executing them in parallel</li>
+<li>scikit-learn's out of core API for when your training dataset doesn't fit in
+  memory</li>
+<li>using dask to implement distributed machine learning algorithms</li>
+</ul>
+<p>Until then I would <em>really</em> appreciate your feedback. My personal experience
+using scikit-learn and pandas can't cover the diversity of use-cases they're
+being thrown into. You can reach me on Twitter
+<a href="https://twitter.com/TomAugspurger">@TomAugspurger</a> or by email at
+<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#116;&#111;&#109;&#46;&#119;&#46;&#97;&#117;&#103;&#115;&#112;&#117;&#114;&#103;&#101;&#114;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;">&#116;&#111;&#109;&#46;&#119;&#46;&#97;&#117;&#103;&#115;&#112;&#117;&#114;&#103;&#101;&#114;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;</a>. Thanks for reading!</p>
 <div class="footnote">
 <hr>
 <ol>
