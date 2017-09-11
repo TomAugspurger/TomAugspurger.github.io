@@ -495,8 +495,8 @@ or a large workstation), but you have to predict on a much larger dataset.&lt;/p
 followed best-practices and did everything inside a &lt;code&gt;Pipeline&lt;/code&gt; object. For
 predicting, we used &lt;code&gt;dask&lt;/code&gt; to write regular pandas code that worked out-of-core
 on my laptop or on a distributed cluster.&lt;/p&gt;
-&lt;p&gt;If this topic interests you, you should watch &lt;a href="scaling sklearn"&gt;this talk&lt;/a&gt; by
-&lt;a href="https://twitter.com/stephenactual"&gt;Stephen Hoover&lt;/a&gt; on how Civis is scaling scikit-learn.&lt;/p&gt;
+&lt;p&gt;If this topic interests you, you should watch &lt;a href="https://www.youtube.com/watch?v=KqKEttfQ_hE"&gt;this talk&lt;/a&gt;
+by &lt;a href="https://twitter.com/stephenactual"&gt;Stephen Hoover&lt;/a&gt; on how Civis is scaling scikit-learn.&lt;/p&gt;
 &lt;p&gt;In future posts we'll dig into&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;how dask can speed up your existing pipelines by executing them in parallel&lt;/li&gt;
