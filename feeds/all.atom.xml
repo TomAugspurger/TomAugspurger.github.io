@@ -1,5 +1,527 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2016-08-30T00:00:00-05:00</updated><entry><title>Introducing Stitch</title><link href="/introducing-stitch.html" rel="alternate"></link><published>2016-08-30T00:00:00-05:00</published><updated>2016-08-30T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-08-30:/introducing-stitch.html</id><summary type="html">&lt;p&gt;Today I released &lt;a href="https://github.com/pystitch/stitch"&gt;&lt;code&gt;stitch&lt;/code&gt;&lt;/a&gt; into the
+<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2016-09-11T00:00:00-05:00</updated><entry><title>Scalable Machine Learning (Part 1)</title><link href="/scalable-ml-01.html" rel="alternate"></link><published>2016-09-11T00:00:00-05:00</published><updated>2016-09-11T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-09-11:/scalable-ml-01.html</id><summary type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda Inc.&lt;/a&gt; and the Data Driven Discovery
+Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Anaconda is interested in scaling the scientific python ecosystem. My current
+focus is on out-of-core, parallel, and distributed machine learning. This series
+of posts will introduce those concepts, explore what we have available …&lt;/p&gt;</summary><content type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda Inc.&lt;/a&gt; and the Data Driven Discovery
+Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Anaconda is interested in scaling the scientific python ecosystem. My current
+focus is on out-of-core, parallel, and distributed machine learning. This series
+of posts will introduce those concepts, explore what we have available today,
+and track the community's efforts to push the boundaries.&lt;/p&gt;
+&lt;h2&gt;Constraints&lt;/h2&gt;
+&lt;p&gt;I am (or was, anyway) an economist, and economists like to think in terms of
+constraints. How are we constrained by scale? The two main ones I can think of
+are&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;I'm constrained by size&lt;/strong&gt;: My training dataset fits in RAM, but I have to
+   predict for a much larger dataset. Or, my training dataset doesn't even fit
+   in RAM. &lt;em&gt;I'd like to scale out by adopting algorithms that work in batches
+   locally, or on a distributed cluster.&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;I'm constrained by time&lt;/strong&gt;: I'd like to fit more models (think
+   hyper-parameter optimization or ensemble learning) on my dataset in a given
+   amount of time. &lt;em&gt;I'd like to scale out by fitting more models in parallel,
+   either on my laptop by using more cores, or on a cluster.&lt;/em&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;These aren't mutually exclusive or exhaustive, but they should serve as a nice
+framework for our discussion. I'll be showing where the usual pandas +
+scikit-learn for in-memory analytics workflow breaks down, and offer some
+solutions for scaling out to larger problems.&lt;/p&gt;
+&lt;p&gt;This post will focus on cases where your &lt;em&gt;training&lt;/em&gt; dataset fits in memory, but
+you must predict on a dataset that's larger than memory. Later posts will
+explore into parallel, out-of-core, and distributed training of machine learning
+models.&lt;/p&gt;
+&lt;h2&gt;Don't forget your Statistics&lt;/h2&gt;
+&lt;p&gt;Statistics is a thing&lt;sup id="fnref-*"&gt;&lt;a class="footnote-ref" href="#fn-*"&gt;1&lt;/a&gt;&lt;/sup&gt;. Statisticians have thought a lot about things like
+sampling and the variance of estimators. So it's worth stating up front that
+you may be able to just&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;SELECT&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+&lt;span class="k"&gt;FROM&lt;/span&gt; &lt;span class="n"&gt;dataset&lt;/span&gt;
+&lt;span class="k"&gt;ORDER&lt;/span&gt; &lt;span class="k"&gt;BY&lt;/span&gt; &lt;span class="n"&gt;random&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="k"&gt;LIMIT&lt;/span&gt; &lt;span class="mi"&gt;10000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and fit your model on a (representative) subset of your data. &lt;em&gt;You may not need
+distributed machine learning&lt;/em&gt;. The tricky thing is selecting how large your
+sample should be. The "correct" value depends on the complexity of your learning
+task, the complexity of your model, and the nature of your data. The best you
+can do here is think carefully about your problem and to plot the &lt;a href="http://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html"&gt;learning
+curve&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img alt="scikit-learn" src="http://scikit-learn.org/stable/_images/sphx_glr_plot_learning_curve_001.png"&gt;&lt;/p&gt;
+&lt;div style="text-align: center"&gt; &lt;a
+  href="http://scikit-learn.org/stable/_images/sphx_glr_plot_learning_curve_001.png"&gt;&lt;i&gt;source&lt;/i&gt;&lt;/a&gt;
+&lt;/div&gt;
+
+&lt;p&gt;As usual, the scikit-learn developers do a great job explaining the concept in
+addition to providing a great library. I encourage you to follow &lt;a href="http://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html"&gt;that
+link&lt;/a&gt;. This gist is that—for some models on some
+datasets—training the model on more observations doesn't improve performance. At
+some point the learning curve levels off and you're just wasting time and money
+training on those extra observations.&lt;/p&gt;
+&lt;p&gt;For today, we'll assume that we're on the flat part of the learning curve. Later
+in the series we'll explore cases where we run out of RAM before the learning
+curve levels off.&lt;/p&gt;
+&lt;h2&gt;Fit, Predict&lt;/h2&gt;
+&lt;p&gt;In my experience, the first place I bump into RAM constraints is when my
+training dataset fits in memory, but I have to make predictions for a dataset
+that's orders of magnitude larger. In these cases, I fit my model like normal,
+and do my predictions out-of-core (without reading the full dataset into memory
+at once).&lt;/p&gt;
+&lt;p&gt;We'll see that the training side is completely normal (since everything fits in
+RAM). We'll see that &lt;a href="https://dask.pydata.org"&gt;dask&lt;/a&gt; let's us write normal-looking pandas and NumPy code,
+so we don't have to worry about writing the batching code ourself.&lt;/p&gt;
+&lt;p&gt;To make this concrete, we'll use the (tried and true) New York City taxi
+dataset. The goal will be to predict if the passenger leaves a tip. We'll train
+the model on a single month's worth of data (which fits in my laptop's RAM), and
+predict on the full dataset&lt;sup id="fnref-2"&gt;&lt;a class="footnote-ref" href="#fn-2"&gt;2&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+&lt;p&gt;Let's load in the first month of data from disk:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dtype&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="s1"&gt;&amp;#39;vendor_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;category&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s1"&gt;&amp;#39;Payment_Type&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;category&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_csv&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;data/yellow_tripdata_2009-01.csv&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                 &lt;span class="n"&gt;parse_dates&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Trip_Pickup_DateTime&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Trip_Dropoff_DateTime&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],)&lt;/span&gt;
+&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;head&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;table&gt; &lt;thead&gt; &lt;tr style="text-align: right;"&gt; &lt;th&gt;&lt;/th&gt; &lt;th&gt;vendor_name&lt;/th&gt;
+  &lt;th&gt;Trip_Pickup_DateTime&lt;/th&gt; &lt;th&gt;Trip_Dropoff_DateTime&lt;/th&gt;
+  &lt;th&gt;Passenger_Count&lt;/th&gt; &lt;th&gt;Trip_Distance&lt;/th&gt; &lt;th&gt;Start_Lon&lt;/th&gt;
+  &lt;th&gt;Start_Lat&lt;/th&gt; &lt;th&gt;Rate_Code&lt;/th&gt; &lt;th&gt;store_and_forward&lt;/th&gt;
+  &lt;th&gt;End_Lon&lt;/th&gt; &lt;th&gt;End_Lat&lt;/th&gt; &lt;th&gt;Payment_Type&lt;/th&gt; &lt;th&gt;Fare_Amt&lt;/th&gt;
+  &lt;th&gt;surcharge&lt;/th&gt; &lt;th&gt;mta_tax&lt;/th&gt; &lt;th&gt;Tip_Amt&lt;/th&gt; &lt;th&gt;Tolls_Amt&lt;/th&gt;
+  &lt;th&gt;Total_Amt&lt;/th&gt; &lt;/tr&gt; &lt;/thead&gt; &lt;tbody&gt; &lt;tr&gt; &lt;th&gt;0&lt;/th&gt; &lt;td&gt;VTS&lt;/td&gt;
+  &lt;td&gt;2009-01-04 02:52:00&lt;/td&gt; &lt;td&gt;2009-01-04 03:02:00&lt;/td&gt; &lt;td&gt;1&lt;/td&gt;
+  &lt;td&gt;2.63&lt;/td&gt; &lt;td&gt;-73.991957&lt;/td&gt; &lt;td&gt;40.721567&lt;/td&gt; &lt;td&gt;NaN&lt;/td&gt; &lt;td&gt;NaN&lt;/td&gt;
+  &lt;td&gt;-73.993803&lt;/td&gt; &lt;td&gt;40.695922&lt;/td&gt; &lt;td&gt;CASH&lt;/td&gt; &lt;td&gt;8.9&lt;/td&gt; &lt;td&gt;0.5&lt;/td&gt;
+  &lt;td&gt;NaN&lt;/td&gt; &lt;td&gt;0.00&lt;/td&gt; &lt;td&gt;0.0&lt;/td&gt; &lt;td&gt;9.40&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;th&gt;1&lt;/th&gt;
+  &lt;td&gt;VTS&lt;/td&gt; &lt;td&gt;2009-01-04 03:31:00&lt;/td&gt; &lt;td&gt;2009-01-04 03:38:00&lt;/td&gt;
+  &lt;td&gt;3&lt;/td&gt; &lt;td&gt;4.55&lt;/td&gt; &lt;td&gt;-73.982102&lt;/td&gt; &lt;td&gt;40.736290&lt;/td&gt; &lt;td&gt;NaN&lt;/td&gt;
+  &lt;td&gt;NaN&lt;/td&gt; &lt;td&gt;-73.955850&lt;/td&gt; &lt;td&gt;40.768030&lt;/td&gt; &lt;td&gt;Credit&lt;/td&gt;
+  &lt;td&gt;12.1&lt;/td&gt; &lt;td&gt;0.5&lt;/td&gt; &lt;td&gt;NaN&lt;/td&gt; &lt;td&gt;2.00&lt;/td&gt; &lt;td&gt;0.0&lt;/td&gt;
+  &lt;td&gt;14.60&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;th&gt;2&lt;/th&gt; &lt;td&gt;VTS&lt;/td&gt; &lt;td&gt;2009-01-03 15:43:00&lt;/td&gt;
+  &lt;td&gt;2009-01-03 15:57:00&lt;/td&gt; &lt;td&gt;5&lt;/td&gt; &lt;td&gt;10.35&lt;/td&gt; &lt;td&gt;-74.002587&lt;/td&gt;
+  &lt;td&gt;40.739748&lt;/td&gt; &lt;td&gt;NaN&lt;/td&gt; &lt;td&gt;NaN&lt;/td&gt; &lt;td&gt;-73.869983&lt;/td&gt;
+  &lt;td&gt;40.770225&lt;/td&gt; &lt;td&gt;Credit&lt;/td&gt; &lt;td&gt;23.7&lt;/td&gt; &lt;td&gt;0.0&lt;/td&gt; &lt;td&gt;NaN&lt;/td&gt;
+  &lt;td&gt;4.74&lt;/td&gt; &lt;td&gt;0.0&lt;/td&gt; &lt;td&gt;28.44&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt; &lt;th&gt;3&lt;/th&gt; &lt;td&gt;DDS&lt;/td&gt;
+  &lt;td&gt;2009-01-01 20:52:58&lt;/td&gt; &lt;td&gt;2009-01-01 21:14:00&lt;/td&gt; &lt;td&gt;1&lt;/td&gt;
+  &lt;td&gt;5.00&lt;/td&gt; &lt;td&gt;-73.974267&lt;/td&gt; &lt;td&gt;40.790955&lt;/td&gt; &lt;td&gt;NaN&lt;/td&gt; &lt;td&gt;NaN&lt;/td&gt;
+  &lt;td&gt;-73.996558&lt;/td&gt; &lt;td&gt;40.731849&lt;/td&gt; &lt;td&gt;CREDIT&lt;/td&gt; &lt;td&gt;14.9&lt;/td&gt;
+  &lt;td&gt;0.5&lt;/td&gt; &lt;td&gt;NaN&lt;/td&gt; &lt;td&gt;3.05&lt;/td&gt; &lt;td&gt;0.0&lt;/td&gt; &lt;td&gt;18.45&lt;/td&gt; &lt;/tr&gt; &lt;tr&gt;
+  &lt;th&gt;4&lt;/th&gt; &lt;td&gt;DDS&lt;/td&gt; &lt;td&gt;2009-01-24 16:18:23&lt;/td&gt; &lt;td&gt;2009-01-24
+  16:24:56&lt;/td&gt; &lt;td&gt;1&lt;/td&gt; &lt;td&gt;0.40&lt;/td&gt; &lt;td&gt;-74.001580&lt;/td&gt; &lt;td&gt;40.719382&lt;/td&gt;
+  &lt;td&gt;NaN&lt;/td&gt; &lt;td&gt;NaN&lt;/td&gt; &lt;td&gt;-74.008378&lt;/td&gt; &lt;td&gt;40.720350&lt;/td&gt; &lt;td&gt;CASH&lt;/td&gt;
+  &lt;td&gt;3.7&lt;/td&gt; &lt;td&gt;0.0&lt;/td&gt; &lt;td&gt;NaN&lt;/td&gt; &lt;td&gt;0.00&lt;/td&gt; &lt;td&gt;0.0&lt;/td&gt;
+  &lt;td&gt;3.70&lt;/td&gt; &lt;/tr&gt; &lt;/tbody&gt; &lt;/table&gt;
+
+&lt;p&gt;The January 2009 file has about 14M rows, and pandas takes about a minute to
+read the CSV into memory. We'll do the usual train-test split:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;drop&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Tip_Amt&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;axis&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Tip_Amt&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+
+&lt;span class="n"&gt;X_train&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;X_test&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y_train&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y_test&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;train_test_split&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Train:&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X_train&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Test: &amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X_test&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Train&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;10569309&lt;/span&gt;
+&lt;span class="n"&gt;Test&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;  &lt;span class="mi"&gt;3523104&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Aside on Pipelines&lt;/h2&gt;
+&lt;p&gt;The first time you're introduced to scikit-learn, you'll typically be shown how
+you pass two NumPy arrays &lt;code&gt;X&lt;/code&gt; and &lt;code&gt;y&lt;/code&gt; straight into an estimator's &lt;code&gt;.fit&lt;/code&gt;
+method.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.linear_model&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;LinearRegression&lt;/span&gt;
+
+&lt;span class="n"&gt;est&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;LinearRegression&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;est&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Eventually, you might want to use some of scikit-learn's pre-processing methods.
+For example, we might impute missing values with the median and normalize the
+data before handing it off to &lt;code&gt;LinearRegression&lt;/code&gt;. You could do this "by hand":&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.preprocessing&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Imputer&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;StandardScaler&lt;/span&gt;
+
+&lt;span class="n"&gt;imputer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Imputer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;strategy&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;median&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;X_filled&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;imputer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fit_transform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;scaler&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;StandardScaler&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;X_scaled&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;X_scaler&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fit_transform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X_filled&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;est&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;LinearRegression&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;est&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X_scaled&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We set up each step, and manually pass the data through: &lt;code&gt;X -&amp;gt; X_filled -&amp;gt;
+X_scaled&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The downside of this approach is that we now have to remember which
+pre-processing steps we did, and in what order. The pipeline from raw data to
+fit model is spread across multiple python objects. A better approach is to use
+scikit-learn's &lt;code&gt;Pipeline&lt;/code&gt; object.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.pipeline&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;make_pipeline&lt;/span&gt;
+
+&lt;span class="n"&gt;pipe&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;make_pipeline&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+    &lt;span class="n"&gt;Imputer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;strategy&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;median&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+    &lt;span class="n"&gt;StandardScaler&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+    &lt;span class="n"&gt;LinearRegression&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;pipe&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Each step in the pipeline implements the &lt;code&gt;fit&lt;/code&gt;, &lt;code&gt;transform&lt;/code&gt;, and &lt;code&gt;fit_transform&lt;/code&gt;
+methods. Scikit-learn takes care of shepherding the data through the various
+transforms, and finally to the estimator at the end. Pipelines have many
+benefits but the main one for our purpose today is that it packages our entire
+task into a single python object. Later on, our &lt;code&gt;predict&lt;/code&gt; step will be a single
+function call, which makes scaling out to the entire dataset extremely
+convenient.&lt;/p&gt;
+&lt;p&gt;If you want more information on &lt;code&gt;Pipeline&lt;/code&gt;s, check out the &lt;a href="http://scikit-learn.org/stable/modules/pipeline.html#pipeline"&gt;scikit-learn
+docs&lt;/a&gt;, &lt;a href="http://zacstewart.com/2014/08/05/pipelines-of-featureunions-of-pipelines.html"&gt;this blog&lt;/a&gt; post, and my talk from
+&lt;a href="https://www.youtube.com/watch?v=KLPtEBokqQ0"&gt;PyData Chicago 2016&lt;/a&gt;. We'll be implementing some custom ones,
+which is &lt;em&gt;not&lt;/em&gt; the point of this post. Don't get lost in the weeds here, I only
+include this section for completeness.&lt;/p&gt;
+&lt;h2&gt;Our Pipeline&lt;/h2&gt;
+&lt;p&gt;This isn't a perfectly clean dataset, which is nice because it gives us a chance
+to demonstrate some pandas' pre-processing prowess, before we hand the data
+of to scikit-learn to fit the model.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.pipeline&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;make_pipeline&lt;/span&gt;
+&lt;span class="c1"&gt;# We&amp;#39;ll use FunctionTransformer for simple transforms&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.preprocessing&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;FunctionTransformer&lt;/span&gt;
+&lt;span class="c1"&gt;# TransformerMixin gives us fit_transform for free&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.base&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;TransformerMixin&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;There are some minor differences in the spelling on "Payment Type":&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Payment_Type&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cat&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;categories&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Index([&amp;#39;CASH&amp;#39;, &amp;#39;CREDIT&amp;#39;, &amp;#39;Cash&amp;#39;, &amp;#39;Credit&amp;#39;, &amp;#39;Dispute&amp;#39;, &amp;#39;No Charge&amp;#39;], dtype=&amp;#39;object&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We'll reconcile that by lower-casing everything with a &lt;code&gt;.str.lower()&lt;/code&gt;. But
+resist the temptation to just do that imperatively inplace! We'll package it up
+into a function that will later be wrapped up in a &lt;a href="http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.FunctionTransformer.html"&gt;FunctionTransformer&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;payment_lowerer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;assign&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Payment_Type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Payment_Type&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;str&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;lower&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;I should note here that I'm using
+&lt;a href="https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.assign.html"&gt;&lt;code&gt;.assign&lt;/code&gt;&lt;/a&gt;
+to update the variables since it implicitly copies the data. We don't want to
+be modifying the caller's data without their consent.&lt;/p&gt;
+&lt;p&gt;Not all the columns look useful. We could have easily solved this by only
+reading in the data that we're actually going to use, but let's solve it now
+with another simple transformer:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;ColumnSelector&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TransformerMixin&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Select `columns` from `X`&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="fm"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;columns&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;transform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Internally, pandas stores &lt;code&gt;datetimes&lt;/code&gt; like &lt;code&gt;Trip_Pickup_DateTime&lt;/code&gt; as a 64-bit
+integer representing the nanoseconds since some time in the 1600s. If we left
+this untransformed, scikit-learn would happily transform that column to its
+integer representation, which may not be the most meaningful item to stick in
+a linear model for predicting tips. A better feature might the hour of the day:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;HourExtractor&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TransformerMixin&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Transform each datetime in `columns` to integer hour of the day&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="fm"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;columns&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;transform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;assign&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;col&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;col&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;hour&lt;/span&gt;
+                           &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;col&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Likewise, we'll need to ensure the categorical variables (in a statistical
+sense) are categorical dtype (in a pandas sense). We want categoricals so that
+we can call &lt;code&gt;get_dummies&lt;/code&gt; later on without worrying about missing or extra
+categories in a subset of the data throwing off our linear algebra (See my
+&lt;a href="https://www.youtube.com/watch?v=KLPtEBokqQ0"&gt;talk&lt;/a&gt; for more details).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;CategoricalEncoder&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TransformerMixin&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="sd"&gt;    Convert to Categorical with specific `categories`.&lt;/span&gt;
+
+&lt;span class="sd"&gt;    Examples&lt;/span&gt;
+&lt;span class="sd"&gt;    --------&lt;/span&gt;
+&lt;span class="sd"&gt;    &amp;gt;&amp;gt;&amp;gt; CategoricalEncoder({&amp;quot;A&amp;quot;: [&amp;#39;a&amp;#39;, &amp;#39;b&amp;#39;, &amp;#39;c&amp;#39;]}).fit_transform(&lt;/span&gt;
+&lt;span class="sd"&gt;    ...     pd.DataFrame({&amp;quot;A&amp;quot;: [&amp;#39;a&amp;#39;, &amp;#39;b&amp;#39;, &amp;#39;a&amp;#39;, &amp;#39;a&amp;#39;]})&lt;/span&gt;
+&lt;span class="sd"&gt;    ... )[&amp;#39;A&amp;#39;]&lt;/span&gt;
+&lt;span class="sd"&gt;    0    a&lt;/span&gt;
+&lt;span class="sd"&gt;    1    b&lt;/span&gt;
+&lt;span class="sd"&gt;    2    a&lt;/span&gt;
+&lt;span class="sd"&gt;    3    a&lt;/span&gt;
+&lt;span class="sd"&gt;    Name: A, dtype: category&lt;/span&gt;
+&lt;span class="sd"&gt;    Categories (2, object): [a, b, c]&lt;/span&gt;
+&lt;span class="sd"&gt;    &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="fm"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;categories&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;categories&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;categories&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;transform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;copy&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;col&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;categories&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;categories&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+            &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;col&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;col&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;astype&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;category&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cat&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;set_categories&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;categories&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Finally, we'd like to normalize the quantitative subset of the data.
+Scikit-learn has a &lt;a href="http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html"&gt;StandardScaler&lt;/a&gt;, which we'll mimic here, to just operate on
+a subset of the columns.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;StandardScaler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TransformerMixin&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;Scale a subset of the columns in a DataFrame&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="fm"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;columns&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="c1"&gt;# Yes, non-ASCII symbols can be a valid identfiers in python 3&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="err"&gt;μ&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;mean&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="err"&gt;σ&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;std&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;transform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;copy&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sub&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="err"&gt;μ&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;div&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="err"&gt;σ&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Side-note: I'd like to repeat my desire for a library of &lt;code&gt;Transformers&lt;/code&gt; that
+work well on NumPy arrays, dask arrays, pandas &lt;code&gt;DataFrame&lt;/code&gt;s and dask dataframes.
+I think that'd be a popular library. Essentially everything we've written could
+go in there and be imported.&lt;/p&gt;
+&lt;p&gt;Now we can build up the pipeline:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# The columns at the start of the pipeline&lt;/span&gt;
+&lt;span class="n"&gt;columns&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;vendor_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Trip_Pickup_DateTime&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+           &lt;span class="s1"&gt;&amp;#39;Passenger_Count&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Trip_Distance&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+           &lt;span class="s1"&gt;&amp;#39;Payment_Type&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Fare_Amt&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;surcharge&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="c1"&gt;# The mapping of {column: set of categories}&lt;/span&gt;
+&lt;span class="n"&gt;categories&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="s1"&gt;&amp;#39;vendor_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;CMT&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;DDS&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;VTS&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+    &lt;span class="s1"&gt;&amp;#39;Payment_Type&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;cash&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;credit&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;dispute&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;no charge&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="n"&gt;scale&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Trip_Distance&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Fare_Amt&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;surcharge&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="n"&gt;pipe&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;make_pipeline&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+    &lt;span class="n"&gt;ColumnSelector&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+    &lt;span class="n"&gt;HourExtractor&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Trip_Pickup_DateTime&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]),&lt;/span&gt;
+    &lt;span class="n"&gt;FunctionTransformer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;payment_lowerer&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;validate&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+    &lt;span class="n"&gt;CategoricalEncoder&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;categories&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+    &lt;span class="n"&gt;FunctionTransformer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_dummies&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;validate&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+    &lt;span class="n"&gt;StandardScaler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;scale&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+    &lt;span class="n"&gt;LogisticRegression&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;pipe&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[(&amp;#39;columnselector&amp;#39;, &amp;lt;__main__.ColumnSelector at 0x1a2c726d8&amp;gt;),
+ (&amp;#39;hourextractor&amp;#39;, &amp;lt;__main__.HourExtractor at 0x10dc72a90&amp;gt;),
+ (&amp;#39;functiontransformer-1&amp;#39;, FunctionTransformer(accept_sparse=False,
+           func=&amp;lt;function payment_lowerer at 0x17e0d5510&amp;gt;, inv_kw_args=None,
+           inverse_func=None, kw_args=None, pass_y=&amp;#39;deprecated&amp;#39;,
+           validate=False)),
+ (&amp;#39;categoricalencoder&amp;#39;, &amp;lt;__main__.CategoricalEncoder at 0x11dd72f98&amp;gt;),
+ (&amp;#39;functiontransformer-2&amp;#39;, FunctionTransformer(accept_sparse=False,
+           func=&amp;lt;function get_dummies at 0x10f43b0d0&amp;gt;, inv_kw_args=None,
+           inverse_func=None, kw_args=None, pass_y=&amp;#39;deprecated&amp;#39;,
+           validate=False)),
+ (&amp;#39;standardscaler&amp;#39;, &amp;lt;__main__.StandardScaler at 0x162580a90&amp;gt;),
+ (&amp;#39;logisticregression&amp;#39;,
+  LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
+           intercept_scaling=1, max_iter=100, multi_class=&amp;#39;ovr&amp;#39;, n_jobs=1,
+           penalty=&amp;#39;l2&amp;#39;, random_state=None, solver=&amp;#39;liblinear&amp;#39;, tol=0.0001,
+           verbose=0, warm_start=False))]
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We can fit the pipeline as normal:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt; &lt;span class="n"&gt;pipe&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X_train&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y_train&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This take about a minute on my laptop. We can check the accuracy (but again,
+this isn't the point)&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;pipe&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;score&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X_train&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y_train&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="mf"&gt;0.9931&lt;/span&gt;
+
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;pipe&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;score&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X_test&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y_test&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="mf"&gt;0.9931&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;It turns out people essentially tip if and only if they're paying with a card,
+so this isn't a particularly difficult task. Or perhaps more accurately, tips
+are only &lt;em&gt;recorded&lt;/em&gt; when someone pays with a card.&lt;/p&gt;
+&lt;h2&gt;Scaling Out with Dask&lt;/h2&gt;
+&lt;p&gt;OK, so we've fit our model and it's been basically normal. Maybe we've been
+overly-dogmatic about doing &lt;em&gt;everything&lt;/em&gt; in a pipeline, but that's just good
+model hygiene anyway.&lt;/p&gt;
+&lt;p&gt;Now, to scale out to the rest of the dataset. We'll predict the probability of
+tipping for every cab ride in the dataset (bearing in mind that the full dataset
+doesn't fit in my laptop's RAM, so we'll do it out-of-core).&lt;/p&gt;
+&lt;p&gt;To make things a bit easier we'll use dask, though it isn't strictly necessary
+for this section. It saves us from writing a for loop (big whoop). Later on well
+see that we can, reuse this code when we go to scale out to a cluster (that part
+is pretty cool, actually). Dask can scale down to a single laptop, and up to
+thousands of cores.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;dask.dataframe&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;dd&lt;/span&gt;
+
+&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_csv&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;data/*.csv&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                 &lt;span class="n"&gt;parse_dates&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Trip_Pickup_DateTime&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Trip_Dropoff_DateTime&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],)&lt;/span&gt;
+
+&lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;drop&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Tip_Amt&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;axis&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;X&lt;/code&gt; is a &lt;code&gt;dask.dataframe&lt;/code&gt;, which can be mostly be treated like a pandas
+dataframe (internally, operations are done on many smaller dataframes). &lt;code&gt;X&lt;/code&gt; has
+about 170M rows (compared with the 14M for the training dataset).&lt;/p&gt;
+&lt;p&gt;Since scikit-learn isn't dask-aware, we can't simply call
+&lt;code&gt;pipe.predict_proba(X)&lt;/code&gt;. At some point, our &lt;code&gt;dask.dataframe&lt;/code&gt; would be cast to a
+&lt;code&gt;numpy.ndarray&lt;/code&gt;, and our memory would blow up. Fortunately, dask has some nice
+little escape hatches for dealing with functions that know how to operate on
+NumPy arrays, but not dask objects. In this case, we'll use &lt;code&gt;map_partitions&lt;/code&gt;.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;yhat&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;map_partitions&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Series&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;pipe&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;predict_proba&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)[:,&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+                                            &lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;yhat&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+                        &lt;span class="n"&gt;meta&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;yhat&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;f8&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;map_partitions&lt;/code&gt; will go through each partition in your dataframe (one per
+file), calling the function on each partition. Dask worries about stitching
+together the result (though we provide a hint with the &lt;code&gt;meta&lt;/code&gt; keyword, to say
+that it's a &lt;code&gt;Series&lt;/code&gt; with name &lt;code&gt;yhat&lt;/code&gt; and dtype &lt;code&gt;f8&lt;/code&gt;).&lt;/p&gt;
+&lt;p&gt;Now we can write it out to disk (using parquet rather than CSV, because CSVs are
+evil).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;yhat&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;to_frame&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;to_parquet&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;data/predictions.parq&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This takes about 9 minutes to finish on my laptop.&lt;/p&gt;
+&lt;h2&gt;Scaling Out (even further)&lt;/h2&gt;
+&lt;p&gt;If 9 minutes is too long, and you happen to have a cluster sitting around, you
+can repurpose that dask code to run on the &lt;a href="http://distributed.readthedocs.io/en/latest/"&gt;distributed scheduler&lt;/a&gt;. I'll use
+&lt;a href="https://github.com/dask/dask-kubernetes"&gt;dask-kubernetes&lt;/a&gt;, to start up a cluster on Google Cloud Platform, but you could
+also use &lt;a href="https://github.com/dask/dask-ec2"&gt;dask-ec2&lt;/a&gt; for AWS, or &lt;a href="https://github.com/dask/dask-drmaa"&gt;dask-drmaa&lt;/a&gt; or &lt;a href="https://github.com/dask/dask-yarn"&gt;dask-yarn&lt;/a&gt; if already have
+access to a cluster from your business or institution.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dask&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;kubernetes&lt;/span&gt; &lt;span class="n"&gt;create&lt;/span&gt; &lt;span class="n"&gt;scalable&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;ml&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This sets up a cluster with 8 workers and 54 GB of memory.&lt;/p&gt;
+&lt;p&gt;The next part of this post is a bit fuzzy, since your teams will probably have
+different procedures and infrastructure around persisting models. At my old job,
+I wrote a small utility for serializing a scikit-learn model along with some
+metadata about what it was trained on, before dumping it in S3. If you want to
+be fancy, you should watch &lt;a href="https://www.youtube.com/watch?v=vKU8MWORHP8"&gt;this talk&lt;/a&gt;
+by &lt;a href="twitter.com/oceankidbilly"&gt;Rob Story&lt;/a&gt; on how Stripe handles these things
+(it's a bit more sophisticated than my "dump it on S3" script).&lt;/p&gt;
+&lt;p&gt;For this blog post, "shipping it to prod" consists of a &lt;code&gt;joblib.dump(pipe,
+"taxi-model.pkl")&lt;/code&gt; on our laptop, and copying it to somewhere the cluster can
+load the file. Then on the cluster, we'll load it up, and create a &lt;code&gt;Client&lt;/code&gt; to
+communicate with our cluster's workers.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;distributed&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Client&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.externals&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;joblib&lt;/span&gt;
+
+&lt;span class="n"&gt;pipe&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;joblib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;taxi-model.pkl&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Client&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;dask-scheduler:8786&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Depending on how your cluster is set up, specifically with respect to having a
+shared-file-system or not, the rest of the code is more-or-less identical. If
+we're using S3 or Google Cloud Storage as our shared file system, we'd modify
+the loading code to read from S3 or GCS, rather than our local hard drive:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_csv&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;s3://bucket/yellow_tripdata_2009*.csv&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                 &lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                 &lt;span class="n"&gt;parse_dates&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Trip_Pickup_DateTime&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Trip_Dropoff_DateTime&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+                 &lt;span class="n"&gt;storage_options&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;anon&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;persist&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  &lt;span class="c1"&gt;# persist the dataset in distributed memory&lt;/span&gt;
+                    &lt;span class="c1"&gt;# across all the workers in the Dataset&lt;/span&gt;
+&lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;drop&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Tip_Amt&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;axis&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Tip_Amt&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Computing the predictions is identical to our out-of-core-on-my-laptop code:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;yhat&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;map_partitions&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Series&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;pipe&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;predict_proba&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)[:,&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;yhat&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+                        &lt;span class="n"&gt;meta&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;yhat&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;f8&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;And saving the data (say to S3) might look like&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;yhat&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;to_parquet&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;s3://bucket/predictions.parq&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The loading took about 4 minutes on the cluster, the predict about 10 seconds,
+and the writing about 1 minute. Not bad overall.&lt;/p&gt;
+&lt;h2&gt;Wrapup&lt;/h2&gt;
+&lt;p&gt;Today, we went into detail on what's potentially the first scaling problem
+you'll hit with scikit-learn: you can train your dataset in-memory (on a laptop,
+or a large workstation), but you have to predict on a much larger dataset.&lt;/p&gt;
+&lt;p&gt;We saw that the existing tools handle this case quite well. For training, we
+followed best-practices and did everything inside a &lt;code&gt;Pipeline&lt;/code&gt; object. For
+predicting, we used &lt;code&gt;dask&lt;/code&gt; to write regular pandas code that worked out-of-core
+on my laptop or on a distributed cluster.&lt;/p&gt;
+&lt;p&gt;If this topic interests you, you should watch &lt;a href="scaling sklearn"&gt;this talk&lt;/a&gt; by
+&lt;a href="https://twitter.com/stephenactual"&gt;Stephen Hoover&lt;/a&gt; on how Civis is scaling scikit-learn.&lt;/p&gt;
+&lt;p&gt;In future posts we'll dig into&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;how dask can speed up your existing pipelines by executing them in parallel&lt;/li&gt;
+&lt;li&gt;scikit-learn's out of core API for when your training dataset doesn't fit in
+  memory&lt;/li&gt;
+&lt;li&gt;using dask to implement distributed machine learning algorithms&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Until then I would &lt;em&gt;really&lt;/em&gt; appreciate your feedback. My personal experience
+using scikit-learn and pandas can't cover the diversity of use-cases they're
+being thrown into. You can reach me on Twitter
+&lt;a href="https://twitter.com/TomAugspurger"&gt;@TomAugspurger&lt;/a&gt; or by email at
+&lt;a href="&amp;#109;&amp;#97;&amp;#105;&amp;#108;&amp;#116;&amp;#111;&amp;#58;&amp;#116;&amp;#111;&amp;#109;&amp;#46;&amp;#119;&amp;#46;&amp;#97;&amp;#117;&amp;#103;&amp;#115;&amp;#112;&amp;#117;&amp;#114;&amp;#103;&amp;#101;&amp;#114;&amp;#64;&amp;#103;&amp;#109;&amp;#97;&amp;#105;&amp;#108;&amp;#46;&amp;#99;&amp;#111;&amp;#109;"&gt;&amp;#116;&amp;#111;&amp;#109;&amp;#46;&amp;#119;&amp;#46;&amp;#97;&amp;#117;&amp;#103;&amp;#115;&amp;#112;&amp;#117;&amp;#114;&amp;#103;&amp;#101;&amp;#114;&amp;#64;&amp;#103;&amp;#109;&amp;#97;&amp;#105;&amp;#108;&amp;#46;&amp;#99;&amp;#111;&amp;#109;&lt;/a&gt;. Thanks for reading!&lt;/p&gt;
+&lt;div class="footnote"&gt;
+&lt;hr&gt;
+&lt;ol&gt;
+&lt;li id="fn-*"&gt;
+&lt;p&gt;p &amp;lt; .05&amp;#160;&lt;a class="footnote-backref" href="#fnref-*" title="Jump back to footnote 1 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id="fn-2"&gt;
+&lt;p&gt;This is a bad example, since there could be a time-trend or seasonality to
+the dataset. But our focus isn't on building a good model, I hope you'll
+forgive me.&amp;#160;&lt;a class="footnote-backref" href="#fnref-2" title="Jump back to footnote 2 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;</content></entry><entry><title>Introducing Stitch</title><link href="/introducing-stitch.html" rel="alternate"></link><published>2016-08-30T00:00:00-05:00</published><updated>2016-08-30T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-08-30:/introducing-stitch.html</id><summary type="html">&lt;p&gt;Today I released &lt;a href="https://github.com/pystitch/stitch"&gt;&lt;code&gt;stitch&lt;/code&gt;&lt;/a&gt; into the
 wild. If you haven't yet, check out the &lt;a href="https://pystitch.github.io"&gt;examples
 page&lt;/a&gt; to see an example of what stitch does,
 and the &lt;a href="https://github.com/pystitch/stitch"&gt;Github repo&lt;/a&gt; for how to

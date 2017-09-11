@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Tue, 30 Aug 2016 00:00:00 -0500</lastBuildDate><item><title>Introducing Stitch</title><link>/introducing-stitch.html</link><description>&lt;p&gt;Today I released &lt;a href="https://github.com/pystitch/stitch"&gt;&lt;code&gt;stitch&lt;/code&gt;&lt;/a&gt; into the
+<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Sun, 11 Sep 2016 00:00:00 -0500</lastBuildDate><item><title>Scalable Machine Learning (Part 1)</title><link>/scalable-ml-01.html</link><description>&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda Inc.&lt;/a&gt; and the Data Driven Discovery
+Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Anaconda is interested in scaling the scientific python ecosystem. My current
+focus is on out-of-core, parallel, and distributed machine learning. This series
+of posts will introduce those concepts, explore what we have available …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Sun, 11 Sep 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-09-11:/scalable-ml-01.html</guid></item><item><title>Introducing Stitch</title><link>/introducing-stitch.html</link><description>&lt;p&gt;Today I released &lt;a href="https://github.com/pystitch/stitch"&gt;&lt;code&gt;stitch&lt;/code&gt;&lt;/a&gt; into the
 wild. If you haven't yet, check out the &lt;a href="https://pystitch.github.io"&gt;examples
 page&lt;/a&gt; to see an example of what stitch does,
 and the &lt;a href="https://github.com/pystitch/stitch"&gt;Github repo&lt;/a&gt; for how to
