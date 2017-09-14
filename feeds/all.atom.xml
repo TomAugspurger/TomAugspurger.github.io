@@ -9,6 +9,7 @@ Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore Foundation&lt;/
 focus is on out-of-core, parallel, and distributed machine learning. This series
 of posts will introduce those concepts, explore what we have available today,
 and track the community's efforts to push the boundaries.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;You can download a Jupyter notebook demonstrating the analysis &lt;a href="https://nbviewer.jupyter.org/gist/TomAugspurger/94ee62127bbc8e20223f97ebd7d29191"&gt;here&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;h2&gt;Constraints&lt;/h2&gt;
 &lt;p&gt;I am (or was, anyway) an economist, and economists like to think in terms of
 constraints. How are we constrained by scale? The two main ones I can think of
