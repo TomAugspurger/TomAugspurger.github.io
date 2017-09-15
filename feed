@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Mon, 11 Sep 2017 00:00:00 -0500</lastBuildDate><item><title>Scalable Machine Learning (Part 1)</title><link>/scalable-ml-01.html</link><description>&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda Inc.&lt;/a&gt; and the Data Driven Discovery
+<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Fri, 15 Sep 2017 00:00:00 -0500</lastBuildDate><item><title>Scalable Machine Learning (interlude)</title><link>/scalable-ml-interlude-01.html</link><description>&lt;p&gt;&lt;em&gt;This work is supported by [Anaconda Inc.] and the Data Driven Discovery
+Initiative from the [Moore Foundation].&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;This is a bit of an interlude in my series on scalable machine learning, but I
+wanted to collect feedback on an idea I had today. It's less of a "how to" and …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Fri, 15 Sep 2017 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2017-09-15:/scalable-ml-interlude-01.html</guid></item><item><title>Scalable Machine Learning (Part 1)</title><link>/scalable-ml-01.html</link><description>&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda Inc.&lt;/a&gt; and the Data Driven Discovery
 Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;Anaconda is interested in scaling the scientific python ecosystem. My current
 focus is on out-of-core, parallel, and distributed machine learning. This series

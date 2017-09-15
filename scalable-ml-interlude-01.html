@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+<meta name="keywords" content="">
+
+  <title>
+    datas-frame
+&ndash; Scalable Machine Learning (interlude)  </title>
+
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+      </p>
+    </header>
+
+<article>
+  <div class="article__title">
+    <h1><a href="/scalable-ml-interlude-01.html">Scalable Machine Learning (interlude)</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Fri 15 September 2017</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p><em>This work is supported by [Anaconda Inc.] and the Data Driven Discovery
+Initiative from the [Moore Foundation].</em></p>
+<p>This is a bit of an interlude in my series on scalable machine learning, but I
+wanted to collect feedback on an idea I had today. It's less of a "how to" and
+more of a "thoughts?".</p>
+<p>Scikit-learn supports out-of-core learning (fitting a model on a dataset that
+doesn't fit in RAM), through it's <code>partial_fit</code> API. See
+<a href="http://scikit-learn.org/stable/modules/scaling_strategies.html#scaling-with-instances-using-out-of-core-learning">here</a>.</p>
+<p>The basic idea is that, <em>for certain estimators</em>, learning can be done in
+batches. The estimator will see a batch, and then incrementally update whatever
+it's learning (the coefficients, for example).</p>
+<p>Unfortunately, the <code>partial_fit</code> API doesn't play that nicely with my favorite
+part of scikit-learn:
+<a href="http://scikit-learn.org/stable/modules/pipeline.html#pipeline">pipelines</a>. You
+would essentially need every chain in the pipeline to have an out-of-core
+<code>parital_fit</code> version, which isn't really feasible. Setting that aside, it
+wouldn't be great for a user, since working with generators of datasets is
+awkward.</p>
+<p>Fortunately, we <em>have</em> a great data containers for larger than memory arrays and
+dataframes: <code>dask.array</code> and <code>dask.dataframe</code>. We can</p>
+<ol>
+<li>Use dask for pre-processing data in an out-of-core manner</li>
+<li>Use scikit-learn to fit the actual model, out-of-core, using the
+   <code>partial_fit</code> API</li>
+</ol>
+<p>And all of this can be done in a pipeline. The rest of this post shows how.</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daskml.datasets</span> <span class="kn">import</span> <span class="n">make_classification</span>
+<span class="kn">from</span> <span class="nn">daskml.linear_model</span> <span class="kn">import</span> <span class="n">BigSGDClassifier</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">TransformerMixin</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">make_pipeline</span>
+</pre></div>
+
+
+<p><code>daskml</code> is a prototype library where I'm collection these thoughts. It's not
+ready for production (yet).</p>
+<p>Let's make an <code>X</code> and <code>y</code> for classification.</p>
+<div class="highlight"><pre><span></span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">10</span><span class="n">_000</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">1</span><span class="n">_000</span><span class="p">)</span>
+</pre></div>
+
+
+<p>These are dask arrays:</p>
+<div class="highlight"><pre><span></span><span class="n">X</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>dask.array&lt;array, shape=(10000, 20), dtype=float64, chunksize=(1000, 20)&gt;
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">y</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>dask.array&lt;array, shape=(10000,), dtype=int64, chunksize=(1000,)&gt;
+</pre></div>
+
+
+<p>To demonstrate the idea, we'll have a small pipeline</p>
+<ol>
+<li>Scale the features by mean and variance</li>
+<li>Fit an <code>SGDClassifer</code></li>
+</ol>
+<p>Since scikit-learn isn't dask-aware, we'll write our own <code>StandardScaler</code>. This
+isn't too many lines of code:</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">StandardScaler</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_</span>
+</pre></div>
+
+
+<p>And now for the pipeline:</p>
+<div class="highlight"><pre><span></span><span class="n">pipe</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
+    <span class="n">StandardScaler</span><span class="p">(),</span>
+    <span class="n">BigSGDClassifier</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">pipe</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Pipeline(memory=None,
+     steps=[(&#39;standardscaler&#39;, &lt;__main__.StandardScaler object at 0x1137efa20&gt;),
+            (&#39;bigsgdclassifier&#39;, BigSGDClassifier(
+                alpha=0.0001, average=False, class_weight=None,
+                classes=[0, 1], epsilon=0.1, eta0=0.0, fit_intercept=True,
+                l1_ratio=0.15, learning_rate=&#39;optimal&#39;, loss=&#39;hinge&#39;,
+                max_iter=1000, n_iter=None, n_jobs=1, penalty=&#39;l2&#39;, power_t=0.5,
+                random_state=2, shuffle=True, tol=0.001, verbose=0,
+                warm_start=False))])
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">pipe</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">coef_</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>array([[ -3.84269726,  -0.37780912,  15.68333536,  -1.31574306,
+          2.70781476,  -2.55583381,  -0.39162044,  -1.18764602,
+          1.74171432,   0.38190678,  -1.95610583,   5.51880009,
+        -10.83082117,  -1.18993518,   1.56220091,   0.65688068,
+        14.64347836,   0.76979726,   1.11516644,  -2.99760032]])
+</pre></div>
+
+
+<p>Somewhat anticlimatic, I'll admit, but I'm excited about it! We get to write
+NumPy-like code, operate on larger datsets, and use (some) scikit-learn
+estimators, without modify scikit-learn at all!</p>
+<h2>How?</h2>
+<p>The implementation is equally exiting to me. It essentially comes down to two
+methods</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dask.array</span> <span class="kn">as</span> <span class="nn">da</span>
+
+<span class="k">def</span> <span class="nf">_as_blocks</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="n">X_blocks</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">to_delayed</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">y_blocks</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">to_delayed</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">zip</span><span class="p">(</span><span class="n">X_blocks</span><span class="p">,</span> <span class="n">y_blocks</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_BigDataMixin</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">pairs</span> <span class="o">=</span> <span class="n">_as_blocks</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pairs</span><span class="p">):</span>
+            <span class="n">xx</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">from_delayed</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">chunks</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">P</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="n">yy</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">from_delayed</span><span class="p">(</span><span class="n">yy</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">chunks</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">],),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">partial_fit</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">)</span>
+</pre></div>
+
+
+<p><code>_as_blocks</code> is a little helper for going from a <code>dask.array</code> to a list of <code>dask.Delayed</code> objects.</p>
+<div class="highlight"><pre><span></span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">_as_blocks</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+<span class="n">xx</span><span class="p">,</span> <span class="n">yy</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>(Delayed((&#39;array-faee43bf99d08c2158b52f3c76cccfdf&#39;, 0, 0)),
+ Delayed((&#39;array-0e5a80aa67c1727b5b452eb624c3b30e&#39;, 0)))
+</pre></div>
+
+
+<p>In the <code>_BigDataMixin</code> class (I chuckle every time at that name), we iterate over each of the <code>xx, yy</code> pairs. Wd do a <code>da.from_delayed</code> dance to get a (small) <code>dask.Array</code> that looks array-like enough for NumPy to operate on it. That's what's passed into the <code>partial_fit</code> of the class it's mixed in with.</p>
+<p>It's important to stress that we don't get any parallelism here. This is entirely sequential. This is more about the user-convenience of getting to use dask arrays for exploring larger-than-memory datasets. We get to use a complex scikit-learn estimator on a <code>dask.array</code> in ~20 lines of code. I'll take it for now.</p>
+<p>Anyway, let me know what you think. I'm pretty excited about this because it removes some of the friction around using sckit-learn Pipelines with the out-of-core estimators. I'll be packaging this up in <code>daskml</code> to make it more usable for the community, but wanted to get some feedback on the idea first.</p>
+<p>You can download a notebook demonstrating this <a href="http://nbviewer.jupyter.org/gist/TomAugspurger/6306a5eb7389351164801fcbf2945521">here</a>.</p>
+  </div>
+
+</article>
+
+
+  </main>
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
+</body>
+</html>
