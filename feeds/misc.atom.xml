@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame - misc</title><link href="/" rel="alternate"></link><link href="/feeds/misc.atom.xml" rel="self"></link><id>/</id><updated>2017-09-15T00:00:00-05:00</updated><entry><title>Scalable Machine Learning (interlude)</title><link href="/scalable-ml-interlude-01.html" rel="alternate"></link><published>2017-09-15T00:00:00-05:00</published><updated>2017-09-15T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2017-09-15:/scalable-ml-interlude-01.html</id><summary type="html">&lt;p&gt;&lt;em&gt;This work is supported by [Anaconda Inc.] and the Data Driven Discovery
-Initiative from the [Moore Foundation].&lt;/em&gt;&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame - misc</title><link href="/" rel="alternate"></link><link href="/feeds/misc.atom.xml" rel="self"></link><id>/</id><updated>2017-09-15T00:00:00-05:00</updated><entry><title>Scalable Machine Learning (interlude)</title><link href="/scalable-ml-interlude-01.html" rel="alternate"></link><published>2017-09-15T00:00:00-05:00</published><updated>2017-09-15T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2017-09-15:/scalable-ml-interlude-01.html</id><summary type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda Inc.&lt;/a&gt; and the Data Driven Discovery
+Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;This is a bit of an interlude in my series on scalable machine learning, but I
-wanted to collect feedback on an idea I had today. It's less of a "how to" and …&lt;/p&gt;</summary><content type="html">&lt;p&gt;&lt;em&gt;This work is supported by [Anaconda Inc.] and the Data Driven Discovery
-Initiative from the [Moore Foundation].&lt;/em&gt;&lt;/p&gt;
+wanted to collect feedback on an idea I had today. It's less of a "how to" and …&lt;/p&gt;</summary><content type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda Inc.&lt;/a&gt; and the Data Driven Discovery
+Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;This is a bit of an interlude in my series on scalable machine learning, but I
 wanted to collect feedback on an idea I had today. It's less of a "how to" and
 more of a "thoughts?".&lt;/p&gt;
