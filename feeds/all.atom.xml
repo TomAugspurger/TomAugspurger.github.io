@@ -22,7 +22,9 @@ doesn't fit in RAM), through it's &lt;code&gt;partial_fit&lt;/code&gt; API. See
 &lt;a href="http://scikit-learn.org/stable/modules/scaling_strategies.html#scaling-with-instances-using-out-of-core-learning"&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;The basic idea is that, &lt;em&gt;for certain estimators&lt;/em&gt;, learning can be done in
 batches. The estimator will see a batch, and then incrementally update whatever
-it's learning (the coefficients, for example).&lt;/p&gt;
+it's learning (the coefficients, for example). &lt;a href="http://scikit-learn.org/stable/modules/scaling_strategies.html#incremental-learning"&gt;This
+link&lt;/a&gt;
+has a list of the algorithms that implement &lt;code&gt;partial_fit&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Unfortunately, the &lt;code&gt;partial_fit&lt;/code&gt; API doesn't play that nicely with my favorite
 part of scikit-learn,
 &lt;a href="http://scikit-learn.org/stable/modules/pipeline.html#pipeline"&gt;pipelines&lt;/a&gt;,
@@ -42,10 +44,10 @@ dataframes: &lt;code&gt;dask.array&lt;/code&gt; and &lt;code&gt;dask.dataframe&l
 &lt;p&gt;And with a little bit of work, all of this can be done in a pipeline. The rest
 of this post shows how.&lt;/p&gt;
 &lt;h2&gt;Big Arrays&lt;/h2&gt;
-&lt;p&gt;If you follow along in &lt;a href="http://nbviewer.jupyter.org/github/TomAugspurger/scalable-ml/blob/master/partial.ipynb"&gt;companion notebook&lt;/a&gt;, you'll see that I
-generate a dataset, replicate it 100 times, and write the results out to
-disk. I then read it back in as a pair of &lt;code&gt;dask.dataframe&lt;/code&gt;s and convert them
-to a pair of &lt;code&gt;dask.array&lt;/code&gt;s. I'll skip those details to focus on main goal: using
+&lt;p&gt;If you follow along in the &lt;a href="http://nbviewer.jupyter.org/github/TomAugspurger/scalable-ml/blob/master/partial.ipynb"&gt;companion notebook&lt;/a&gt;, you'll see that I
+generate a dataset, replicate it 100 times, and write the results out to disk. I
+then read it back in as a pair of &lt;code&gt;dask.dataframe&lt;/code&gt;s and convert them to a pair
+of &lt;code&gt;dask.array&lt;/code&gt;s. I'll skip those details to focus on main goal: using
 &lt;code&gt;sklearn.Pipeline&lt;/code&gt;s on larger-than-memory datasets. Suffice to say, we have a
 function &lt;code&gt;read&lt;/code&gt; that gives us our big &lt;code&gt;X&lt;/code&gt; and &lt;code&gt;y&lt;/code&gt;:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
@@ -65,9 +67,9 @@ function &lt;code&gt;read&lt;/code&gt; that gives us our big &lt;code&gt;X&lt;/c
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;So &lt;code&gt;X&lt;/code&gt; is a 100,000,000 x 20 array of floats that we'll use to predict &lt;code&gt;y&lt;/code&gt;. I
-generated the dataset, so I know that &lt;code&gt;y&lt;/code&gt; is either 0 or 1. We'll be doing
-classification.&lt;/p&gt;
+&lt;p&gt;So &lt;code&gt;X&lt;/code&gt; is a 100,000,000 x 20 array of floats (I have float64s, you're probably
+fine with float32s) that we'll use to predict &lt;code&gt;y&lt;/code&gt;. I generated the dataset, so I
+know that &lt;code&gt;y&lt;/code&gt; is either 0 or 1. We'll be doing classification.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;nbytes&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;nbytes&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="mi"&gt;9&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 

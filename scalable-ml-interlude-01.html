@@ -75,7 +75,9 @@ doesn't fit in RAM), through it's <code>partial_fit</code> API. See
 <a href="http://scikit-learn.org/stable/modules/scaling_strategies.html#scaling-with-instances-using-out-of-core-learning">here</a>.</p>
 <p>The basic idea is that, <em>for certain estimators</em>, learning can be done in
 batches. The estimator will see a batch, and then incrementally update whatever
-it's learning (the coefficients, for example).</p>
+it's learning (the coefficients, for example). <a href="http://scikit-learn.org/stable/modules/scaling_strategies.html#incremental-learning">This
+link</a>
+has a list of the algorithms that implement <code>partial_fit</code>.</p>
 <p>Unfortunately, the <code>partial_fit</code> API doesn't play that nicely with my favorite
 part of scikit-learn,
 <a href="http://scikit-learn.org/stable/modules/pipeline.html#pipeline">pipelines</a>,
@@ -95,10 +97,10 @@ dataframes: <code>dask.array</code> and <code>dask.dataframe</code>. We can</p>
 <p>And with a little bit of work, all of this can be done in a pipeline. The rest
 of this post shows how.</p>
 <h2>Big Arrays</h2>
-<p>If you follow along in <a href="http://nbviewer.jupyter.org/github/TomAugspurger/scalable-ml/blob/master/partial.ipynb">companion notebook</a>, you'll see that I
-generate a dataset, replicate it 100 times, and write the results out to
-disk. I then read it back in as a pair of <code>dask.dataframe</code>s and convert them
-to a pair of <code>dask.array</code>s. I'll skip those details to focus on main goal: using
+<p>If you follow along in the <a href="http://nbviewer.jupyter.org/github/TomAugspurger/scalable-ml/blob/master/partial.ipynb">companion notebook</a>, you'll see that I
+generate a dataset, replicate it 100 times, and write the results out to disk. I
+then read it back in as a pair of <code>dask.dataframe</code>s and convert them to a pair
+of <code>dask.array</code>s. I'll skip those details to focus on main goal: using
 <code>sklearn.Pipeline</code>s on larger-than-memory datasets. Suffice to say, we have a
 function <code>read</code> that gives us our big <code>X</code> and <code>y</code>:</p>
 <div class="highlight"><pre><span></span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">read</span><span class="p">()</span>
@@ -118,9 +120,9 @@ function <code>read</code> that gives us our big <code>X</code> and <code>y</cod
 </pre></div>
 
 
-<p>So <code>X</code> is a 100,000,000 x 20 array of floats that we'll use to predict <code>y</code>. I
-generated the dataset, so I know that <code>y</code> is either 0 or 1. We'll be doing
-classification.</p>
+<p>So <code>X</code> is a 100,000,000 x 20 array of floats (I have float64s, you're probably
+fine with float32s) that we'll use to predict <code>y</code>. I generated the dataset, so I
+know that <code>y</code> is either 0 or 1. We'll be doing classification.</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">nbytes</span> <span class="o">+</span> <span class="n">y</span><span class="o">.</span><span class="n">nbytes</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="o">**</span><span class="mi">9</span>
 </pre></div>
 
