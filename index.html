@@ -27,6 +27,17 @@
     datas-frame
   </title>
 
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-48304175-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
 </head>
 
 <body>
@@ -42,17 +53,23 @@
 
 <article>
   <div class="article__title">
-    <h1><a href="/scalable-ml-interlude-01.html">Scalable Machine Learning (interlude)</a></h1>
+    <h1><a href="/scalable-ml-interlude-01.html">Scalable Machine Learning (Part 2): Partial Fit</a></h1>
   </div>
   <div class="article__meta">
     <p class="article__meta__post-date">Posted on: Fri 15 September 2017</p>
     </p>
   </div>
   <div class="article__text">
-    <p><em>This work is supported by <a href="https://www.anaconda.com/">Anaconda Inc.</a> and the Data Driven Discovery
-Initiative from the <a href="https://www.moore.org/">Moore Foundation</a>.</em></p>
-<p>This is a bit of an interlude in my series on scalable machine learning, but I
-wanted to collect feedback on an idea I had today. It's less of a "how to" and …</p>
+    <p><em>This work is supported by <a href="https://www.anaconda.com/">Anaconda, Inc.</a> and the
+Data Driven Discovery Initiative from the <a href="https://www.moore.org/">Moore Foundation</a>.</em></p>
+<p>This is part two of my series on scalable machine learning.</p>
+<ul>
+<li><a href="scalable-ml-01">Small Fit, Big Predict</a></li>
+<li><a href="scalable-ml-02">Scikit-Learn Partial Fit</a></li>
+</ul>
+<p>You can download a notebook of this post <a href="http://nbviewer.jupyter.org/github/TomAugspurger/scalable-ml/blob/master/partial.ipynb">here</a>.</p>
+<hr>
+<p>Scikit-learn supports out-of-core learning (fitting a …</p>
   </div>
 </article>
 <hr />

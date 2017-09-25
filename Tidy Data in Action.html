@@ -28,6 +28,17 @@
     datas-frame
 &ndash; Tidy Data in Action  </title>
 
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-48304175-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
 </head>
 
 <body>
@@ -302,6 +313,17 @@ But honestly, I'm having trouble writing the messy data version.
 You don't really have anything to group on, so you'd need to keep track of the row where you last saw this team (either in <code>AwayTeam</code> or <code>HomeTeam</code>).
 And then each row will have two answers, one for each team.
 It's certainly possible to write the necessary code, but the fact that I'm struggling so much to write the messy version is pretty good evidence for the importance of tidy data.</p>
+  </div>
+  <div id="article__comments">
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_identifier = "Tidy Data in Action.html";
+        (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = '//tomaugspurger.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+         })();
+    </script>
   </div>
 
 </article>
