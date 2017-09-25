@@ -30,7 +30,7 @@ part of scikit-learn,
 &lt;a href="http://scikit-learn.org/stable/modules/pipeline.html#pipeline"&gt;pipelines&lt;/a&gt;,
 which we discussed at length in &lt;a href="scalable-ml-01"&gt;part 1&lt;/a&gt;. For pipelines to work,
 you would essentially need every step in the pipeline to have an out-of-core
-&lt;code&gt;parital_fit&lt;/code&gt; version, which isn't really feasible; some algorithms just have to
+&lt;code&gt;partial_fit&lt;/code&gt; version, which isn't really feasible; some algorithms just have to
 see the entire dataset at once. Setting that aside, it wouldn't be great for a
 user, since working with generators of datasets is awkward compared to the
 expressivity we get from pandas and NumPy.&lt;/p&gt;
@@ -162,16 +162,16 @@ years ago.&lt;/p&gt;
     &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
         &lt;span class="c1"&gt;# ... some setup&lt;/span&gt;
         &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;xx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;yy&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;by_blocks&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parital_fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;xx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;yy&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;partial_fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;xx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;yy&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
         &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;If you aren't familiar with &lt;code&gt;dask&lt;/code&gt;, its arrays are composed of many smaller
 NumPy arrays (blocks in the larger dask array). We iterate over the dask arrays
-block-wise, and pass them into the estimators &lt;code&gt;parital_fit&lt;/code&gt; method. That's exactly
+block-wise, and pass them into the estimators &lt;code&gt;partial_fit&lt;/code&gt; method. That's exactly
 what you would be doing if you were using, say, a generator feed NumPy arrays to
-the &lt;code&gt;parital_fit&lt;/code&gt; method. Only you can manipulate a &lt;code&gt;dask.array&lt;/code&gt; like regular
+the &lt;code&gt;partial_fit&lt;/code&gt; method. Only you can manipulate a &lt;code&gt;dask.array&lt;/code&gt; like regular
 NumPy array, so things are more convenient.&lt;/p&gt;
 &lt;h2&gt;Some Challenges&lt;/h2&gt;
 &lt;p&gt;For our small pipeline, we had to make two passes over the data. One to fit the

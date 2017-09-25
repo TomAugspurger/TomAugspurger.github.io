@@ -83,7 +83,7 @@ part of scikit-learn,
 <a href="http://scikit-learn.org/stable/modules/pipeline.html#pipeline">pipelines</a>,
 which we discussed at length in <a href="scalable-ml-01">part 1</a>. For pipelines to work,
 you would essentially need every step in the pipeline to have an out-of-core
-<code>parital_fit</code> version, which isn't really feasible; some algorithms just have to
+<code>partial_fit</code> version, which isn't really feasible; some algorithms just have to
 see the entire dataset at once. Setting that aside, it wouldn't be great for a
 user, since working with generators of datasets is awkward compared to the
 expressivity we get from pandas and NumPy.</p>
@@ -215,16 +215,16 @@ years ago.</p>
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="c1"># ... some setup</span>
         <span class="k">for</span> <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span> <span class="ow">in</span> <span class="n">by_blocks</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">parital_fit</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">partial_fit</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 </pre></div>
 
 
 <p>If you aren't familiar with <code>dask</code>, its arrays are composed of many smaller
 NumPy arrays (blocks in the larger dask array). We iterate over the dask arrays
-block-wise, and pass them into the estimators <code>parital_fit</code> method. That's exactly
+block-wise, and pass them into the estimators <code>partial_fit</code> method. That's exactly
 what you would be doing if you were using, say, a generator feed NumPy arrays to
-the <code>parital_fit</code> method. Only you can manipulate a <code>dask.array</code> like regular
+the <code>partial_fit</code> method. Only you can manipulate a <code>dask.array</code> like regular
 NumPy array, so things are more convenient.</p>
 <h2>Some Challenges</h2>
 <p>For our small pipeline, we had to make two passes over the data. One to fit the
