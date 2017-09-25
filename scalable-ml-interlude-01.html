@@ -184,7 +184,7 @@ attributes like <code>pipe.steps[1][1].coef_</code>.</p>
 <p>One important point to stress here: when we get to the <code>BigSGDClassifier.fit</code>
 at the end of the pipeline, everything is done serially. We can see that by
 plotting the <code>Profiler</code> we captured up above:</p>
-<p><img alt="" src="images/sml-02-fit.png"></p>
+<p><img alt="Training parallelism" src="images/sml-02-fit.png"></p>
 <p>That graph shows the tasks (the rectangles) each worker (a core on my laptop)
 executed over time. Workers are along the vertical axis, and time is along the
 horizontal. Towards the start, when we're reading off disk, converting to
@@ -198,7 +198,7 @@ we get to the <code>BigSGDClassifier</code>, which is just a simple wrapper arou
 </pre></div>
 
 
-<p><img alt="" src="images/sml-02-predict.png"></p>
+<p><img alt="Predicting parallelism" src="images/sml-02-predict.png"></p>
 <p>That took about 40 seconds, from disk to prediction, and back to disk on 16 GB
 of data, using all 8 cores of my laptop.</p>
 <h2>How?</h2>
