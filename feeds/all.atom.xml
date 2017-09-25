@@ -171,10 +171,20 @@ block-wise, and pass them into the estimators &lt;code&gt;parital_fit&lt;/code&g
 what you would be doing if you were using, say, a generator feed NumPy arrays to
 the &lt;code&gt;parital_fit&lt;/code&gt; method. Only you can manipulate a &lt;code&gt;dask.array&lt;/code&gt; like regular
 NumPy array, so things are more convenient.&lt;/p&gt;
-&lt;p&gt;Let me know what you think. I'm pretty excited about this because it
-removes some of the friction around using sckit-learn Pipelines with
-out-of-core estimators. In &lt;a href="https://github.com/dask/dask-ml/"&gt;&lt;code&gt;dask-ml&lt;/code&gt;&lt;/a&gt;, I've
-implemented similar wrappers for&lt;/p&gt;
+&lt;h2&gt;Some Challenges&lt;/h2&gt;
+&lt;p&gt;For our small pipeline, we had to make two passes over the data. One to fit the
+&lt;code&gt;StandardScaler&lt;/code&gt; and one to fit the &lt;code&gt;BigSGDClassifier&lt;/code&gt;. In general, with
+this approach, we'll have to make one pass per stage of the pipeline, which
+isn't great. I &lt;em&gt;think&lt;/em&gt; this is unavoidable with the current design, but I'm
+considering ways around it.&lt;/p&gt;
+&lt;h2&gt;Recap&lt;/h2&gt;
+&lt;p&gt;We've seen &lt;em&gt;a&lt;/em&gt; way to use scikit-learn's existing estimators on
+larger-than-memory dask arrays by passing the blocks of a dask array to the
+&lt;code&gt;partial_fit&lt;/code&gt; method. This enables us to use &lt;code&gt;Pipeline&lt;/code&gt;s on larger-than-memory
+datasets.&lt;/p&gt;
+&lt;p&gt;Let me know what you think. I'm pretty excited about this because it removes
+some of the friction around using sckit-learn Pipelines with out-of-core
+estimators. In &lt;a href="https://github.com/dask/dask-ml"&gt;&lt;code&gt;dask-ml&lt;/code&gt;&lt;/a&gt;, I've implemented similar wrappers for&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;SGDRegressor&lt;/li&gt;
 &lt;li&gt;PassiveAggressiveClassifier&lt;/li&gt;
@@ -184,10 +194,15 @@ implemented similar wrappers for&lt;/p&gt;
 &lt;li&gt;MLPRegressor&lt;/li&gt;
 &lt;li&gt;MiniBatchKMeans&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;I'll be packaging this up in &lt;code&gt;daskml&lt;/code&gt; to make it more usable for the community
-over the next couple weeks. If this type of work interests you, please reach out
-on &lt;a href="http://twitter.com/TomAugspurger"&gt;Twitter&lt;/a&gt; or by
-&lt;a href="tom.w.augspurger@gmail.com"&gt;email&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I'll be packaging this up in &lt;a href="https://github.com/dask/dask-ml"&gt;&lt;code&gt;daskml&lt;/code&gt;&lt;/a&gt; to make it more usable for the
+community over the next couple weeks. If this type of work interests you, please
+reach out on &lt;a href="http://twitter.com/TomAugspurger"&gt;Twitter&lt;/a&gt; or by
+&lt;a href="tom.w.augspurger@gmail.com"&gt;email&lt;/a&gt;. If you're interested in contributing, I
+think a library of basic transformers that operate on NumPy and dask arrays and
+pandas and dask DataFrames would be &lt;em&gt;extremely&lt;/em&gt; useful. &lt;code&gt;daskml&lt;/code&gt; may be a good
+home for those, and I could use help in implementing them (I don't think
+scikit-learn would be a good home, since they don't (and shouldn't) depend on
+dask at this point).&lt;/p&gt;
 &lt;p&gt;Next time we'll be going back to smaller datasets. We'll see how dask can help
 us parallelize our work to fit more models in less time.&lt;/p&gt;</content></entry><entry><title>Scalable Machine Learning (Part 1)</title><link href="/scalable-ml-01.html" rel="alternate"></link><published>2017-09-11T00:00:00-05:00</published><updated>2017-09-11T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2017-09-11:/scalable-ml-01.html</id><summary type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda Inc.&lt;/a&gt; and the Data Driven Discovery
 Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
