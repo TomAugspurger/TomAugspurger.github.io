@@ -138,7 +138,7 @@ for the fitting. We'll have a small pipeline</p>
 <li>Scale the features by mean and variance</li>
 <li>Fit an SGDClassifier</li>
 </ol>
-<p>I've implemented a `daskml.preprocessing.StandardScaler``, using dask, in about
+<p>I've implemented a <code>daskml.preprocessing.StandardScaler</code>, using dask, in about
 40 lines of code (see <a href="https://github.com/dask/dask-ml/blob/9e85ba282a93c0f62afbe68dabe088fbd59ada40/daskml/preprocessing/data.py#L8">here</a>).
 The scaling will be done completely in parallel and completely out-of-core.</p>
 <p>I <em>haven't</em> implemented a custom <code>SGDClassifier</code>, because that'd be much more
