@@ -199,7 +199,7 @@ estimators. In &lt;a href="https://github.com/dask/dask-ml"&gt;&lt;code&gt;dask-
 &lt;p&gt;I'll be packaging this up in &lt;a href="https://github.com/dask/dask-ml"&gt;&lt;code&gt;daskml&lt;/code&gt;&lt;/a&gt; to make it more usable for the
 community over the next couple weeks. If this type of work interests you, please
 reach out on &lt;a href="http://twitter.com/TomAugspurger"&gt;Twitter&lt;/a&gt; or by
-&lt;a href="tom.w.augspurger@gmail.com"&gt;email&lt;/a&gt;. If you're interested in contributing, I
+email at &lt;a href="&amp;#109;&amp;#97;&amp;#105;&amp;#108;&amp;#116;&amp;#111;&amp;#58;&amp;#116;&amp;#111;&amp;#109;&amp;#46;&amp;#119;&amp;#46;&amp;#97;&amp;#117;&amp;#103;&amp;#115;&amp;#112;&amp;#117;&amp;#114;&amp;#103;&amp;#101;&amp;#114;&amp;#64;&amp;#103;&amp;#109;&amp;#97;&amp;#105;&amp;#108;&amp;#46;&amp;#99;&amp;#111;&amp;#109;"&gt;&amp;#116;&amp;#111;&amp;#109;&amp;#46;&amp;#119;&amp;#46;&amp;#97;&amp;#117;&amp;#103;&amp;#115;&amp;#112;&amp;#117;&amp;#114;&amp;#103;&amp;#101;&amp;#114;&amp;#64;&amp;#103;&amp;#109;&amp;#97;&amp;#105;&amp;#108;&amp;#46;&amp;#99;&amp;#111;&amp;#109;&lt;/a&gt;. If you're interested in contributing, I
 think a library of basic transformers that operate on NumPy and dask arrays and
 pandas and dask DataFrames would be &lt;em&gt;extremely&lt;/em&gt; useful. I've started &lt;a href="https://github.com/dask/dask-ml/issues/6"&gt;an
 issue&lt;/a&gt; to track this progress.
