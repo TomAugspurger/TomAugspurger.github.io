@@ -1,5 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2017-09-15T00:00:00-05:00</updated><entry><title>Scalable Machine Learning (Part 2): Partial Fit</title><link href="/scalable-ml-02.html" rel="alternate"></link><published>2017-09-15T00:00:00-05:00</published><updated>2017-09-15T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2017-09-15:/scalable-ml-02.html</id><summary type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda, Inc.&lt;/a&gt; and the
+<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2017-10-26T00:00:00-05:00</updated><entry><title>dask-ml</title><link href="/dask-ml-announce.html" rel="alternate"></link><published>2017-10-26T00:00:00-05:00</published><updated>2017-10-26T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2017-10-26:/dask-ml-announce.html</id><summary type="html">&lt;p&gt;Today we released the first version of &lt;code&gt;dask-ml&lt;/code&gt;, a library for parallel and
+distributed machine learning. Read the &lt;a href="http://dask-ml.readthedocs.io/en/latest/"&gt;documentation&lt;/a&gt; or install it with&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;pip install dask-ml
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Packages are currently building for conda-forge, and will be up later today.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;conda install -c conda-forge dask-ml
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;The Goals&lt;/h2&gt;
+&lt;p&gt;&lt;a href="http://dask.pydata.org/en/latest/"&gt;dask&lt;/a&gt; is, to quote the …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Today we released the first version of &lt;code&gt;dask-ml&lt;/code&gt;, a library for parallel and
+distributed machine learning. Read the &lt;a href="http://dask-ml.readthedocs.io/en/latest/"&gt;documentation&lt;/a&gt; or install it with&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;pip install dask-ml
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Packages are currently building for conda-forge, and will be up later today.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;conda install -c conda-forge dask-ml
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;The Goals&lt;/h2&gt;
+&lt;p&gt;&lt;a href="http://dask.pydata.org/en/latest/"&gt;dask&lt;/a&gt; is, to quote the docs, "a flexible parallel computing library for
+analytic computing." &lt;code&gt;dask.array&lt;/code&gt; and &lt;code&gt;dask.dataframe&lt;/code&gt; have done a great job
+scaling NumPy arrays and pandas dataframes; &lt;code&gt;dask-ml&lt;/code&gt; hopes to do the same in
+the machine learning domain.&lt;/p&gt;
+&lt;p&gt;Put simply, we want&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;est&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MyEstimator&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;est&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;to work well in parallel and potentially distributed across a cluster. &lt;code&gt;dask&lt;/code&gt;
+provides us with the building blocks to do that.&lt;/p&gt;
+&lt;h2&gt;What's Been Done&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;dask-ml&lt;/code&gt; collects some efforts that others already built:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://dask-ml.readthedocs.io/en/latest/joblib.html"&gt;distributed joblib&lt;/a&gt;:
+  scaling out some scikit-learn operations to clusters (from
+  &lt;code&gt;distributed.joblib&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://dask-ml.readthedocs.io/en/latest/hyper-parameter-search.html"&gt;hyper-parameter
+  search&lt;/a&gt;:
+  Some drop in replacements for scikit-learn's &lt;code&gt;GridSearchCV&lt;/code&gt; and
+  &lt;code&gt;RandomizedSearchCV&lt;/code&gt; classes (from &lt;code&gt;dask-searchcv&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://dask-ml.readthedocs.io/en/latest/glm.html"&gt;distributed GLMs&lt;/a&gt;: Fit
+  large Generalized Linear Models on your cluster (from &lt;code&gt;dask-glm&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://dask-ml.readthedocs.io/en/latest/xgboost.html"&gt;dask + xgboost&lt;/a&gt;: Peer a
+  &lt;code&gt;dask.distributed&lt;/code&gt; cluster with XGBoost running in distributed mode (from
+  &lt;code&gt;dask-xgboost&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://dask-ml.readthedocs.io/en/latest/tensorflow.html"&gt;dask + tensorflow&lt;/a&gt;:
+  Peer a &lt;code&gt;dask.distributed&lt;/code&gt; cluster with TensorFlow running in distributed mode
+  (from &lt;code&gt;dask-tensorflow&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://dask-ml.readthedocs.io/en/latest/incremental.html"&gt;Out-of-core learning in
+  pipelines&lt;/a&gt;: Reuse
+  scikit-learn's out-of-core &lt;code&gt;.partial_fit&lt;/code&gt; API in pipelines (from
+  &lt;code&gt;dask.array.learn&lt;/code&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In addition to providing a single home for these existing efforts, we've
+implemented some algorithms that are designed to run in parallel and distributed
+across a cluster.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://dask-ml.readthedocs.io/en/latest/modules/generated/dask_ml.cluster.KMeans.html#dask_ml.cluster.KMeans"&gt;&lt;code&gt;KMeans&lt;/code&gt;&lt;/a&gt;:
+  Uses the &lt;code&gt;k-means||&lt;/code&gt; algorithm for initialization, and a parallelized Lloyd's
+  algorithm for the EM step.&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://dask-ml.readthedocs.io/en/latest/modules/api.html#module-dask_ml.preprocessing"&gt;Preprocessing&lt;/a&gt;:
+  These are estimators that can be dropped into scikit-learn Pipelines, but they
+  operate in parallel on dask collections. They'll work well on datasets in
+  distributed memory, and may be faster for NumPy arrays (depending on the
+  overhead from parallelizing, and whether or not the scikit-learn
+  implementation is already parallel).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;Help Contribute!&lt;/h2&gt;
+&lt;p&gt;Scikit-learn is a robust, mature, stable library. &lt;code&gt;dask-ml&lt;/code&gt; is... not. Which
+means there are plenty of places to contribute! Dask makes writing parallel and
+distributed implementations of algorithms fun. For the most part, you don't even
+have to think about "where's my data? How do I parallelize this?" Dask does that
+for you.&lt;/p&gt;
+&lt;p&gt;Have a look at the &lt;a href="https://github.com/dask/dask-ml/issues"&gt;issues&lt;/a&gt; or propose a
+new one. I'd love to hear issues that you've run into when scaling the
+"traditional" scientific python stack out to larger problems.&lt;/p&gt;</content></entry><entry><title>Scalable Machine Learning (Part 2): Partial Fit</title><link href="/scalable-ml-02.html" rel="alternate"></link><published>2017-09-15T00:00:00-05:00</published><updated>2017-09-15T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2017-09-15:/scalable-ml-02.html</id><summary type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda, Inc.&lt;/a&gt; and the
 Data Driven Discovery Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;This is part two of my series on scalable machine learning.&lt;/p&gt;
 &lt;ul&gt;

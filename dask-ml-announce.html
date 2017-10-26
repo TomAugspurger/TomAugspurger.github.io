@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+<meta name="keywords" content="">
+
+  <title>
+    datas-frame
+&ndash; dask-ml  </title>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-48304175-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+      </p>
+    </header>
+
+<article>
+  <div class="article__title">
+    <h1><a href="/dask-ml-announce.html">dask-ml</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Thu 26 October 2017</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>Today we released the first version of <code>dask-ml</code>, a library for parallel and
+distributed machine learning. Read the <a href="http://dask-ml.readthedocs.io/en/latest/">documentation</a> or install it with</p>
+<div class="highlight"><pre><span></span>pip install dask-ml
+</pre></div>
+
+
+<p>Packages are currently building for conda-forge, and will be up later today.</p>
+<div class="highlight"><pre><span></span>conda install -c conda-forge dask-ml
+</pre></div>
+
+
+<h2>The Goals</h2>
+<p><a href="http://dask.pydata.org/en/latest/">dask</a> is, to quote the docs, "a flexible parallel computing library for
+analytic computing." <code>dask.array</code> and <code>dask.dataframe</code> have done a great job
+scaling NumPy arrays and pandas dataframes; <code>dask-ml</code> hopes to do the same in
+the machine learning domain.</p>
+<p>Put simply, we want</p>
+<div class="highlight"><pre><span></span><span class="n">est</span> <span class="o">=</span> <span class="n">MyEstimator</span><span class="p">()</span>
+<span class="n">est</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</pre></div>
+
+
+<p>to work well in parallel and potentially distributed across a cluster. <code>dask</code>
+provides us with the building blocks to do that.</p>
+<h2>What's Been Done</h2>
+<p><code>dask-ml</code> collects some efforts that others already built:</p>
+<ul>
+<li><a href="http://dask-ml.readthedocs.io/en/latest/joblib.html">distributed joblib</a>:
+  scaling out some scikit-learn operations to clusters (from
+  <code>distributed.joblib</code>)</li>
+<li><a href="http://dask-ml.readthedocs.io/en/latest/hyper-parameter-search.html">hyper-parameter
+  search</a>:
+  Some drop in replacements for scikit-learn's <code>GridSearchCV</code> and
+  <code>RandomizedSearchCV</code> classes (from <code>dask-searchcv</code>)</li>
+<li><a href="http://dask-ml.readthedocs.io/en/latest/glm.html">distributed GLMs</a>: Fit
+  large Generalized Linear Models on your cluster (from <code>dask-glm</code>)</li>
+<li><a href="http://dask-ml.readthedocs.io/en/latest/xgboost.html">dask + xgboost</a>: Peer a
+  <code>dask.distributed</code> cluster with XGBoost running in distributed mode (from
+  <code>dask-xgboost</code>)</li>
+<li><a href="http://dask-ml.readthedocs.io/en/latest/tensorflow.html">dask + tensorflow</a>:
+  Peer a <code>dask.distributed</code> cluster with TensorFlow running in distributed mode
+  (from <code>dask-tensorflow</code>)</li>
+<li><a href="http://dask-ml.readthedocs.io/en/latest/incremental.html">Out-of-core learning in
+  pipelines</a>: Reuse
+  scikit-learn's out-of-core <code>.partial_fit</code> API in pipelines (from
+  <code>dask.array.learn</code>)</li>
+</ul>
+<p>In addition to providing a single home for these existing efforts, we've
+implemented some algorithms that are designed to run in parallel and distributed
+across a cluster.</p>
+<ul>
+<li><a href="http://dask-ml.readthedocs.io/en/latest/modules/generated/dask_ml.cluster.KMeans.html#dask_ml.cluster.KMeans"><code>KMeans</code></a>:
+  Uses the <code>k-means||</code> algorithm for initialization, and a parallelized Lloyd's
+  algorithm for the EM step.</li>
+<li><a href="http://dask-ml.readthedocs.io/en/latest/modules/api.html#module-dask_ml.preprocessing">Preprocessing</a>:
+  These are estimators that can be dropped into scikit-learn Pipelines, but they
+  operate in parallel on dask collections. They'll work well on datasets in
+  distributed memory, and may be faster for NumPy arrays (depending on the
+  overhead from parallelizing, and whether or not the scikit-learn
+  implementation is already parallel).</li>
+</ul>
+<h2>Help Contribute!</h2>
+<p>Scikit-learn is a robust, mature, stable library. <code>dask-ml</code> is... not. Which
+means there are plenty of places to contribute! Dask makes writing parallel and
+distributed implementations of algorithms fun. For the most part, you don't even
+have to think about "where's my data? How do I parallelize this?" Dask does that
+for you.</p>
+<p>Have a look at the <a href="https://github.com/dask/dask-ml/issues">issues</a> or propose a
+new one. I'd love to hear issues that you've run into when scaling the
+"traditional" scientific python stack out to larger problems.</p>
+  </div>
+  <div id="article__comments">
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_identifier = "dask-ml-announce.html";
+        (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = '//tomaugspurger.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+         })();
+    </script>
+  </div>
+
+</article>
+
+
+  </main>
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
+</body>
+</html>

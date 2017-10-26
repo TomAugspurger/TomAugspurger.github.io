@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Fri, 15 Sep 2017 00:00:00 -0500</lastBuildDate><item><title>Scalable Machine Learning (Part 2): Partial Fit</title><link>/scalable-ml-02.html</link><description>&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda, Inc.&lt;/a&gt; and the
+<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Thu, 26 Oct 2017 00:00:00 -0500</lastBuildDate><item><title>dask-ml</title><link>/dask-ml-announce.html</link><description>&lt;p&gt;Today we released the first version of &lt;code&gt;dask-ml&lt;/code&gt;, a library for parallel and
+distributed machine learning. Read the &lt;a href="http://dask-ml.readthedocs.io/en/latest/"&gt;documentation&lt;/a&gt; or install it with&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;pip install dask-ml
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Packages are currently building for conda-forge, and will be up later today.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;conda install -c conda-forge dask-ml
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;The Goals&lt;/h2&gt;
+&lt;p&gt;&lt;a href="http://dask.pydata.org/en/latest/"&gt;dask&lt;/a&gt; is, to quote the …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Thu, 26 Oct 2017 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2017-10-26:/dask-ml-announce.html</guid></item><item><title>Scalable Machine Learning (Part 2): Partial Fit</title><link>/scalable-ml-02.html</link><description>&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda, Inc.&lt;/a&gt; and the
 Data Driven Discovery Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;This is part two of my series on scalable machine learning.&lt;/p&gt;
 &lt;ul&gt;
