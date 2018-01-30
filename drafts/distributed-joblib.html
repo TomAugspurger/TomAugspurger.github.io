@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+<meta name="keywords" content="">
+
+  <title>
+    datas-frame
+&ndash; Easy distributed training with Joblib and `dask.distributed`  </title>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-48304175-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+      </p>
+    </header>
+
+<article>
+  <div class="article__title">
+    <h1><a href="/drafts/distributed-joblib.html">Easy distributed training with Joblib and `dask.distributed`</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Thu 26 October 2017</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>Scikit-learn uses <a href="">joblib</a> for simple parallelism in many places, anywhere you
+see an <code>n_jobs</code> keyword. Your estimator may have an embarrassingly parallel
+step internally (fitting each of the trees in a <code>RandomForest</code> for example). Or
+your meta-estimator like <code>GridSearchCV</code> may try out many combinations of
+hyper-parameters in parallel.</p>
+<p>Joblib offers a few "backends" for how to do your parallelism, but they all boil
+down to "does it use many threads, or many processes?"</p>
+<h2>Parallelism in Python</h2>
+<p>A quick digression on <em>single-machine</em> parallelism in Python. We have two main
+choices: multiple threads or multiple processes. We can't say up front that one
+is always better than the other; it unfortunately depends on the specific
+workload. But we do have some general heuristics, that come down to
+serialization overhead and Python's Global Interpreter Lock (GIL).</p>
+<p>The GIL is part of CPython's (i.e. the C program that interprets and runs your
+Python program). It limits your process so that only one thread is running
+<em>Python</em> code at once. Fortunately, much of the numerical Python stack is
+written in C, Cython, or C++, and <em>may</em> be able to "release" the GIL. This means
+your "Python" program, which is calling into Cython or C via NumPy or pandas,
+can get real thread-based parallelism without being limited by the GIL. The main
+caveat here is working with string data or Python objects (lists, dicts, sets,
+etc). Since those are touching Python objects, NumPy, pandas, etc. will still
+need to hold the GIL to manipulate them.</p>
+<p>So, if we have the <em>option</em> of using threads instead of processes, which do we
+choose? For most numeric / scientific workloads, threads are better than
+processes because of <em>shared memory</em>. Each thread in a thread-pool can view (and
+modify!) the <em>same</em> large NumPy array or pandas dataframe. With multiple
+processes, data must be <em>serialized</em> between processes (perhaps using pickle).
+For large arrays or dataframes this can be slow, and it may blow up your memory
+if the data a decent fraction of your machine's RAM. You'll have a full copy in
+each processes.</p>
+<h2>Changes to Joblib</h2>
+<p>A while back, Jim Crist added the <code>dask.distributed.joblib</code> backend for
+joblib. <code>dask.distributed</code> registers a backend with joblib, so that users can
+parallelize a computation across an <em>entire cluster</em>, not just your local
+machine's threads or processes.</p>
+<p>This is great when</p>
+<ol>
+<li>Your dataset is not too large (since the data must be sent to each worker)</li>
+<li>The runtime of each task (say fitting one of the trees in a <code>RandomForest</code>
+   is long enough that the overhead of serializing the data across the network
+   to the worker doesn't dominate the runtime</li>
+<li>You have <em>many</em> parallel tasks to run (else, you'd just use a local thread or
+   process pool and avoid the network delay)</li>
+</ol>
+<p>Here's a small example showing how to use dask's distributed joblib backend.</p>
+<p>We will</p>
+<ol>
+<li>Create / connect to our <code>dask.distributed</code> cluster (normally you'd put the IP
+   address of your scheduler in the call to <code>Client</code>)</li>
+<li>Define a function to simulate our "work", which draws a random number, and
+   sleeps for that times a factor</li>
+<li>Do the work in parallel, using a <code>joblib.Parallel</code> call inside our parallel
+   backend call.</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">joblib</span>
+<span class="kn">import</span> <span class="nn">distributed.joblib</span>  <span class="c1"># register backend</span>
+<span class="kn">from</span> <span class="nn">dask.distributed</span> <span class="kn">import</span> <span class="n">Client</span>
+
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>  <span class="c1"># Pass the IP address of your scheduler here.</span>
+
+
+<span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>  <span class="c1"># simulate a long computation</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">with</span> <span class="n">joblib</span><span class="o">.</span><span class="n">parallel_backend</span><span class="p">(</span><span class="s2">&quot;dask.distributed&quot;</span><span class="p">):</span>
+    <span class="c1"># &#39;results&#39; is computed in parallel using every worker</span>
+    <span class="c1"># in your cluster.</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">joblib</span><span class="o">.</span><span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">)(</span>
+        <span class="n">joblib</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">f</span><span class="p">)(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="p">)</span>
+</pre></div>
+
+
+<p>Each call to <code>f</code> happens on one of our workers. With a large enough cluster,
+each call would happen on a different worker.</p>
+<p>There were a few issues with this though, which we were able to resolve last
+week.</p>
+<p>First, <code>dask.distributed</code>'s joblib backend didn't handle <em>nested</em> parallelism
+well. This may occur if you do something like</p>
+<div class="highlight"><pre><span></span>gs = GridSearchCV(Estimator(n_jobs=-1), n_jobs=-1)
+</pre></div>
+
+
+<p>You could run into deadlocks where the outer level kicks off a bunch of
+<code>Parallel</code> calls. Those inner <code>Parallel</code> calls would make their way to the
+distributed scheduler, who would look around for a free worker. But all the
+workers were "busy" waiting around for the outer <code>Parallel</code> calls to finish,
+which weren't progressing because there weren't any free workers! Deadlock!</p>
+<p><code>dask.distributed</code> has a solution for this case (workers <code>secede</code> from the
+thread pool when they start a long-running <code>Parllel</code> call, and <code>rejoin</code> when
+they're done), but we needed a way to negotiate with joblib about when the
+<code>secede</code> and <code>rejoin</code> should happen. Joblib now has an API for backends to
+control some setup and teardown around the actual function execution.</p>
+<p>Second, some places in scikit-learn hard-code the backend they want to use in
+their <code>Parallel()</code> call, meaning the cluster isn't used. This may be because the
+algorithm author knows that one backend performs better than others. For
+example, <code>RandomForest.fit</code> performs better with threads, since it's purely
+numeric and releases the GIL. In this case we would say the <code>Parallel</code> call
+<em>prefers</em> threads, since you'd get the same result with processes, it'd just be
+slower.</p>
+<p>Another reason for hard-coding the backend is if the <em>correctness</em> of the
+implementation relies on it. For example, <code>RandomForest.predict</code> allocates the
+output array and mutates the output array from many threads (it knows not to
+mutate the same place). In this case, we'd say the <code>Parallel</code> call <em>requires</em>
+shared memory, because you'd get an incorrect result using processes.</p>
+<p>The solution was enhance <code>joblib.Parallel</code> to take two new keywords, <code>prefer</code>
+and <code>require</code>. If a <code>Parallel</code> call <em>prefers</em> threads, it'll use them, unless
+it's in a context saying "use this backend instead", like</p>
+<div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">joblib</span><span class="o">.</span><span class="n">parallel_backend</span><span class="p">(</span><span class="s1">&#39;dask.distributed&#39;</span><span class="p">):</span>
+    <span class="c1"># This uses dask&#39;s workers, not threads</span>
+    <span class="n">joblib</span><span class="o">.</span><span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">prefer</span><span class="o">=</span><span class="s2">&quot;threads&quot;</span><span class="p">)(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+
+
+<p>On the other hand, if a <code>Parallel</code> requires a specific backend, it'll get it.</p>
+<div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">joblib</span><span class="o">.</span><span class="n">parallel_backend</span><span class="p">(</span><span class="s1">&#39;dask.distributed&#39;</span><span class="p">):</span>
+    <span class="c1"># This uses the threading backend, since shared memory is required</span>
+    <span class="n">joblib</span><span class="o">.</span><span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;sharedmem&quot;</span><span class="p">)(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+
+
+<p>This is a elegant way to negotiate a compromise between</p>
+<ol>
+<li>The <em>user</em>, who knows best about what resources are available, as specified
+   by the <code>joblib.parallel_backend</code> context manager. And,</li>
+<li>The <em>algorithm author</em>, who knows best about the GIL handling and shared
+   memory requirements.</li>
+</ol>
+<p>After the next joblib release, we'll update scikit-learn to use it in places
+where it currently hardcodes the parallel backend.</p>
+<h1>TODO: embed movie of the distributed scheduler.</h1>
+  </div>
+  <div id="article__comments">
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_identifier = "drafts/distributed-joblib.html";
+        (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = '//tomaugspurger.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+         })();
+    </script>
+  </div>
+
+</article>
+
+
+  </main>
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li><a href="/pages/article-1-cluster.html" title="article-1-cluster"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
+</body>
+</html>
