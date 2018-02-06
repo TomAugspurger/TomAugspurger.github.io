@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Thu, 26 Oct 2017 00:00:00 -0500</lastBuildDate><item><title>dask-ml</title><link>/dask-ml-announce.html</link><description>&lt;p&gt;Today we released the first version of &lt;code&gt;dask-ml&lt;/code&gt;, a library for parallel and
+<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Mon, 05 Feb 2018 00:00:00 -0600</lastBuildDate><item><title>Easy distributed training with Joblib and dask</title><link>/distributed-joblib.html</link><description>&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="http://anaconda.com/"&gt;Anaconda Inc&lt;/a&gt; and the Data
+Driven Discovery Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore
+Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;This past week, I had a chance to visit some of the scikit-learn developers at
+Inria in Paris. It was a fun and productive week, and I'm thankful to them for
+hosting me …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 05 Feb 2018 00:00:00 -0600</pubDate><guid isPermaLink="false">tag:None,2018-02-05:/distributed-joblib.html</guid></item><item><title>dask-ml</title><link>/dask-ml-announce.html</link><description>&lt;p&gt;Today we released the first version of &lt;code&gt;dask-ml&lt;/code&gt;, a library for parallel and
 distributed machine learning. Read the &lt;a href="http://dask-ml.readthedocs.io/en/latest/"&gt;documentation&lt;/a&gt; or install it with&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;pip install dask-ml
 &lt;/pre&gt;&lt;/div&gt;

@@ -1,5 +1,181 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2017-10-26T00:00:00-05:00</updated><entry><title>dask-ml</title><link href="/dask-ml-announce.html" rel="alternate"></link><published>2017-10-26T00:00:00-05:00</published><updated>2017-10-26T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2017-10-26:/dask-ml-announce.html</id><summary type="html">&lt;p&gt;Today we released the first version of &lt;code&gt;dask-ml&lt;/code&gt;, a library for parallel and
+<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2018-02-05T00:00:00-06:00</updated><entry><title>Easy distributed training with Joblib and dask</title><link href="/distributed-joblib.html" rel="alternate"></link><published>2018-02-05T00:00:00-06:00</published><updated>2018-02-05T00:00:00-06:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2018-02-05:/distributed-joblib.html</id><summary type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="http://anaconda.com/"&gt;Anaconda Inc&lt;/a&gt; and the Data
+Driven Discovery Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore
+Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;This past week, I had a chance to visit some of the scikit-learn developers at
+Inria in Paris. It was a fun and productive week, and I'm thankful to them for
+hosting me …&lt;/p&gt;</summary><content type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="http://anaconda.com/"&gt;Anaconda Inc&lt;/a&gt; and the Data
+Driven Discovery Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore
+Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;This past week, I had a chance to visit some of the scikit-learn developers at
+Inria in Paris. It was a fun and productive week, and I'm thankful to them for
+hosting me and Anaconda for sending me there. This article will talk about some
+improvements we made to improve training scikit-learn models using a cluster.&lt;/p&gt;
+&lt;p&gt;Scikit-learn uses &lt;a href="https://pythonhosted.org/joblib/parallel.html"&gt;joblib&lt;/a&gt; for
+simple parallelism in many places. Anywhere you pass an &lt;code&gt;n_jobs&lt;/code&gt; keyword,
+scikit-learn is internally calling &lt;code&gt;joblib.Parallel(...)&lt;/code&gt;, and doing a batch of
+work in parallel. The estimator may have an embarrassingly parallel step
+internally (fitting each of the trees in a &lt;code&gt;RandomForest&lt;/code&gt; for example). Or your
+meta-estimator like &lt;code&gt;GridSearchCV&lt;/code&gt; may try out many combinations of
+hyper-parameters in parallel.&lt;/p&gt;
+&lt;p&gt;You can think of joblib as a broker between the user and the algorithm author.
+The user comes along and says, "I have &lt;code&gt;n_jobs&lt;/code&gt; cores, please use them!".
+Scikit-Learn says "I have all these embarrassingly parallel tasks to be run as
+part of fitting this estimator." Joblib accepts the cores from the user and the
+tasks from scikit-learn, runs the tasks on the cores, and hands the completed
+tasks back to scikit-learn.&lt;/p&gt;
+&lt;p&gt;Joblib offers a few "backends" for how to do your parallelism, but they all boil
+down to using many processes versus using many threads.&lt;/p&gt;
+&lt;h2&gt;Parallelism in Python&lt;/h2&gt;
+&lt;p&gt;A quick digression on &lt;em&gt;single-machine&lt;/em&gt; parallelism in Python. We can't say up
+front that using threads is always better or worse than using processes.
+Unfortunately the relative performance depends on the specific workload. But we
+do have some general heuristics that come down to serialization overhead and
+Python's Global Interpreter Lock (GIL).&lt;/p&gt;
+&lt;p&gt;The GIL is part of CPython, the C program that interprets and runs your Python
+program. It limits your Python process so that only one thread is executing
+&lt;em&gt;Python&lt;/em&gt; at once, defeating your parallelism. Fortunately, much of the numerical
+Python stack is written in C, Cython, C++, Fortran, or numba, and &lt;em&gt;may&lt;/em&gt; be able
+to release the GIL. This means your "Python" program, which is calling into
+Cython or C via NumPy or pandas, can get real thread-based parallelism without
+being limited by the GIL. The main caveat here that manipulating strings or
+Python objects (lists, dicts, sets, etc) typically requires holding the GIL.&lt;/p&gt;
+&lt;p&gt;So, if we have the &lt;em&gt;option&lt;/em&gt; of choosing threads or processes, which do we want?
+For most numeric / scientific workloads, threads are better than processes
+because of &lt;em&gt;shared memory&lt;/em&gt;. Each thread in a thread-pool can view (and modify!)
+the &lt;em&gt;same&lt;/em&gt; large NumPy array. With multiple processes, data must be &lt;em&gt;serialized&lt;/em&gt;
+between processes (perhaps using pickle). For large arrays or dataframes this
+can be slow, and it may blow up your memory if the data a decent fraction of
+your machine's RAM. You'll have a full copy in each processes.&lt;/p&gt;
+&lt;p&gt;See &lt;a href="http://matthewrocklin.com/blog/work/2015/03/10/PyData-GIL"&gt;Matthew Rocklin's
+article&lt;/a&gt; and &lt;a href="http://www.dabeaz.com/GIL/"&gt;David
+Beazley's page&lt;/a&gt; if you want to learn more.&lt;/p&gt;
+&lt;h2&gt;Distributed Training with dask.distributed&lt;/h2&gt;
+&lt;p&gt;For a while now, you've been able to use
+&lt;a href="http://distributed.readthedocs.io/en/latest/"&gt;&lt;code&gt;dask.distributed&lt;/code&gt;&lt;/a&gt; as a
+backend for joblib. This means that in &lt;em&gt;most&lt;/em&gt; places scikit-learn offers an
+&lt;code&gt;n_jobs&lt;/code&gt; keyword, you're able to do the parallel computation on your cluster.&lt;/p&gt;
+&lt;p&gt;This is great when&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Your dataset is not too large (since the data must be sent to each worker)&lt;/li&gt;
+&lt;li&gt;The runtime of each task is long enough that the overhead of serializing the
+   data across the network to the worker doesn't dominate the runtime&lt;/li&gt;
+&lt;li&gt;You have many parallel tasks to run (else, you'd just use a local thread or
+   process pool and avoid the network delay)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Fitting a &lt;code&gt;RandomForest&lt;/code&gt; is a good example of this. Each tree in a forest may be
+built independently of every other tree. This next code chunk shows how you can
+parallelize fitting a &lt;code&gt;RandomForestClassifier&lt;/code&gt; across a cluster, though as
+discussed later this won't work on the currently released versions of
+scikit-learn and joblib.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.externals&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;joblib&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;dask.distributed&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Client&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;distributed.joblib&lt;/span&gt;  &lt;span class="c1"&gt;# register the joblib backend&lt;/span&gt;
+
+&lt;span class="n"&gt;client&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Client&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;dask-scheduler:8786&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="n"&gt;joblib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parallel_backend&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;dask&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;scatter&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;X_train&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y_train&lt;/span&gt;&lt;span class="p"&gt;]):&lt;/span&gt;
+    &lt;span class="n"&gt;clf&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X_train&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y_train&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The &lt;code&gt;.fit&lt;/code&gt; call is parallelized across all the workers in your cluster. Here's
+the distributed dashboard during that training.&lt;/p&gt;
+&lt;video src="/images/distributed-joblib-cluster.webm" autoplay controls loop width="80%"&gt;
+  Your browser doesn't support HTML5 video.
+&lt;/video&gt;
+
+&lt;p&gt;The center pane shows the task stream as they complete. Each rectangle is a
+single task, building a single tree in a random forest in this case. Workers are
+represented vertically. My cluster had 8 workers with 4 cores each, which means
+up to 32 tasks can be processed simultaneously. We fit the 200 trees in about 20
+seconds.&lt;/p&gt;
+&lt;h2&gt;Changes to Joblib&lt;/h2&gt;
+&lt;p&gt;Above, I said that distributed training worked in &lt;em&gt;most&lt;/em&gt; places in scikit-learn.
+Getting it to work everywhere required a bit more work, and was part of last
+week's focus.&lt;/p&gt;
+&lt;p&gt;First, &lt;code&gt;dask.distributed&lt;/code&gt;'s joblib backend didn't handle &lt;em&gt;nested&lt;/em&gt; parallelism
+well. This may occur if you do something like&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;gs = GridSearchCV(Estimator(n_jobs=-1), n_jobs=-1)
+gs.fit(X, y)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Previously, that caused deadlocks. Inside &lt;code&gt;GridSearchCV&lt;/code&gt;, there's a call like&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# In GridSearchCV.fit, the outer layer&lt;/span&gt;
+&lt;span class="n"&gt;results&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;joblib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Parallel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n_jobs&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;n_jobs&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="n"&gt;fit_estimator&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;where &lt;code&gt;fit_estimator&lt;/code&gt; is a function that &lt;em&gt;itself&lt;/em&gt; tries to do things in parallel&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# In fit_estimator, the inner layer&lt;/span&gt;
+&lt;span class="n"&gt;results&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;joblib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Parallel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n_jobs&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;n_jobs&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="n"&gt;fit_one&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;So the outer level kicks off a bunch of &lt;code&gt;joblib.Parallel&lt;/code&gt; calls, and waits
+around for the results. For each of those &lt;code&gt;Parallel&lt;/code&gt; calls, the inner level
+tries to make a bunch of &lt;code&gt;joblib.Parallel&lt;/code&gt; calls. When joblib tried to start the
+inner ones, it would ask the distributed scheduler for a free worker. But all
+the workers were "busy" waiting around for the outer &lt;code&gt;Parallel&lt;/code&gt; calls to finish,
+which weren't progressing because there weren't any free workers! Deadlock!&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;dask.distributed&lt;/code&gt; has a solution for this case (workers
+&lt;a href="http://distributed.readthedocs.io/en/latest/api.html#distributed.secede"&gt;&lt;code&gt;secede&lt;/code&gt;&lt;/a&gt;
+from the thread pool when they start a long-running &lt;code&gt;Parllel&lt;/code&gt; call, and
+&lt;a href="http://distributed.readthedocs.io/en/latest/api.html#distributed.rejoin"&gt;&lt;code&gt;rejoin&lt;/code&gt;&lt;/a&gt;
+when they're done), but we needed a way to negotiate with joblib about when the
+&lt;code&gt;secede&lt;/code&gt; and &lt;code&gt;rejoin&lt;/code&gt; should happen. Joblib now has an API for backends to
+control some setup and teardown around the actual function execution. This work
+was done in &lt;a href="https://github.com/joblib/joblib/pull/538"&gt;Joblib #538&lt;/a&gt; and
+&lt;a href="https://github.com/dask/distributed/pull/1705"&gt;dask-distributed #1705&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Second, some places in scikit-learn hard-code the backend they want to use in
+their &lt;code&gt;Parallel()&lt;/code&gt; call, meaning the cluster isn't used. This may be because the
+algorithm author knows that one backend performs better than others. For
+example, &lt;code&gt;RandomForest.fit&lt;/code&gt; performs better with threads, since it's purely
+numeric and releases the GIL. In this case we would say the &lt;code&gt;Parallel&lt;/code&gt; call
+&lt;em&gt;prefers&lt;/em&gt; threads, since you'd get the same result with processes, it'd just be
+slower.&lt;/p&gt;
+&lt;p&gt;Another reason for hard-coding the backend is if the &lt;em&gt;correctness&lt;/em&gt; of the
+implementation relies on it. For example, &lt;code&gt;RandomForest.predict&lt;/code&gt; preallocates
+the output array and mutates it from many threads (it knows not to mutate the
+same place from multiple threads). In this case, we'd say the &lt;code&gt;Parallel&lt;/code&gt; call
+&lt;em&gt;requires&lt;/em&gt; shared memory, because you'd get an incorrect result using processes.&lt;/p&gt;
+&lt;p&gt;The solution was to enhance &lt;code&gt;joblib.Parallel&lt;/code&gt; to take two new keywords, &lt;code&gt;prefer&lt;/code&gt;
+and &lt;code&gt;require&lt;/code&gt;. If a &lt;code&gt;Parallel&lt;/code&gt; call &lt;em&gt;prefers&lt;/em&gt; threads, it'll use them, unless
+it's in a context saying "use this backend instead", like&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n_jobs&lt;/span&gt;&lt;span class="o"&gt;=-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;joblib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Parallel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n_jobs&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;n_jobs&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;prefer&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;threads&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+&lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="n"&gt;joblib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parallel_backend&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;dask&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="c1"&gt;# This uses dask&amp;#39;s workers, not threads&lt;/span&gt;
+    &lt;span class="n"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;On the other hand, if a &lt;code&gt;Parallel&lt;/code&gt; requires a specific backend, it'll get it.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n_jobs&lt;/span&gt;&lt;span class="o"&gt;=-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;joblib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Parallel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n_jobs&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;n_jobs&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;require&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;sharedmem&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="n"&gt;joblib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parallel_backend&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;dask&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="c1"&gt;# This uses the threading backend, since shared memory is required&lt;/span&gt;
+    &lt;span class="n"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This is a elegant way to negotiate a compromise between&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The &lt;em&gt;user&lt;/em&gt;, who knows best about what resources are available, as specified
+   by the &lt;code&gt;joblib.parallel_backend&lt;/code&gt; context manager. And,&lt;/li&gt;
+&lt;li&gt;The &lt;em&gt;algorithm author&lt;/em&gt;, who knows best about the GIL handling and shared
+   memory requirements.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;This work was done in &lt;a href="https://github.com/joblib/joblib/pull/602"&gt;Joblib #602&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;After the next joblib release, scikit-learn will be updated to use these options
+in places where the backend is currently hard-coded. My example above used a
+branch with those changes.&lt;/p&gt;
+&lt;p&gt;Look forward for these changes in the upcoming joblib, dask, and scikit-learn
+releases. As always, let me know if you have any feedback.&lt;/p&gt;</content></entry><entry><title>dask-ml</title><link href="/dask-ml-announce.html" rel="alternate"></link><published>2017-10-26T00:00:00-05:00</published><updated>2017-10-26T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2017-10-26:/dask-ml-announce.html</id><summary type="html">&lt;p&gt;Today we released the first version of &lt;code&gt;dask-ml&lt;/code&gt;, a library for parallel and
 distributed machine learning. Read the &lt;a href="http://dask-ml.readthedocs.io/en/latest/"&gt;documentation&lt;/a&gt; or install it with&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;pip install dask-ml
 &lt;/pre&gt;&lt;/div&gt;
