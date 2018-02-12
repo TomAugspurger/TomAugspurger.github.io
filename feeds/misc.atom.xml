@@ -1,5 +1,166 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame - misc</title><link href="/" rel="alternate"></link><link href="/feeds/misc.atom.xml" rel="self"></link><id>/</id><updated>2018-02-05T00:00:00-06:00</updated><entry><title>Easy distributed training with Joblib and dask</title><link href="/distributed-joblib.html" rel="alternate"></link><published>2018-02-05T00:00:00-06:00</published><updated>2018-02-05T00:00:00-06:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2018-02-05:/distributed-joblib.html</id><summary type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="http://anaconda.com/"&gt;Anaconda Inc&lt;/a&gt; and the Data
+<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame - misc</title><link href="/" rel="alternate"></link><link href="/feeds/misc.atom.xml" rel="self"></link><id>/</id><updated>2018-02-12T00:00:00-06:00</updated><entry><title>Extension Arrays for Pandas</title><link href="/pandas-extension-arrays.html" rel="alternate"></link><published>2018-02-12T00:00:00-06:00</published><updated>2018-02-12T00:00:00-06:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2018-02-12:/pandas-extension-arrays.html</id><summary type="html">&lt;p&gt;This is a status update on some enhancements for pandas. The goal of the work
+is to store things that are sufficiently array-like in a pandas &lt;code&gt;DataFrame&lt;/code&gt;,
+even if they aren't a regular NumPy array. Pandas already does this in a few
+places for some blessed types (like &lt;code&gt;Categorical&lt;/code&gt;); we'd …&lt;/p&gt;</summary><content type="html">&lt;p&gt;This is a status update on some enhancements for pandas. The goal of the work
+is to store things that are sufficiently array-like in a pandas &lt;code&gt;DataFrame&lt;/code&gt;,
+even if they aren't a regular NumPy array. Pandas already does this in a few
+places for some blessed types (like &lt;code&gt;Categorical&lt;/code&gt;); we'd like to open that up to
+anybody.&lt;/p&gt;
+&lt;p&gt;A couple months ago, a client came to &lt;a href="https://www.anaconda.com/"&gt;Anaconda&lt;/a&gt; with a problem: they
+have a bunch of IP Address data that they'd like to work with in pandas. They
+didn't just want to make a NumPy array of IP addresses for a few reasons:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;IPv6 addresses are 128 bits, so they can't use a specialized NumPy dtype. It
+   would have to be an &lt;code&gt;object&lt;/code&gt; array, which will be slow for their large
+   datasets.&lt;/li&gt;
+&lt;li&gt;IP Addresses have special structure. They'd like to use this structure for
+   special methods like &lt;code&gt;is_reserved&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;It's much better to put the knowledge of types in the library, rather than
+   relying on analysts to know that this column of objects or strings is
+   &lt;em&gt;actually&lt;/em&gt; this other special type.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;I wrote up a &lt;a href="https://github.com/pandas-dev/pandas/issues/18767"&gt;proposal&lt;/a&gt; to gauge interest from the community for
+adding an IP Address dtype to pandas. The general sentiment was that an IP
+addresses were too specialized for inclusion pandas (which matched my own
+feelings). But, the community was interested in allowing 3rd party libraries to
+define their own types and having pandas "do the right thing" when it encounters
+them.&lt;/p&gt;
+&lt;h2&gt;Pandas Internals&lt;/h2&gt;
+&lt;p&gt;While not technically true, you could reasonably describe a &lt;code&gt;DataFrame&lt;/code&gt; as a
+dictionary of NumPy arrays. There are a few complications that invalidate that
+caricature , but the one I want to focus on is pandas' &lt;em&gt;extension dtypes&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Pandas has extended NumPy's type system in a few cases. For the most part, this
+involves tricking &lt;code&gt;pandas.DataFrame&lt;/code&gt; and &lt;code&gt;pandas.Series&lt;/code&gt; into thinking that
+the object passed to it is a single array, when in fact it's multiple arrays, or
+an array plus a bit of extra metadata.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;datetime64[ns]&lt;/code&gt; &lt;em&gt;with a timezone&lt;/em&gt;. A regular &lt;code&gt;numpy.datetime64[ns]&lt;/code&gt; array
+   (which is really just an array of integers) plus some metadata for the
+   timezone.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Period&lt;/code&gt;: An array of integer ordinals and some metadata about the frequency.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Categorical&lt;/code&gt;: two arrays: one with the unique set of &lt;code&gt;categories&lt;/code&gt;
+   and a second array of &lt;code&gt;codes&lt;/code&gt;, the positions in &lt;code&gt;categories&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Interval&lt;/code&gt;: Two arrays, one for the left-hand endpoints and one for the
+   right-hand endpoints.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;So our definition of a &lt;code&gt;pandas.DataFrame&lt;/code&gt; is now "A dictionary of NumPy arrays,
+or one of pandas' extension types." Internal to pandas, we have checks for "is
+this thing an extension dtype? If so take this special path." To the user, it
+looks like a &lt;code&gt;Categorical&lt;/code&gt; is just a regular column, but internally, it's a bit
+messier.&lt;/p&gt;
+&lt;p&gt;Anyway, the upshot of my &lt;a href="https://github.com/pandas-dev/pandas/issues/18767"&gt;proposal&lt;/a&gt; was to make changes to pandas'
+internals to support 3rd-party objects going down that "is this an extension
+dtype" path.&lt;/p&gt;
+&lt;h2&gt;Pandas' Array Interface&lt;/h2&gt;
+&lt;p&gt;To support external libraries defining extension array types, we defined an interface.&lt;/p&gt;
+&lt;p&gt;In &lt;a href="https://github.com/pandas-dev/pandas/pull/19268"&gt;pandas-19268&lt;/a&gt; we laid out exactly what pandas considers
+sufficiently "array-like" for an extension array type. When pandas comes across
+one of these array-like objects, it avoids the previous behavior of just storing
+the data in a NumPy array of objects. The interface includes things like &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;What type of scalars do you hold?&lt;/li&gt;
+&lt;li&gt;How do I convert you to a NumPy array?&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;__getitem__&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Most things should be pretty straightforward to implement. In the test suit, we
+have a 60-line implementation for storing &lt;code&gt;decimal.Decimal&lt;/code&gt; objects in a
+&lt;code&gt;Series&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;It's important to emphasize that pandas' &lt;code&gt;ExtensionArray&lt;/code&gt; is &lt;em&gt;not&lt;/em&gt; another array
+implementation. It's just an agreement between pandas and your library that your
+array-like object (which may be a NumPy array, many NumPy arrays, an Arrow
+array, a list, anything really) that satisfies the proper semantics for storage
+inside a &lt;code&gt;Series&lt;/code&gt; or &lt;code&gt;DataFrame&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;With those changes, I've been able to prototype a small library (named...
+&lt;a href="https://github.com/ContinuumIO/cyberpandas"&gt;cyberpandas&lt;/a&gt;) for storing arrays of IP Addresses. It defines
+&lt;code&gt;IPAddress&lt;/code&gt;, an array-like container for IP Addresses. For this blogpost, the
+only relevant implementation detail is that IP Addresses are stored as a NumPy
+structured array with two uint64 fields. So we're making pandas treat this 2-D
+array as a single array, like how &lt;code&gt;Interval&lt;/code&gt; works. Here's a taste:&lt;/p&gt;
+&lt;p&gt;As a taste for what's possible, here's a preview of our IP Address library,
+&lt;code&gt;cyberpandas&lt;/code&gt;.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;cyberpandas&lt;/span&gt;
+
+&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+
+&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;ips&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;cyberpandas&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;IPAddress&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;
+   &lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;     &lt;span class="s1"&gt;&amp;#39;0.0.0.0&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+   &lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;     &lt;span class="s1"&gt;&amp;#39;192.168.1.1&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+   &lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;     &lt;span class="s1"&gt;&amp;#39;2001:0db8:85a3:0000:0000:8a2e:0370:7334&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+   &lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;])&lt;/span&gt;
+
+&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;ips&lt;/span&gt;
+&lt;span class="n"&gt;Out&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;IPAddress&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;0.0.0.0&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;192.168.1.1&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;2001:db8:85a3::8a2e:370:7334&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;ips&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;
+&lt;span class="n"&gt;Out&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt;
+&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([(&lt;/span&gt;                  &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;               &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+       &lt;span class="p"&gt;(&lt;/span&gt;                  &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;      &lt;span class="mi"&gt;3232235777&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+       &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;2306139570357600256&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;151930230829876&lt;/span&gt;&lt;span class="p"&gt;)],&lt;/span&gt;
+      &lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;hi&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&amp;gt;u8&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;lo&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&amp;gt;u8&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;ips&lt;/code&gt; satisfies pandas' &lt;code&gt;ExtensionArray&lt;/code&gt; interface, so it can be stored inside
+pandas' containers.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;ser&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Series&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ips&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;ser&lt;/span&gt;
+&lt;span class="n"&gt;Out&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt;
+&lt;span class="mi"&gt;0&lt;/span&gt;                         &lt;span class="mf"&gt;0.0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.0&lt;/span&gt;
+&lt;span class="mi"&gt;1&lt;/span&gt;                     &lt;span class="mf"&gt;192.168&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;1.1&lt;/span&gt;
+&lt;span class="mi"&gt;2&lt;/span&gt;    &lt;span class="mi"&gt;2001&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;db8&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;85&lt;/span&gt;&lt;span class="n"&gt;a3&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="n"&gt;a2e&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;370&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;7334&lt;/span&gt;
+&lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;ip&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Note the &lt;code&gt;dtype&lt;/code&gt; in that output. That's a custom dtype (like &lt;code&gt;category&lt;/code&gt;) defined
+&lt;em&gt;outside&lt;/em&gt; pandas.&lt;/p&gt;
+&lt;p&gt;We register a &lt;a href="http://pandas-docs.github.io/pandas-docs-travis/developer.html#developer-register-accessors"&gt;custom accessor&lt;/a&gt; with pandas claiming the &lt;code&gt;.ip&lt;/code&gt;
+namespace (just like pandas uses &lt;code&gt;.str&lt;/code&gt; or &lt;code&gt;.dt&lt;/code&gt; or &lt;code&gt;.cat&lt;/code&gt;):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;ser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ip&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;isna&lt;/span&gt;
+&lt;span class="n"&gt;Out&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt;
+&lt;span class="mi"&gt;0&lt;/span&gt;     &lt;span class="bp"&gt;True&lt;/span&gt;
+&lt;span class="mi"&gt;1&lt;/span&gt;    &lt;span class="bp"&gt;False&lt;/span&gt;
+&lt;span class="mi"&gt;2&lt;/span&gt;    &lt;span class="bp"&gt;False&lt;/span&gt;
+&lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;bool&lt;/span&gt;
+
+&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;9&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;ser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ip&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;is_ipv6&lt;/span&gt;
+&lt;span class="n"&gt;Out&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;9&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt;
+&lt;span class="mi"&gt;0&lt;/span&gt;    &lt;span class="bp"&gt;False&lt;/span&gt;
+&lt;span class="mi"&gt;1&lt;/span&gt;    &lt;span class="bp"&gt;False&lt;/span&gt;
+&lt;span class="mi"&gt;2&lt;/span&gt;     &lt;span class="bp"&gt;True&lt;/span&gt;
+&lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;bool&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;I'm &lt;em&gt;extremely&lt;/em&gt; interested in seeing what the community builds on top of this
+interface. Joris has already tested out the &lt;a href="geopandas"&gt;Cythonized geopandas&lt;/a&gt;
+extension, which stores a NumPy array of pointers to geometry objects, and
+things seem great. I could see someone (perhaps you, dear reader?) building a
+&lt;code&gt;JSONArray&lt;/code&gt; array type for working with nested data. That combined with custom
+&lt;code&gt;.json&lt;/code&gt; accessor, perhaps with a &lt;a href="https://stedolan.github.io/jq/"&gt;&lt;code&gt;jq&lt;/code&gt;-like&lt;/a&gt; query language should make for
+a powerful combination.&lt;/p&gt;
+&lt;p&gt;I'm also happy to have to say "Closed, out of scope; sorry." less often. Now it
+can be "Closed, out of scope; do it outside of pandas." :)&lt;/p&gt;
+&lt;h2&gt;Open Source Success Story&lt;/h2&gt;
+&lt;p&gt;It's worth taking a moment to realize that this was a great example of open
+source at its best.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;A company had a need for a tool. They didn't have the expertise or desire to
+   build and maintain it internally, so they approached Anaconda (a for-profit
+   company with a great OSS tradition) to do it for them.&lt;/li&gt;
+&lt;li&gt;A proposal was made &lt;em&gt;and rejected&lt;/em&gt; by the pandas community. You can't just
+   "buy" features in pandas if it conflicts too strongly with the long-term
+   goals for the project.&lt;/li&gt;
+&lt;li&gt;A more general solution was found, with minimal changes to pandas itself,
+   allowing anyone to do this type of extension outside of pandas.&lt;/li&gt;
+&lt;li&gt;We built the &lt;a href="https://github.com/ContinuumIO/cyberpandas"&gt;cyberpandas&lt;/a&gt;, which to users will feel like a
+   first-class array type in pandas.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Thanks to the tireless reviews from the other pandas contributors, especially
+Jeff Reback, Joris van den Bossche, and Stephen Hoyer. Look forward to these
+changes in the next major pandas release.&lt;/p&gt;</content></entry><entry><title>Easy distributed training with Joblib and dask</title><link href="/distributed-joblib.html" rel="alternate"></link><published>2018-02-05T00:00:00-06:00</published><updated>2018-02-05T00:00:00-06:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2018-02-05:/distributed-joblib.html</id><summary type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="http://anaconda.com/"&gt;Anaconda Inc&lt;/a&gt; and the Data
 Driven Discovery Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore
 Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;This past week, I had a chance to visit some of the scikit-learn developers at

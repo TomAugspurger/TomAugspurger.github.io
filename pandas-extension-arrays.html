@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+<meta name="keywords" content="">
+
+  <title>
+    datas-frame
+&ndash; Extension Arrays for Pandas  </title>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-48304175-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+      </p>
+    </header>
+
+<article>
+  <div class="article__title">
+    <h1><a href="/pandas-extension-arrays.html">Extension Arrays for Pandas</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 12 February 2018</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>This is a status update on some enhancements for pandas. The goal of the work
+is to store things that are sufficiently array-like in a pandas <code>DataFrame</code>,
+even if they aren't a regular NumPy array. Pandas already does this in a few
+places for some blessed types (like <code>Categorical</code>); we'd like to open that up to
+anybody.</p>
+<p>A couple months ago, a client came to <a href="https://www.anaconda.com/">Anaconda</a> with a problem: they
+have a bunch of IP Address data that they'd like to work with in pandas. They
+didn't just want to make a NumPy array of IP addresses for a few reasons:</p>
+<ol>
+<li>IPv6 addresses are 128 bits, so they can't use a specialized NumPy dtype. It
+   would have to be an <code>object</code> array, which will be slow for their large
+   datasets.</li>
+<li>IP Addresses have special structure. They'd like to use this structure for
+   special methods like <code>is_reserved</code>.</li>
+<li>It's much better to put the knowledge of types in the library, rather than
+   relying on analysts to know that this column of objects or strings is
+   <em>actually</em> this other special type.</li>
+</ol>
+<p>I wrote up a <a href="https://github.com/pandas-dev/pandas/issues/18767">proposal</a> to gauge interest from the community for
+adding an IP Address dtype to pandas. The general sentiment was that an IP
+addresses were too specialized for inclusion pandas (which matched my own
+feelings). But, the community was interested in allowing 3rd party libraries to
+define their own types and having pandas "do the right thing" when it encounters
+them.</p>
+<h2>Pandas Internals</h2>
+<p>While not technically true, you could reasonably describe a <code>DataFrame</code> as a
+dictionary of NumPy arrays. There are a few complications that invalidate that
+caricature , but the one I want to focus on is pandas' <em>extension dtypes</em>.</p>
+<p>Pandas has extended NumPy's type system in a few cases. For the most part, this
+involves tricking <code>pandas.DataFrame</code> and <code>pandas.Series</code> into thinking that
+the object passed to it is a single array, when in fact it's multiple arrays, or
+an array plus a bit of extra metadata.</p>
+<ol>
+<li><code>datetime64[ns]</code> <em>with a timezone</em>. A regular <code>numpy.datetime64[ns]</code> array
+   (which is really just an array of integers) plus some metadata for the
+   timezone.</li>
+<li><code>Period</code>: An array of integer ordinals and some metadata about the frequency.</li>
+<li><code>Categorical</code>: two arrays: one with the unique set of <code>categories</code>
+   and a second array of <code>codes</code>, the positions in <code>categories</code>.</li>
+<li><code>Interval</code>: Two arrays, one for the left-hand endpoints and one for the
+   right-hand endpoints.</li>
+</ol>
+<p>So our definition of a <code>pandas.DataFrame</code> is now "A dictionary of NumPy arrays,
+or one of pandas' extension types." Internal to pandas, we have checks for "is
+this thing an extension dtype? If so take this special path." To the user, it
+looks like a <code>Categorical</code> is just a regular column, but internally, it's a bit
+messier.</p>
+<p>Anyway, the upshot of my <a href="https://github.com/pandas-dev/pandas/issues/18767">proposal</a> was to make changes to pandas'
+internals to support 3rd-party objects going down that "is this an extension
+dtype" path.</p>
+<h2>Pandas' Array Interface</h2>
+<p>To support external libraries defining extension array types, we defined an interface.</p>
+<p>In <a href="https://github.com/pandas-dev/pandas/pull/19268">pandas-19268</a> we laid out exactly what pandas considers
+sufficiently "array-like" for an extension array type. When pandas comes across
+one of these array-like objects, it avoids the previous behavior of just storing
+the data in a NumPy array of objects. The interface includes things like </p>
+<ul>
+<li>What type of scalars do you hold?</li>
+<li>How do I convert you to a NumPy array?</li>
+<li><code>__getitem__</code></li>
+</ul>
+<p>Most things should be pretty straightforward to implement. In the test suit, we
+have a 60-line implementation for storing <code>decimal.Decimal</code> objects in a
+<code>Series</code>.</p>
+<p>It's important to emphasize that pandas' <code>ExtensionArray</code> is <em>not</em> another array
+implementation. It's just an agreement between pandas and your library that your
+array-like object (which may be a NumPy array, many NumPy arrays, an Arrow
+array, a list, anything really) that satisfies the proper semantics for storage
+inside a <code>Series</code> or <code>DataFrame</code>.</p>
+<p>With those changes, I've been able to prototype a small library (named...
+<a href="https://github.com/ContinuumIO/cyberpandas">cyberpandas</a>) for storing arrays of IP Addresses. It defines
+<code>IPAddress</code>, an array-like container for IP Addresses. For this blogpost, the
+only relevant implementation detail is that IP Addresses are stored as a NumPy
+structured array with two uint64 fields. So we're making pandas treat this 2-D
+array as a single array, like how <code>Interval</code> works. Here's a taste:</p>
+<p>As a taste for what's possible, here's a preview of our IP Address library,
+<code>cyberpandas</code>.</p>
+<div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">cyberpandas</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">ips</span> <span class="o">=</span> <span class="n">cyberpandas</span><span class="o">.</span><span class="n">IPAddress</span><span class="p">([</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="s1">&#39;192.168.1.1&#39;</span><span class="p">,</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="s1">&#39;2001:0db8:85a3:0000:0000:8a2e:0370:7334&#39;</span><span class="p">,</span>
+   <span class="o">...</span><span class="p">:</span> <span class="p">])</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">ips</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">IPAddress</span><span class="p">([</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="s1">&#39;192.168.1.1&#39;</span><span class="p">,</span> <span class="s1">&#39;2001:db8:85a3::8a2e:370:7334&#39;</span><span class="p">])</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">ips</span><span class="o">.</span><span class="n">data</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span>
+<span class="n">array</span><span class="p">([(</span>                  <span class="mi">0</span><span class="p">,</span>               <span class="mi">0</span><span class="p">),</span>
+       <span class="p">(</span>                  <span class="mi">0</span><span class="p">,</span>      <span class="mi">3232235777</span><span class="p">),</span>
+       <span class="p">(</span><span class="mi">2306139570357600256</span><span class="p">,</span> <span class="mi">151930230829876</span><span class="p">)],</span>
+      <span class="n">dtype</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;hi&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;u8&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;lo&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;u8&#39;</span><span class="p">)])</span>
+</pre></div>
+
+
+<p><code>ips</code> satisfies pandas' <code>ExtensionArray</code> interface, so it can be stored inside
+pandas' containers.</p>
+<div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">ser</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">ips</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">ser</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">7</span><span class="p">]:</span>
+<span class="mi">0</span>                         <span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span>
+<span class="mi">1</span>                     <span class="mf">192.168</span><span class="o">.</span><span class="mf">1.1</span>
+<span class="mi">2</span>    <span class="mi">2001</span><span class="p">:</span><span class="n">db8</span><span class="p">:</span><span class="mi">85</span><span class="n">a3</span><span class="p">::</span><span class="mi">8</span><span class="n">a2e</span><span class="p">:</span><span class="mi">370</span><span class="p">:</span><span class="mi">7334</span>
+<span class="n">dtype</span><span class="p">:</span> <span class="n">ip</span>
+</pre></div>
+
+
+<p>Note the <code>dtype</code> in that output. That's a custom dtype (like <code>category</code>) defined
+<em>outside</em> pandas.</p>
+<p>We register a <a href="http://pandas-docs.github.io/pandas-docs-travis/developer.html#developer-register-accessors">custom accessor</a> with pandas claiming the <code>.ip</code>
+namespace (just like pandas uses <code>.str</code> or <code>.dt</code> or <code>.cat</code>):</p>
+<div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">ser</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">isna</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">8</span><span class="p">]:</span>
+<span class="mi">0</span>     <span class="bp">True</span>
+<span class="mi">1</span>    <span class="bp">False</span>
+<span class="mi">2</span>    <span class="bp">False</span>
+<span class="n">dtype</span><span class="p">:</span> <span class="nb">bool</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">ser</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">is_ipv6</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span>
+<span class="mi">0</span>    <span class="bp">False</span>
+<span class="mi">1</span>    <span class="bp">False</span>
+<span class="mi">2</span>     <span class="bp">True</span>
+<span class="n">dtype</span><span class="p">:</span> <span class="nb">bool</span>
+</pre></div>
+
+
+<p>I'm <em>extremely</em> interested in seeing what the community builds on top of this
+interface. Joris has already tested out the <a href="geopandas">Cythonized geopandas</a>
+extension, which stores a NumPy array of pointers to geometry objects, and
+things seem great. I could see someone (perhaps you, dear reader?) building a
+<code>JSONArray</code> array type for working with nested data. That combined with custom
+<code>.json</code> accessor, perhaps with a <a href="https://stedolan.github.io/jq/"><code>jq</code>-like</a> query language should make for
+a powerful combination.</p>
+<p>I'm also happy to have to say "Closed, out of scope; sorry." less often. Now it
+can be "Closed, out of scope; do it outside of pandas." :)</p>
+<h2>Open Source Success Story</h2>
+<p>It's worth taking a moment to realize that this was a great example of open
+source at its best.</p>
+<ol>
+<li>A company had a need for a tool. They didn't have the expertise or desire to
+   build and maintain it internally, so they approached Anaconda (a for-profit
+   company with a great OSS tradition) to do it for them.</li>
+<li>A proposal was made <em>and rejected</em> by the pandas community. You can't just
+   "buy" features in pandas if it conflicts too strongly with the long-term
+   goals for the project.</li>
+<li>A more general solution was found, with minimal changes to pandas itself,
+   allowing anyone to do this type of extension outside of pandas.</li>
+<li>We built the <a href="https://github.com/ContinuumIO/cyberpandas">cyberpandas</a>, which to users will feel like a
+   first-class array type in pandas.</li>
+</ol>
+<p>Thanks to the tireless reviews from the other pandas contributors, especially
+Jeff Reback, Joris van den Bossche, and Stephen Hoyer. Look forward to these
+changes in the next major pandas release.</p>
+  </div>
+  <div id="article__comments">
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_identifier = "pandas-extension-arrays.html";
+        (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = '//tomaugspurger.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+         })();
+    </script>
+  </div>
+
+</article>
+
+
+  </main>
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li><a href="/pages/article-1-cluster.html" title="article-1-cluster"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
+</body>
+</html>

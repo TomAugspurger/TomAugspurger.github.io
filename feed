@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Mon, 05 Feb 2018 00:00:00 -0600</lastBuildDate><item><title>Easy distributed training with Joblib and dask</title><link>/distributed-joblib.html</link><description>&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="http://anaconda.com/"&gt;Anaconda Inc&lt;/a&gt; and the Data
+<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Mon, 12 Feb 2018 00:00:00 -0600</lastBuildDate><item><title>Extension Arrays for Pandas</title><link>/pandas-extension-arrays.html</link><description>&lt;p&gt;This is a status update on some enhancements for pandas. The goal of the work
+is to store things that are sufficiently array-like in a pandas &lt;code&gt;DataFrame&lt;/code&gt;,
+even if they aren't a regular NumPy array. Pandas already does this in a few
+places for some blessed types (like &lt;code&gt;Categorical&lt;/code&gt;); we'd …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 12 Feb 2018 00:00:00 -0600</pubDate><guid isPermaLink="false">tag:None,2018-02-12:/pandas-extension-arrays.html</guid></item><item><title>Easy distributed training with Joblib and dask</title><link>/distributed-joblib.html</link><description>&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="http://anaconda.com/"&gt;Anaconda Inc&lt;/a&gt; and the Data
 Driven Discovery Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore
 Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;This past week, I had a chance to visit some of the scikit-learn developers at
