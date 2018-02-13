@@ -103,7 +103,7 @@ in-memory dataset.</p>
 
 
 <p>Nothing special so far. But now, let's suppose we had a "large" dataset for
-prediction. We'll use <code>dask_ml.datasets.make_classifciation</code>, but in practice
+prediction. We'll use <code>dask_ml.datasets.make_classification</code>, but in practice
 you would read this from a file system or database.</p>
 <div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">X_big</span><span class="p">,</span> <span class="n">y_big</span> <span class="o">=</span> <span class="n">dask_ml</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">make_classification</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
                                                         <span class="n">chunks</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
