@@ -32,7 +32,13 @@ Data Driven Discovery Initiative from the &lt;a href="https://www.moore.org/"&gt
 Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;Anaconda is interested in scaling the scientific python ecosystem. My current
 focus is on out-of-core, parallel, and distributed machine learning. This series
-of posts will introduce those concepts, explore what we have available …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 11 Sep 2017 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2017-09-11:/scalable-ml-01.html</guid></item><item><title>Introducing Stitch</title><link>/introducing-stitch.html</link><description>&lt;p&gt;Today I released &lt;a href="https://github.com/pystitch/stitch"&gt;&lt;code&gt;stitch&lt;/code&gt;&lt;/a&gt; into the
+of posts will introduce those concepts, explore what we have available …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 11 Sep 2017 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2017-09-11:/scalable-ml-01.html</guid></item><item><title>dask-ml 0.4.1 Released</title><link>/dask-ml-041.html</link><description>&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="http://anaconda.com/"&gt;Anaconda Inc&lt;/a&gt; and the Data
+Driven Discovery Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore
+Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://dask-ml.readthedocs.io/en/latest/"&gt;dask-ml&lt;/a&gt; 0.4.1 was released today with a few enhancements. See the
+&lt;a href="http://dask-ml.readthedocs.io/en/latest/changelog.html"&gt;changelog&lt;/a&gt; for all the changes from 0.4.0.&lt;/p&gt;
+&lt;p&gt;Conda packages are available on conda-forge&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ conda install -c conda-forge dask-ml …&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 13 Feb 2017 00:00:00 -0600</pubDate><guid isPermaLink="false">tag:None,2017-02-13:/dask-ml-041.html</guid></item><item><title>Introducing Stitch</title><link>/introducing-stitch.html</link><description>&lt;p&gt;Today I released &lt;a href="https://github.com/pystitch/stitch"&gt;&lt;code&gt;stitch&lt;/code&gt;&lt;/a&gt; into the
 wild. If you haven't yet, check out the &lt;a href="https://pystitch.github.io"&gt;examples
 page&lt;/a&gt; to see an example of what stitch does,
 and the &lt;a href="https://github.com/pystitch/stitch"&gt;Github repo&lt;/a&gt; for how to

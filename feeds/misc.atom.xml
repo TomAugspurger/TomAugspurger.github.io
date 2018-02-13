@@ -1146,7 +1146,103 @@ the dataset. But our focus isn't on building a good model, I hope you'll
 forgive me.&amp;#160;&lt;a class="footnote-backref" href="#fnref-2" title="Jump back to footnote 2 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;/div&gt;</content></entry><entry><title>Introducing Stitch</title><link href="/introducing-stitch.html" rel="alternate"></link><published>2016-08-30T00:00:00-05:00</published><updated>2016-08-30T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-08-30:/introducing-stitch.html</id><summary type="html">&lt;p&gt;Today I released &lt;a href="https://github.com/pystitch/stitch"&gt;&lt;code&gt;stitch&lt;/code&gt;&lt;/a&gt; into the
+&lt;/div&gt;</content></entry><entry><title>dask-ml 0.4.1 Released</title><link href="/dask-ml-041.html" rel="alternate"></link><published>2017-02-13T00:00:00-06:00</published><updated>2017-02-13T00:00:00-06:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2017-02-13:/dask-ml-041.html</id><summary type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="http://anaconda.com/"&gt;Anaconda Inc&lt;/a&gt; and the Data
+Driven Discovery Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore
+Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://dask-ml.readthedocs.io/en/latest/"&gt;dask-ml&lt;/a&gt; 0.4.1 was released today with a few enhancements. See the
+&lt;a href="http://dask-ml.readthedocs.io/en/latest/changelog.html"&gt;changelog&lt;/a&gt; for all the changes from 0.4.0.&lt;/p&gt;
+&lt;p&gt;Conda packages are available on conda-forge&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ conda install -c conda-forge dask-ml …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="http://anaconda.com/"&gt;Anaconda Inc&lt;/a&gt; and the Data
+Driven Discovery Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore
+Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://dask-ml.readthedocs.io/en/latest/"&gt;dask-ml&lt;/a&gt; 0.4.1 was released today with a few enhancements. See the
+&lt;a href="http://dask-ml.readthedocs.io/en/latest/changelog.html"&gt;changelog&lt;/a&gt; for all the changes from 0.4.0.&lt;/p&gt;
+&lt;p&gt;Conda packages are available on conda-forge&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ conda install -c conda-forge dask-ml
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and wheels and the source are available on PyPI&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ pip install dask-ml
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;I wanted to highlight one change, that touches on a topic I mentioned in my
+first post on &lt;a href="scalable-ml-01"&gt;scalable Machine Learning&lt;/a&gt;. I discussed how, in
+my limited experience, a common workflow was to train on a small batch of data
+and predict for a much larger set of data. The training data easily fits in
+memory on a single machine, but the full dataset does not.&lt;/p&gt;
+&lt;p&gt;A new meta-estimator, &lt;a href="http://dask-ml.readthedocs.io/en/latest/modules/generated/dask_ml.wrappers.ParallelPostFit.html#dask_ml.wrappers.ParallelPostFit"&gt;&lt;code&gt;ParallelPostFit&lt;/code&gt;&lt;/a&gt; helps with this
+common case. It's a meta-estimator that wraps a regular scikit-learn estimator,
+similar to how &lt;code&gt;GridSearchCV&lt;/code&gt; wraps an estimator. The &lt;code&gt;.fit&lt;/code&gt; method is very
+simple; it just calls the underlying estimator's &lt;code&gt;.fit&lt;/code&gt; method and copies over
+the learned attributes. This means &lt;code&gt;ParalellPostFit&lt;/code&gt; is not suitable for
+&lt;em&gt;training&lt;/em&gt; on large datasets. It is, however, perfect for post-fit tasks like
+&lt;code&gt;.predict&lt;/code&gt;, or &lt;code&gt;.transform&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;As an example, we'll fit a scikit-learn &lt;code&gt;GradientBoostingClassifier&lt;/code&gt; on a small
+in-memory dataset.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.ensemble&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;GradientBoostingClassifier&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;sklearn.datasets&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;dask_ml.datasets&lt;/span&gt;
+
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sklearn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;datasets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;make_classification&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n_samples&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1000&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;span class="o"&gt;...&lt;/span&gt;                                             &lt;span class="n"&gt;random_state&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;clf&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ParallelPostFit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;estimator&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;GradientBoostingClassifier&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;clf&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;ParallelPostFit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;estimator&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;GradientBoostingClassifier&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Nothing special so far. But now, let's suppose we had a "large" dataset for
+prediction. We'll use &lt;code&gt;dask_ml.datasets.make_classifciation&lt;/code&gt;, but in practice
+you would read this from a file system or database.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;X_big&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y_big&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dask_ml&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;datasets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;make_classification&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n_samples&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;100000&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                                                        &lt;span class="n"&gt;chunks&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1000&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                                                        &lt;span class="n"&gt;random_state&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;In this case we have a dataset with 100,000 samples split into blocks of 1,000.
+We can now predict for this large dataset.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;clf&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;predict&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;dask&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;predict&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;shape&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;10000&lt;/span&gt;&lt;span class="p"&gt;,),&lt;/span&gt; &lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;int64&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;chunksize&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1000&lt;/span&gt;&lt;span class="p"&gt;,)&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now things are different. &lt;code&gt;ParallelPostFit.predict&lt;/code&gt;, &lt;code&gt;.predict_proba&lt;/code&gt;, and
+&lt;code&gt;.transform&lt;/code&gt;, all return dask arrays instead of immediately computing the
+result. This lets you build up a task graph of computations to be performed,
+which allows dask to step in and compute things in parallel. When you're ready
+for the answer, call &lt;code&gt;compute&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;clf&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;predict_proba&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;compute&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([[&lt;/span&gt;&lt;span class="mf"&gt;0.99141094&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.00858906&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+       &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mf"&gt;0.93178389&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.06821611&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+       &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mf"&gt;0.99129105&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.00870895&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+       &lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+       &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mf"&gt;0.97996652&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.02003348&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+       &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mf"&gt;0.98087444&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.01912556&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+       &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mf"&gt;0.99407016&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.00592984&lt;/span&gt;&lt;span class="p"&gt;]])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;At that point the dask scheduler comes in and executes your compute in parallel,
+using all the cores of your laptop or workstation, or all the machines on your
+cluster.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ParallelPostFit&lt;/code&gt; "fixes" a couple of issues in scikit-learn outside of
+scikit-learn itself&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://github.com/scikit-learn/scikit-learn/issues/7448"&gt;parallel predict&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://github.com/scikit-learn/scikit-learn/issues/7635"&gt;parallel transform&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you're able to depend on dask and dask-ml, consider giving &lt;code&gt;ParallelPostFit&lt;/code&gt;
+a shot and let me know how it turns out. For estimators whose predict is
+relatively expensive and not already parallelized, &lt;code&gt;ParallelPostFit&lt;/code&gt; can give
+a nice &lt;a href="http://dask-ml.readthedocs.io/en/latest/auto_examples/plot_parallel_postfit.html#sphx-glr-auto-examples-plot-parallel-postfit-py"&gt;performance boost&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="images/sphx_glr_plot_parallel_postfit_001.png"&gt;&lt;/p&gt;
+&lt;p&gt;Even if the underlying estimator's &lt;code&gt;predict&lt;/code&gt; or &lt;code&gt;tranform&lt;/code&gt; method is cheap or
+parallelized, &lt;code&gt;ParallelPostFit&lt;/code&gt; does still help with distributed the work on all
+the machines in your cluster, or doing the operation out-of-core.&lt;/p&gt;
+&lt;p&gt;Thanks to all the contributors who worked on this release.&lt;/p&gt;</content></entry><entry><title>Introducing Stitch</title><link href="/introducing-stitch.html" rel="alternate"></link><published>2016-08-30T00:00:00-05:00</published><updated>2016-08-30T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2016-08-30:/introducing-stitch.html</id><summary type="html">&lt;p&gt;Today I released &lt;a href="https://github.com/pystitch/stitch"&gt;&lt;code&gt;stitch&lt;/code&gt;&lt;/a&gt; into the
 wild. If you haven't yet, check out the &lt;a href="https://pystitch.github.io"&gt;examples
 page&lt;/a&gt; to see an example of what stitch does,
 and the &lt;a href="https://github.com/pystitch/stitch"&gt;Github repo&lt;/a&gt; for how to
