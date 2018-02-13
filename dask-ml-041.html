@@ -120,9 +120,9 @@ We can now predict for this large dataset.</p>
 
 <p>Now things are different. <code>ParallelPostFit.predict</code>, <code>.predict_proba</code>, and
 <code>.transform</code>, all return dask arrays instead of immediately computing the
-result. This lets you build up a task graph of computations to be performed,
-which allows dask to step in and compute things in parallel. When you're ready
-for the answer, call <code>compute</code>:</p>
+result. We've built up task graph of computations to be performed, which allows
+dask to step in and compute things in parallel. When you're ready for the
+answer, call <code>compute</code>:</p>
 <div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 <span class="n">array</span><span class="p">([[</span><span class="mf">0.99141094</span><span class="p">,</span> <span class="mf">0.00858906</span><span class="p">],</span>
        <span class="p">[</span><span class="mf">0.93178389</span><span class="p">,</span> <span class="mf">0.06821611</span><span class="p">],</span>

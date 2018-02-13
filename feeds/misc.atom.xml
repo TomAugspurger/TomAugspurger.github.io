@@ -1211,9 +1211,9 @@ We can now predict for this large dataset.&lt;/p&gt;
 
 &lt;p&gt;Now things are different. &lt;code&gt;ParallelPostFit.predict&lt;/code&gt;, &lt;code&gt;.predict_proba&lt;/code&gt;, and
 &lt;code&gt;.transform&lt;/code&gt;, all return dask arrays instead of immediately computing the
-result. This lets you build up a task graph of computations to be performed,
-which allows dask to step in and compute things in parallel. When you're ready
-for the answer, call &lt;code&gt;compute&lt;/code&gt;:&lt;/p&gt;
+result. We've built up task graph of computations to be performed, which allows
+dask to step in and compute things in parallel. When you're ready for the
+answer, call &lt;code&gt;compute&lt;/code&gt;:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;clf&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;predict_proba&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;compute&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
 &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([[&lt;/span&gt;&lt;span class="mf"&gt;0.99141094&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.00858906&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
        &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mf"&gt;0.93178389&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.06821611&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
