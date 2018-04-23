@@ -171,7 +171,7 @@ Name: occupation, Length: 100, dtype: int64
 <p>There are a couple differences from the original pandas version, which we'll discuss next, but overall I hope you agree that the Dask version is nicer than the version using iteration.</p>
 <h2>Dask</h2>
 <p>Now that we've seen <code>dask.dataframe</code> in action, let's step back and discuss Dask a bit. Dask is an open-source project that natively parallizes Python. I'm a happy user of and contributor to Dask.</p>
-<p>At a high-level, Dask provide familiar APIs for <a href="https://dask.pydata.org/en/latest/array.html">large N-dimensional arrays</a>, <a href="https://dask.pydata.org/en/latest/dataframe.html">large DataFrames</a>, and <a href="https://distributed.readthedocs.io/en/latest/quickstart.html#map-and-submit-functions">familiar</a> ways to parallelize <a href="https://dask.pydata.org/en/latest/delayed.html">custom algorithms</a>.</p>
+<p>At a high-level, Dask provides familiar APIs for <a href="https://dask.pydata.org/en/latest/array.html">large N-dimensional arrays</a>, <a href="https://dask.pydata.org/en/latest/dataframe.html">large DataFrames</a>, and <a href="https://distributed.readthedocs.io/en/latest/quickstart.html#map-and-submit-functions">familiar</a> ways to parallelize <a href="https://dask.pydata.org/en/latest/delayed.html">custom algorithms</a>.</p>
 <p>At a low-level, each of these is built on high-performance <a href="http://dask.pydata.org/en/latest/scheduling.html">task scheduling</a> that executes operations in parallel. The <a href="http://dask.pydata.org/en/latest/spec.html">low-level details</a> aren't too important; all we care about is that</p>
 <ol>
 <li>Dask works with <em>task graphs</em> (<em>tasks</em>: functions to call on data, and <em>graphs</em>: the relationships between tasks).</li>
@@ -239,7 +239,7 @@ Name: occupation, Length: 100, dtype: int64
 <p>A Dask DataFrame consists of many pandas DataFrames arranged by the index. Dask is really just coordinating these pandas DataFrames.</p>
 <p><img src="http://dask.pydata.org/en/latest/_images/dask-dataframe.svg" width="50%"/></p>
 <p>All the actual computation (reading from disk, computing the value counts, etc.) eventually use pandas internally. If I do <code>df.occupation.str.len</code>, Dask will coordinate calling <code>pandas.Series.str.len</code> on each of the pandas DataFrames.</p>
-<p>Those reading carefully will notice a problem with the statement "A Dask DataFrame consists of many pandas DataFrames". Our initial problem was that we didn't have enough memory for those DataFrames! How can Dask be coordinating DataFrames if there isn't enough memory? This brings us to the second major difference: Dask DataFrames (and arrays) are lazy. Operations on them don't execute and produce the final result immediately. Rather, calling methods on them build up a task graph.</p>
+<p>Those reading carefully will notice a problem with the statement "A Dask DataFrame consists of many pandas DataFrames". Our initial problem was that we didn't have enough memory for those DataFrames! How can Dask be coordinating DataFrames if there isn't enough memory? This brings us to the second major difference: Dask DataFrames (and arrays) are lazy. Operations on them don't execute and produce the final result immediately. Rather, calling methods on them builds up a task graph.</p>
 <p>We can visualize task graphs using <code>graphviz</code>. For the blog, I've trimmed down the example to be a subset of the entire graph.</p>
 <div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">rankdir</span><span class="o">=</span><span class="s1">&#39;LR&#39;</span><span class="p">)</span>
 </pre></div>
@@ -248,7 +248,7 @@ Name: occupation, Length: 100, dtype: int64
 <div class="output"><img src="images/scalable-read-simple.svg"></div>
 
 <p><code>df</code> (the dask DataFrame consisting of many pandas DataFrames) has a task graph with 5 calls to a parquet reader (one for each file), each of which produces a DataFrame when called.</p>
-<p>Calling additional methods on <code>df</code> add additional tasks to this graph. For example, our <code>most_common</code> has three additional calls</p>
+<p>Calling additional methods on <code>df</code> adds additional tasks to this graph. For example, our <code>most_common</code> Series has three additional calls</p>
 <ul>
 <li>Select the <code>occupation</code> column (<code>__getitem__</code>)</li>
 <li>Perform the value counts</li>

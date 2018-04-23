@@ -108,7 +108,7 @@ Name: occupation, Length: 100, dtype: int64
 &lt;p&gt;There are a couple differences from the original pandas version, which we'll discuss next, but overall I hope you agree that the Dask version is nicer than the version using iteration.&lt;/p&gt;
 &lt;h2&gt;Dask&lt;/h2&gt;
 &lt;p&gt;Now that we've seen &lt;code&gt;dask.dataframe&lt;/code&gt; in action, let's step back and discuss Dask a bit. Dask is an open-source project that natively parallizes Python. I'm a happy user of and contributor to Dask.&lt;/p&gt;
-&lt;p&gt;At a high-level, Dask provide familiar APIs for &lt;a href="https://dask.pydata.org/en/latest/array.html"&gt;large N-dimensional arrays&lt;/a&gt;, &lt;a href="https://dask.pydata.org/en/latest/dataframe.html"&gt;large DataFrames&lt;/a&gt;, and &lt;a href="https://distributed.readthedocs.io/en/latest/quickstart.html#map-and-submit-functions"&gt;familiar&lt;/a&gt; ways to parallelize &lt;a href="https://dask.pydata.org/en/latest/delayed.html"&gt;custom algorithms&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;At a high-level, Dask provides familiar APIs for &lt;a href="https://dask.pydata.org/en/latest/array.html"&gt;large N-dimensional arrays&lt;/a&gt;, &lt;a href="https://dask.pydata.org/en/latest/dataframe.html"&gt;large DataFrames&lt;/a&gt;, and &lt;a href="https://distributed.readthedocs.io/en/latest/quickstart.html#map-and-submit-functions"&gt;familiar&lt;/a&gt; ways to parallelize &lt;a href="https://dask.pydata.org/en/latest/delayed.html"&gt;custom algorithms&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;At a low-level, each of these is built on high-performance &lt;a href="http://dask.pydata.org/en/latest/scheduling.html"&gt;task scheduling&lt;/a&gt; that executes operations in parallel. The &lt;a href="http://dask.pydata.org/en/latest/spec.html"&gt;low-level details&lt;/a&gt; aren't too important; all we care about is that&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;Dask works with &lt;em&gt;task graphs&lt;/em&gt; (&lt;em&gt;tasks&lt;/em&gt;: functions to call on data, and &lt;em&gt;graphs&lt;/em&gt;: the relationships between tasks).&lt;/li&gt;
@@ -176,7 +176,7 @@ Name: occupation, Length: 100, dtype: int64
 &lt;p&gt;A Dask DataFrame consists of many pandas DataFrames arranged by the index. Dask is really just coordinating these pandas DataFrames.&lt;/p&gt;
 &lt;p&gt;&lt;img src="http://dask.pydata.org/en/latest/_images/dask-dataframe.svg" width="50%"/&gt;&lt;/p&gt;
 &lt;p&gt;All the actual computation (reading from disk, computing the value counts, etc.) eventually use pandas internally. If I do &lt;code&gt;df.occupation.str.len&lt;/code&gt;, Dask will coordinate calling &lt;code&gt;pandas.Series.str.len&lt;/code&gt; on each of the pandas DataFrames.&lt;/p&gt;
-&lt;p&gt;Those reading carefully will notice a problem with the statement "A Dask DataFrame consists of many pandas DataFrames". Our initial problem was that we didn't have enough memory for those DataFrames! How can Dask be coordinating DataFrames if there isn't enough memory? This brings us to the second major difference: Dask DataFrames (and arrays) are lazy. Operations on them don't execute and produce the final result immediately. Rather, calling methods on them build up a task graph.&lt;/p&gt;
+&lt;p&gt;Those reading carefully will notice a problem with the statement "A Dask DataFrame consists of many pandas DataFrames". Our initial problem was that we didn't have enough memory for those DataFrames! How can Dask be coordinating DataFrames if there isn't enough memory? This brings us to the second major difference: Dask DataFrames (and arrays) are lazy. Operations on them don't execute and produce the final result immediately. Rather, calling methods on them builds up a task graph.&lt;/p&gt;
 &lt;p&gt;We can visualize task graphs using &lt;code&gt;graphviz&lt;/code&gt;. For the blog, I've trimmed down the example to be a subset of the entire graph.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;visualize&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;rankdir&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;LR&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -185,7 +185,7 @@ Name: occupation, Length: 100, dtype: int64
 &lt;div class="output"&gt;&lt;img src="images/scalable-read-simple.svg"&gt;&lt;/div&gt;
 
 &lt;p&gt;&lt;code&gt;df&lt;/code&gt; (the dask DataFrame consisting of many pandas DataFrames) has a task graph with 5 calls to a parquet reader (one for each file), each of which produces a DataFrame when called.&lt;/p&gt;
-&lt;p&gt;Calling additional methods on &lt;code&gt;df&lt;/code&gt; add additional tasks to this graph. For example, our &lt;code&gt;most_common&lt;/code&gt; has three additional calls&lt;/p&gt;
+&lt;p&gt;Calling additional methods on &lt;code&gt;df&lt;/code&gt; adds additional tasks to this graph. For example, our &lt;code&gt;most_common&lt;/code&gt; Series has three additional calls&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Select the &lt;code&gt;occupation&lt;/code&gt; column (&lt;code&gt;__getitem__&lt;/code&gt;)&lt;/li&gt;
 &lt;li&gt;Perform the value counts&lt;/li&gt;
