@@ -55,16 +55,16 @@
 
 <article>
   <div class="article__title">
-    <h1><a href="/drafts/modern-8-scaling.html">Modern Pandas (Part 8): Scaling</a></h1>
+    <h1><a href="/modern-8-scaling.html">Modern Pandas (Part 8): Scaling</a></h1>
   </div>
   <div class="article__meta">
     <p class="article__meta__post-date">Posted on: Mon 23 April 2018</p>
     </p>
   </div>
   <div class="article__text">
-    <p>As I sit down to write this, the third-most popular pandas question on StackOverflow covers <a href="https://stackoverflow.com/q/14262433/1889400">how to use pandas for large datasets</a>. This is in tension with the fact that a pandas DataFrame is an in memory container. <em>You can't have a <code>DataFrame</code> larger than your machine's RAM</em>. In practice, your available RAM should be several times the size of your dataset, as your or pandas will have to make intermediate copies as part of the analysis.</p>
+    <p>As I sit down to write this, the third-most popular pandas question on StackOverflow covers <a href="https://stackoverflow.com/q/14262433/1889400">how to use pandas for large datasets</a>. This is in tension with the fact that a pandas DataFrame is an in memory container. <em>You can't have a <code>DataFrame</code> larger than your machine's RAM</em>. In practice, your available RAM should be several times the size of your dataset, as you or pandas will have to make intermediate copies as part of the analysis.</p>
 <p>Historically, pandas users have scaled to larger datasets by switching away from pandas or using iteration. Both of these are perfectly valid approaches, but changing your workflow in response to scaling data is unfortunate. I use pandas because it's a pleasant experience, and I would like that experience to scale to larger datasets. That's what <a href="dask.pydata.org/">Dask</a>, a parallel computing library, enables. We'll discuss Dask in detail later. But first, let's work through scaling a simple analysis to a larger than memory dataset.</p>
-<p>Our task is to find the 100 most-common occupations reported in the FEC's <a href="https://classic.fec.gov/finance/disclosure/ftpdet.shtml">individual contributions dataest</a>. The files are split by election cycle (2007-2008, 2009-2010, ...). My laptop can read in each cycle's file individually, but the full dataset is too large to read in at once. Let's read in just 2010's file, and do the "small data" version.</p>
+<p>Our task is to find the 100 most-common occupations reported in the FEC's <a href="https://classic.fec.gov/finance/disclosure/ftpdet.shtml">individual contributions dataest</a>. The files are split by election cycle (2007-2008, 2009-2010, ...). You can find some scripts for downloading the data in <a href="https://github.com/tomaugspurger/scalable-ml-fec">this repository</a>. My laptop can read in each cycle's file individually, but the full dataset is too large to read in at once. Let's read in just 2010's file, and do the "small data" version.</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
@@ -321,7 +321,7 @@ Name: occupation, Length: 100, dtype: int64
 </pre></div>
 
 
-<p>Calling <code>Client</code> without providing a scheduler address will make a local cluster of threads or processes on your machine. There are <a href="http://dask.pydata.org/en/latest/setup.html">many ways</a> to deploy a Dask cluster, though we're particularly fond of <a href="http://dask.pydata.org/en/latest/setup/kubernetes.html">Kubernetes</a>. This highlights one of my favorite features of Dask: it scales down to use a handful of threads on a laptop <em>or</em> up to a cluster with thousands of nodes. Dask can comfortably handle medium-sized datasets (dozens of GBs, so larger than RAM) on a laptop. Or it can scale up to very large datasets with a cluster.</p>
+<p>Calling <code>Client</code> without providing a scheduler address will make a local "cluster" of threads or processes on your machine. There are <a href="http://dask.pydata.org/en/latest/setup.html">many ways</a> to deploy a Dask cluster onto an actual cluster of machines, though we're particularly fond of <a href="http://dask.pydata.org/en/latest/setup/kubernetes.html">Kubernetes</a>. This highlights one of my favorite features of Dask: it scales down to use a handful of threads on a laptop <em>or</em> up to a cluster with thousands of nodes. Dask can comfortably handle medium-sized datasets (dozens of GBs, so larger than RAM) on a laptop. Or it can scale up to very large datasets with a cluster.</p>
 <div class="highlight"><pre><span></span><span class="n">individual_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;cmte_id&#39;</span><span class="p">,</span> <span class="s1">&#39;entity_tp&#39;</span><span class="p">,</span> <span class="s1">&#39;employer&#39;</span><span class="p">,</span> <span class="s1">&#39;occupation&#39;</span><span class="p">,</span>
                    <span class="s1">&#39;transaction_dt&#39;</span><span class="p">,</span> <span class="s1">&#39;transaction_amt&#39;</span><span class="p">]</span>
 
@@ -999,7 +999,7 @@ Some committees are directly tied to a candidate (this are campaign committees).
   <div id="article__comments">
     <div id="disqus_thread"></div>
     <script type="text/javascript">
-        var disqus_identifier = "drafts/modern-8-scaling.html";
+        var disqus_identifier = "modern-8-scaling.html";
         (function() {
              var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
              dsq.src = '//tomaugspurger.disqus.com/embed.js';
