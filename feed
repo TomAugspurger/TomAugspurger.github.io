@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Mon, 23 Apr 2018 00:00:00 -0500</lastBuildDate><item><title>Modern Pandas (Part 8): Scaling</title><link>/modern-8-scaling.html</link><description>&lt;p&gt;As I sit down to write this, the third-most popular pandas question on StackOverflow covers &lt;a href="https://stackoverflow.com/q/14262433/1889400"&gt;how to use pandas for large datasets&lt;/a&gt;. This is in tension with the fact that a pandas DataFrame is an in memory container. &lt;em&gt;You can't have a &lt;code&gt;DataFrame&lt;/code&gt; larger than your machine's RAM&lt;/em&gt;. In practice …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 23 Apr 2018 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2018-04-23:/modern-8-scaling.html</guid></item><item><title>dask-ml 0.4.1 Released</title><link>/dask-ml-041.html</link><description>&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="http://anaconda.com/"&gt;Anaconda Inc&lt;/a&gt; and the Data
+<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Mon, 23 Apr 2018 00:00:00 -0500</lastBuildDate><item><title>Modern Pandas (Part 8): Scaling</title><link>/modern-8-scaling.html</link><description>&lt;hr&gt;
+&lt;p&gt;This is part 1 in my series on writing modern idiomatic pandas.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="method-chaining"&gt;Method Chaining&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-3-indexes"&gt;Indexes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-4-performance"&gt;Fast Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;As I sit down to write this, the third-most popular pandas question on StackOverflow covers &lt;a href="https://stackoverflow.com/q/14262433/1889400"&gt;how to use pandas for large datasets&lt;/a&gt;. This is in …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 23 Apr 2018 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2018-04-23:/modern-8-scaling.html</guid></item><item><title>dask-ml 0.4.1 Released</title><link>/dask-ml-041.html</link><description>&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="http://anaconda.com/"&gt;Anaconda Inc&lt;/a&gt; and the Data
 Driven Discovery Initiative from the &lt;a href="https://www.moore.org/"&gt;Moore
 Foundation&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href="http://dask-ml.readthedocs.io/en/latest/"&gt;dask-ml&lt;/a&gt; 0.4.1 was released today with a few enhancements. See the
@@ -54,11 +67,12 @@ issues it tries to solve.&lt;/p&gt;
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Timeseries&lt;/h1&gt;
 &lt;p&gt;Pandas started out in the financial world, so naturally it has strong timeseries support.&lt;/p&gt;
-&lt;p&gt;The first half of this post will look at pandas' capabilities …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Fri, 13 May 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-05-13:/modern-7-timeseries.html</guid></item><item><title>Modern Pandas (Part 6): Visualization</title><link>/modern-6-visualization.html</link><description>&lt;hr&gt;
+&lt;p&gt;The first half of this post will look at pandas' …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Fri, 13 May 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-05-13:/modern-7-timeseries.html</guid></item><item><title>Modern Pandas (Part 6): Visualization</title><link>/modern-6-visualization.html</link><description>&lt;hr&gt;
 &lt;p&gt;This is part 6 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -68,11 +82,12 @@ issues it tries to solve.&lt;/p&gt;
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Visualization and Exploratory Analysis&lt;/h1&gt;
 &lt;p&gt;A few weeks ago, the R community went through some hand-wringing about plotting packages.
-For outsiders (like me) the details aren't that …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Thu, 28 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-28:/modern-6-visualization.html</guid></item><item><title>Modern Pandas (Part 5): Tidy Data</title><link>/modern-5-tidy.html</link><description>&lt;hr&gt;
+For outsiders (like me) the details aren't …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Thu, 28 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-28:/modern-6-visualization.html</guid></item><item><title>Modern Pandas (Part 5): Tidy Data</title><link>/modern-5-tidy.html</link><description>&lt;hr&gt;
 &lt;p&gt;This is part 5 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -82,6 +97,7 @@ For outsiders (like me) the details aren't that …&lt;/p&gt;</description><dc:c
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Reshaping &amp;amp; Tidy Data&lt;/h1&gt;
@@ -90,7 +106,7 @@ For outsiders (like me) the details aren't that …&lt;/p&gt;</description><dc:c
 &lt;/blockquote&gt;
 &lt;p&gt;So, you've sat down to analyze a new dataset.
 What do you do first?&lt;/p&gt;
-&lt;p&gt;In episode …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Fri, 22 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-22:/modern-5-tidy.html</guid></item><item><title>Modern Panadas (Part 3): Indexes</title><link>/modern-3-indexes.html</link><description>&lt;hr&gt;
+&lt;p&gt;In …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Fri, 22 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-22:/modern-5-tidy.html</guid></item><item><title>Modern Panadas (Part 3): Indexes</title><link>/modern-3-indexes.html</link><description>&lt;hr&gt;
 &lt;p&gt;This is part 3 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -100,11 +116,12 @@ What do you do first?&lt;/p&gt;
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;p&gt;&lt;code&gt;Indexes&lt;/code&gt; can be a difficult concept to grasp at first.
 I suspect this is partly becuase they're somewhat peculiar to pandas.
-These aren't like the indexes …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 11 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-11:/modern-3-indexes.html</guid></item><item><title>Modern Pandas (Part 4): Performance</title><link>/modern-4-performance.html</link><description>&lt;hr&gt;
+These aren't like the …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 11 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-11:/modern-3-indexes.html</guid></item><item><title>Modern Pandas (Part 4): Performance</title><link>/modern-4-performance.html</link><description>&lt;hr&gt;
 &lt;p&gt;This is part 4 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -114,9 +131,10 @@ These aren't like the indexes …&lt;/p&gt;</description><dc:creator xmlns:dc="h
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/wesmckinn"&gt;Wes McKinney&lt;/a&gt;, the creator of pandas, is kind of obsessed with performance. From micro-optimizations for element access, to &lt;a href="https://github.com/pydata/pandas/tree/master/pandas/src/klib"&gt;embedding&lt;/a&gt; a fast hash table inside pandas, we …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Fri, 08 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-08:/modern-4-performance.html</guid></item><item><title>Modern Pandas (Part 2): Method Chaining</title><link>/method-chaining.html</link><description>&lt;hr&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/wesmckinn"&gt;Wes McKinney&lt;/a&gt;, the creator of pandas, is kind of obsessed with performance. From micro-optimizations for element access, to &lt;a href="https://github.com/pydata/pandas/tree/master/pandas/src/klib"&gt;embedding&lt;/a&gt; a fast hash table inside pandas …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Fri, 08 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-08:/modern-4-performance.html</guid></item><item><title>Modern Pandas (Part 2): Method Chaining</title><link>/method-chaining.html</link><description>&lt;hr&gt;
 &lt;p&gt;This is part 2 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -126,11 +144,12 @@ These aren't like the indexes …&lt;/p&gt;</description><dc:creator xmlns:dc="h
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Method Chaining&lt;/h1&gt;
 &lt;p&gt;Method chaining, where you call methods on an object one after another, is in vogue at the moment.
-It's always been a style of …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 04 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-04:/method-chaining.html</guid></item><item><title>Modern Pandas (Part 1)</title><link>/modern-1-intro.html</link><description>&lt;hr&gt;
+It's always been a style …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 04 Apr 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-04-04:/method-chaining.html</guid></item><item><title>Modern Pandas (Part 1)</title><link>/modern-1-intro.html</link><description>&lt;hr&gt;
 &lt;p&gt;This is part 1 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -140,12 +159,13 @@ It's always been a style of …&lt;/p&gt;</description><dc:creator xmlns:dc="htt
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Effective Pandas&lt;/h1&gt;
 &lt;h2&gt;Introduction&lt;/h2&gt;
 &lt;p&gt;This series is about how to make effective use of &lt;a href="http://pandas.pydata.org"&gt;pandas&lt;/a&gt;, a data analysis library for the Python programming language.
-It's targeted at …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 21 Mar 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-03-21:/modern-1-intro.html</guid></item><item><title>dplyr and pandas</title><link>/dplry-pandas.html</link><description>&lt;p&gt;This notebook compares &lt;a href="http://pandas.pydata.org"&gt;pandas&lt;/a&gt;
+It's targeted …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 21 Mar 2016 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2016-03-21:/modern-1-intro.html</guid></item><item><title>dplyr and pandas</title><link>/dplry-pandas.html</link><description>&lt;p&gt;This notebook compares &lt;a href="http://pandas.pydata.org"&gt;pandas&lt;/a&gt;
 and &lt;a href="http://cran.r-project.org/web/packages/dplyr/index.html"&gt;dplyr&lt;/a&gt;.
 The comparison is just on syntax (verbage), not performance. Whether you're an R user looking to switch to pandas (or the other way around), I hope this guide will help ease the transition.&lt;/p&gt;
 &lt;p&gt;We'll work through the &lt;a href="http://cran.r-project.org/web/packages/dplyr/vignettes/introduction.html"&gt;introductory dplyr vignette&lt;/a&gt; to analyze some flight …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Thu, 16 Oct 2014 07:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2014-10-16:/dplry-pandas.html</guid><category>python, data science</category></item><item><title>Practical Pandas Part 3 - Exploratory Data Analysis</title><link>/practical-pandas-part-3-exploratory-data-analysis.html</link><description>&lt;p&gt;Welcome back. As a reminder:&lt;/p&gt;

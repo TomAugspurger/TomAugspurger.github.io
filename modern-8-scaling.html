@@ -62,7 +62,20 @@
     </p>
   </div>
   <div class="article__text">
-    <p>As I sit down to write this, the third-most popular pandas question on StackOverflow covers <a href="https://stackoverflow.com/q/14262433/1889400">how to use pandas for large datasets</a>. This is in tension with the fact that a pandas DataFrame is an in memory container. <em>You can't have a <code>DataFrame</code> larger than your machine's RAM</em>. In practice, your available RAM should be several times the size of your dataset, as you or pandas will have to make intermediate copies as part of the analysis.</p>
+    <hr>
+<p>This is part 1 in my series on writing modern idiomatic pandas.</p>
+<ul>
+<li><a href="modern-1-intro">Modern Pandas</a></li>
+<li><a href="method-chaining">Method Chaining</a></li>
+<li><a href="modern-3-indexes">Indexes</a></li>
+<li><a href="modern-4-performance">Fast Pandas</a></li>
+<li><a href="modern-5-tidy">Tidy Data</a></li>
+<li><a href="modern-6-visualization">Visualization</a></li>
+<li><a href="modern-7-timeseries">Time Series</a></li>
+<li><a href="modern-8-scaling">Scaling</a></li>
+</ul>
+<hr>
+<p>As I sit down to write this, the third-most popular pandas question on StackOverflow covers <a href="https://stackoverflow.com/q/14262433/1889400">how to use pandas for large datasets</a>. This is in tension with the fact that a pandas DataFrame is an in memory container. <em>You can't have a <code>DataFrame</code> larger than your machine's RAM</em>. In practice, your available RAM should be several times the size of your dataset, as you or pandas will have to make intermediate copies as part of the analysis.</p>
 <p>Historically, pandas users have scaled to larger datasets by switching away from pandas or using iteration. Both of these are perfectly valid approaches, but changing your workflow in response to scaling data is unfortunate. I use pandas because it's a pleasant experience, and I would like that experience to scale to larger datasets. That's what <a href="dask.pydata.org/">Dask</a>, a parallel computing library, enables. We'll discuss Dask in detail later. But first, let's work through scaling a simple analysis to a larger than memory dataset.</p>
 <p>Our task is to find the 100 most-common occupations reported in the FEC's <a href="https://classic.fec.gov/finance/disclosure/ftpdet.shtml">individual contributions dataest</a>. The files are split by election cycle (2007-2008, 2009-2010, ...). You can find some scripts for downloading the data in <a href="https://github.com/tomaugspurger/scalable-ml-fec">this repository</a>. My laptop can read in each cycle's file individually, but the full dataset is too large to read in at once. Let's read in just 2010's file, and do the "small data" version.</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>

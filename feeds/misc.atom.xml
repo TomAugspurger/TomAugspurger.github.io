@@ -1,5 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame - misc</title><link href="/" rel="alternate"></link><link href="/feeds/misc.atom.xml" rel="self"></link><id>/</id><updated>2018-04-23T00:00:00-05:00</updated><entry><title>Modern Pandas (Part 8): Scaling</title><link href="/modern-8-scaling.html" rel="alternate"></link><published>2018-04-23T00:00:00-05:00</published><updated>2018-04-23T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2018-04-23:/modern-8-scaling.html</id><summary type="html">&lt;p&gt;As I sit down to write this, the third-most popular pandas question on StackOverflow covers &lt;a href="https://stackoverflow.com/q/14262433/1889400"&gt;how to use pandas for large datasets&lt;/a&gt;. This is in tension with the fact that a pandas DataFrame is an in memory container. &lt;em&gt;You can't have a &lt;code&gt;DataFrame&lt;/code&gt; larger than your machine's RAM&lt;/em&gt;. In practice …&lt;/p&gt;</summary><content type="html">&lt;p&gt;As I sit down to write this, the third-most popular pandas question on StackOverflow covers &lt;a href="https://stackoverflow.com/q/14262433/1889400"&gt;how to use pandas for large datasets&lt;/a&gt;. This is in tension with the fact that a pandas DataFrame is an in memory container. &lt;em&gt;You can't have a &lt;code&gt;DataFrame&lt;/code&gt; larger than your machine's RAM&lt;/em&gt;. In practice, your available RAM should be several times the size of your dataset, as you or pandas will have to make intermediate copies as part of the analysis.&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame - misc</title><link href="/" rel="alternate"></link><link href="/feeds/misc.atom.xml" rel="self"></link><id>/</id><updated>2018-04-23T00:00:00-05:00</updated><entry><title>Modern Pandas (Part 8): Scaling</title><link href="/modern-8-scaling.html" rel="alternate"></link><published>2018-04-23T00:00:00-05:00</published><updated>2018-04-23T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2018-04-23:/modern-8-scaling.html</id><summary type="html">&lt;hr&gt;
+&lt;p&gt;This is part 1 in my series on writing modern idiomatic pandas.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="method-chaining"&gt;Method Chaining&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-3-indexes"&gt;Indexes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-4-performance"&gt;Fast Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;As I sit down to write this, the third-most popular pandas question on StackOverflow covers &lt;a href="https://stackoverflow.com/q/14262433/1889400"&gt;how to use pandas for large datasets&lt;/a&gt;. This is in …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
+&lt;p&gt;This is part 1 in my series on writing modern idiomatic pandas.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="method-chaining"&gt;Method Chaining&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-3-indexes"&gt;Indexes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-4-performance"&gt;Fast Pandas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;As I sit down to write this, the third-most popular pandas question on StackOverflow covers &lt;a href="https://stackoverflow.com/q/14262433/1889400"&gt;how to use pandas for large datasets&lt;/a&gt;. This is in tension with the fact that a pandas DataFrame is an in memory container. &lt;em&gt;You can't have a &lt;code&gt;DataFrame&lt;/code&gt; larger than your machine's RAM&lt;/em&gt;. In practice, your available RAM should be several times the size of your dataset, as you or pandas will have to make intermediate copies as part of the analysis.&lt;/p&gt;
 &lt;p&gt;Historically, pandas users have scaled to larger datasets by switching away from pandas or using iteration. Both of these are perfectly valid approaches, but changing your workflow in response to scaling data is unfortunate. I use pandas because it's a pleasant experience, and I would like that experience to scale to larger datasets. That's what &lt;a href="dask.pydata.org/"&gt;Dask&lt;/a&gt;, a parallel computing library, enables. We'll discuss Dask in detail later. But first, let's work through scaling a simple analysis to a larger than memory dataset.&lt;/p&gt;
 &lt;p&gt;Our task is to find the 100 most-common occupations reported in the FEC's &lt;a href="https://classic.fec.gov/finance/disclosure/ftpdet.shtml"&gt;individual contributions dataest&lt;/a&gt;. The files are split by election cycle (2007-2008, 2009-2010, ...). You can find some scripts for downloading the data in &lt;a href="https://github.com/tomaugspurger/scalable-ml-fec"&gt;this repository&lt;/a&gt;. My laptop can read in each cycle's file individually, but the full dataset is too large to read in at once. Let's read in just 2010's file, and do the "small data" version.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;pathlib&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Path&lt;/span&gt;
@@ -2289,11 +2315,12 @@ it a shot and let me know what you think.&lt;/p&gt;
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Timeseries&lt;/h1&gt;
 &lt;p&gt;Pandas started out in the financial world, so naturally it has strong timeseries support.&lt;/p&gt;
-&lt;p&gt;The first half of this post will look at pandas' capabilities …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
+&lt;p&gt;The first half of this post will look at pandas' …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
 &lt;p&gt;This is part 7 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -2303,6 +2330,7 @@ it a shot and let me know what you think.&lt;/p&gt;
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Timeseries&lt;/h1&gt;
@@ -3875,11 +3903,12 @@ We also didn't get to talk at all about Skipper Seabold's work on VARs, but mayb
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Visualization and Exploratory Analysis&lt;/h1&gt;
 &lt;p&gt;A few weeks ago, the R community went through some hand-wringing about plotting packages.
-For outsiders (like me) the details aren't that …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
+For outsiders (like me) the details aren't …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
 &lt;p&gt;This is part 6 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -3889,6 +3918,7 @@ For outsiders (like me) the details aren't that …&lt;/p&gt;</summary><content 
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Visualization and Exploratory Analysis&lt;/h1&gt;
@@ -4459,6 +4489,7 @@ You can still use pandas to get it to the point where it's ready to be visualize
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Reshaping &amp;amp; Tidy Data&lt;/h1&gt;
@@ -4467,7 +4498,7 @@ You can still use pandas to get it to the point where it's ready to be visualize
 &lt;/blockquote&gt;
 &lt;p&gt;So, you've sat down to analyze a new dataset.
 What do you do first?&lt;/p&gt;
-&lt;p&gt;In episode …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
+&lt;p&gt;In …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
 &lt;p&gt;This is part 5 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -4477,6 +4508,7 @@ What do you do first?&lt;/p&gt;
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Reshaping &amp;amp; Tidy Data&lt;/h1&gt;
@@ -5774,11 +5806,12 @@ Next time we'll look at data visualization.&lt;/p&gt;</content></entry><entry><t
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;p&gt;&lt;code&gt;Indexes&lt;/code&gt; can be a difficult concept to grasp at first.
 I suspect this is partly becuase they're somewhat peculiar to pandas.
-These aren't like the indexes …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
+These aren't like the …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
 &lt;p&gt;This is part 3 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -5788,6 +5821,7 @@ These aren't like the indexes …&lt;/p&gt;</summary><content type="html">&lt;hr
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;p&gt;&lt;code&gt;Indexes&lt;/code&gt; can be a difficult concept to grasp at first.
@@ -8746,9 +8780,10 @@ Name: dep_time, dtype: datetime64[ns]
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/wesmckinn"&gt;Wes McKinney&lt;/a&gt;, the creator of pandas, is kind of obsessed with performance. From micro-optimizations for element access, to &lt;a href="https://github.com/pydata/pandas/tree/master/pandas/src/klib"&gt;embedding&lt;/a&gt; a fast hash table inside pandas, we …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/wesmckinn"&gt;Wes McKinney&lt;/a&gt;, the creator of pandas, is kind of obsessed with performance. From micro-optimizations for element access, to &lt;a href="https://github.com/pydata/pandas/tree/master/pandas/src/klib"&gt;embedding&lt;/a&gt; a fast hash table inside pandas …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
 &lt;p&gt;This is part 4 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -8758,6 +8793,7 @@ Name: dep_time, dtype: datetime64[ns]
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/wesmckinn"&gt;Wes McKinney&lt;/a&gt;, the creator of pandas, is kind of obsessed with performance. From micro-optimizations for element access, to &lt;a href="https://github.com/pydata/pandas/tree/master/pandas/src/klib"&gt;embedding&lt;/a&gt; a fast hash table inside pandas, we all benefit from his and others' hard work.
@@ -9777,11 +9813,12 @@ If you want to learn more about what pandas does to make things fast, checkout J
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Method Chaining&lt;/h1&gt;
 &lt;p&gt;Method chaining, where you call methods on an object one after another, is in vogue at the moment.
-It's always been a style of …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
+It's always been a style …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
 &lt;p&gt;This is part 2 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -9791,6 +9828,7 @@ It's always been a style of …&lt;/p&gt;</summary><content type="html">&lt;hr&g
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Method Chaining&lt;/h1&gt;
@@ -10132,12 +10170,13 @@ Next time we'll talk about a much more practical topic: performance.&lt;/p&gt;</
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Effective Pandas&lt;/h1&gt;
 &lt;h2&gt;Introduction&lt;/h2&gt;
 &lt;p&gt;This series is about how to make effective use of &lt;a href="http://pandas.pydata.org"&gt;pandas&lt;/a&gt;, a data analysis library for the Python programming language.
-It's targeted at …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
+It's targeted …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
 &lt;p&gt;This is part 1 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
@@ -10147,6 +10186,7 @@ It's targeted at …&lt;/p&gt;</summary><content type="html">&lt;hr&gt;
 &lt;li&gt;&lt;a href="modern-5-tidy"&gt;Tidy Data&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-6-visualization"&gt;Visualization&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="modern-7-timeseries"&gt;Time Series&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="modern-8-scaling"&gt;Scaling&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1&gt;Effective Pandas&lt;/h1&gt;
