@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Mon, 23 Apr 2018 00:00:00 -0500</lastBuildDate><item><title>Modern Pandas (Part 8): Scaling</title><link>/modern-8-scaling.html</link><description>&lt;hr&gt;
+<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Tue, 14 Aug 2018 00:00:00 -0500</lastBuildDate><item><title>Moral Philosophy for pandas or: What is .values?</title><link>/pandas-moral-philosophy.html</link><description>&lt;p&gt;The other day, I put up a &lt;a href="https://twitter.com/TomAugspurger/status/1026578613389455360"&gt;Twitter poll&lt;/a&gt; asking a simple question: What's the type of &lt;code&gt;series.values&lt;/code&gt;?&lt;/p&gt;
+&lt;blockquote class="twitter-tweet" data-lang="en"&gt;&lt;p lang="en" dir="ltr"&gt;Pop Quiz! What are the possible results for the following:&lt;br&gt;&lt;br&gt;&amp;gt;&amp;gt;&amp;gt; type(pandas.Series.values)&lt;/p&gt;&amp;mdash; Tom Augspurger (@TomAugspurger) &lt;a href="https://twitter.com/TomAugspurger/status/1026578613389455360?ref_src=twsrc%5Etfw"&gt;August 6, 2018&lt;/a&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt; &lt;/p&gt;
+&lt;p&gt;I was a bit limited for space, so I'll expand on …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Tue, 14 Aug 2018 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2018-08-14:/pandas-moral-philosophy.html</guid></item><item><title>Modern Pandas (Part 8): Scaling</title><link>/modern-8-scaling.html</link><description>&lt;hr&gt;
 &lt;p&gt;This is part 1 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;

@@ -1,5 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2018-04-23T00:00:00-05:00</updated><entry><title>Modern Pandas (Part 8): Scaling</title><link href="/modern-8-scaling.html" rel="alternate"></link><published>2018-04-23T00:00:00-05:00</published><updated>2018-04-23T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2018-04-23:/modern-8-scaling.html</id><summary type="html">&lt;hr&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2018-08-14T00:00:00-05:00</updated><entry><title>Moral Philosophy for pandas or: What is .values?</title><link href="/pandas-moral-philosophy.html" rel="alternate"></link><published>2018-08-14T00:00:00-05:00</published><updated>2018-08-14T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2018-08-14:/pandas-moral-philosophy.html</id><summary type="html">&lt;p&gt;The other day, I put up a &lt;a href="https://twitter.com/TomAugspurger/status/1026578613389455360"&gt;Twitter poll&lt;/a&gt; asking a simple question: What's the type of &lt;code&gt;series.values&lt;/code&gt;?&lt;/p&gt;
+&lt;blockquote class="twitter-tweet" data-lang="en"&gt;&lt;p lang="en" dir="ltr"&gt;Pop Quiz! What are the possible results for the following:&lt;br&gt;&lt;br&gt;&amp;gt;&amp;gt;&amp;gt; type(pandas.Series.values)&lt;/p&gt;&amp;mdash; Tom Augspurger (@TomAugspurger) &lt;a href="https://twitter.com/TomAugspurger/status/1026578613389455360?ref_src=twsrc%5Etfw"&gt;August 6, 2018&lt;/a&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt; &lt;/p&gt;
+&lt;p&gt;I was a bit limited for space, so I'll expand on …&lt;/p&gt;</summary><content type="html">&lt;p&gt;The other day, I put up a &lt;a href="https://twitter.com/TomAugspurger/status/1026578613389455360"&gt;Twitter poll&lt;/a&gt; asking a simple question: What's the type of &lt;code&gt;series.values&lt;/code&gt;?&lt;/p&gt;
+&lt;blockquote class="twitter-tweet" data-lang="en"&gt;&lt;p lang="en" dir="ltr"&gt;Pop Quiz! What are the possible results for the following:&lt;br&gt;&lt;br&gt;&amp;gt;&amp;gt;&amp;gt; type(pandas.Series.values)&lt;/p&gt;&amp;mdash; Tom Augspurger (@TomAugspurger) &lt;a href="https://twitter.com/TomAugspurger/status/1026578613389455360?ref_src=twsrc%5Etfw"&gt;August 6, 2018&lt;/a&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt; &lt;/p&gt;
+&lt;p&gt;I was a bit limited for space, so I'll expand on the options here. Choose as many as you want.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;NumPy ndarray&lt;/li&gt;
+&lt;li&gt;pandas Categorical (or all of the above)&lt;/li&gt;
+&lt;li&gt;An Index or any of it's subclasses (DatetimeIndex, CategoricalIndex, RangeIndex, etc.) (or all of the above)&lt;/li&gt;
+&lt;li&gt;None or all of the above&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;I was prompted to write this post because &lt;em&gt;a.)&lt;/em&gt; this is an (unfortunately) confusing topic and &lt;em&gt;b.)&lt;/em&gt; it's undergoing a lot of change right now (and, &lt;em&gt;c.)&lt;/em&gt; I had this awesome title in my head).&lt;/p&gt;
+&lt;h2&gt;The Answer&lt;/h2&gt;
+&lt;p&gt;Unfortunately I kind of messed up the poll. Things are even more complex than I initially thought.&lt;/p&gt;
+&lt;p&gt;As best I can tell, the possible types for &lt;code&gt;series.values&lt;/code&gt; are&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;NumPy ndarray&lt;/li&gt;
+&lt;li&gt;pandas Categorical&lt;/li&gt;
+&lt;li&gt;pandas SparseArray (I forgot about this one in the poll)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;So going with the cop-out "best-available" answer, I would have said that &lt;em&gt;2&lt;/em&gt; was the best answer in the poll.
+SparseArray is &lt;em&gt;technically&lt;/em&gt; and ndarray subclass (for now), so &lt;em&gt;technically&lt;/em&gt; 2 is correct, but that's a few too many &lt;em&gt;technically&lt;/em&gt;s for me.&lt;/p&gt;
+&lt;h2&gt;The Explanation&lt;/h2&gt;
+&lt;p&gt;So, that's a bit of a mess. How'd we get here? Or, stepping back a bit, what even is an array? What's a dataframe?&lt;/p&gt;
+&lt;p&gt;NumPy arrays are N-dimensional and &lt;em&gt;homogenous&lt;/em&gt;. Every element in the array has to have the same data type.&lt;/p&gt;
+&lt;p&gt;Pandas dataframes are 2-dimensional and &lt;em&gt;heterogenous&lt;/em&gt;. Different columns can have different data types. But every element in a single column (Series) has the same data type.
+I like to think of DataFrames as containers for Series.
+Stepping down a dimension, I think of Series as containers for 1-D arrays.
+In an ideal world, we could say Series are containers for NumPy ararys, but that's not &lt;em&gt;quite&lt;/em&gt; the case.&lt;/p&gt;
+&lt;p&gt;While there's a lot of overlap between the pandas and NumPy communites, there are still differences.
+Pandas users place different value on different features, so pandas has restricted and &lt;em&gt;extended&lt;/em&gt; NumPy's type system in a few directions.
+For example, early Pandas users (many of them in the financial sector) needed datetimes with timezones, but didn't really care about lower-precision timestamps like &lt;code&gt;datetime64[D]&lt;/code&gt;.
+So pandas limited its scope to just nanosecond-precision datetimes (&lt;code&gt;datetime64[ns]&lt;/code&gt;) and extended it with some metedata for the timezone.
+Likewise for Categorical, period, sparse, interval, etc.&lt;/p&gt;
+&lt;p&gt;So back to &lt;code&gt;Series.values&lt;/code&gt;; pandas had a choice: should &lt;code&gt;Series.values&lt;/code&gt; always be a NumPy array, even if it means losing information like the timezone or categories, and even if it's slow or could exhaust your memory (large categorical or sparse arrays)?
+Or should it faithfully represent the data, even if that means not returning an ndarray?&lt;/p&gt;
+&lt;p&gt;I don't think there's a clear answer to this question. Both options have their downsides.
+In the end, we ended up with a messy compromise, where some things return ndarrays, some things return something else (Categorical), and some things do a bit of conversion before returning an &lt;code&gt;ndarary&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;For example, off the top of your head, do you know what the type of &lt;code&gt;Series.values&lt;/code&gt; is for timezone-aware data?&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Series&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;date_range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;2017&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;periods&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;tz&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;US/Eastern&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="n"&gt;Out&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt;
+&lt;span class="mi"&gt;0&lt;/span&gt;   &lt;span class="mi"&gt;2017&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;01&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;01&lt;/span&gt; &lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;05&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;
+&lt;span class="mi"&gt;1&lt;/span&gt;   &lt;span class="mi"&gt;2017&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;01&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;02&lt;/span&gt; &lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;05&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;
+&lt;span class="mi"&gt;2&lt;/span&gt;   &lt;span class="mi"&gt;2017&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;01&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;03&lt;/span&gt; &lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;05&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;
+&lt;span class="mi"&gt;3&lt;/span&gt;   &lt;span class="mi"&gt;2017&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;01&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;04&lt;/span&gt; &lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;05&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;
+&lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;datetime64&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;ns&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;US&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;Eastern&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Series&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;date_range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;2017&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;periods&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;tz&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;US/Eastern&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;values&lt;/span&gt;
+&lt;span class="n"&gt;Out&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt;
+&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;2017-01-01T05:00:00.000000000&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;2017-01-02T05:00:00.000000000&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+       &lt;span class="s1"&gt;&amp;#39;2017-01-03T05:00:00.000000000&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;2017-01-04T05:00:00.000000000&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+      &lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;datetime64[ns]&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;With the wisdom of Solomon, we decided to have it both ways; the values are converted to UTC and the timezone is dropped.
+I don't think anyone would claim this is ideal, but it was backwards compatibile-ish.
+Given the constraints, it wasn't the worst choice in the world.&lt;/p&gt;
+&lt;h2&gt;The Near Future&lt;/h2&gt;
+&lt;p&gt;In pandas 0.24, we'll (hopefully) have a good answer for what &lt;code&gt;series.values&lt;/code&gt; is: a NumPy array or an &lt;a href="http://pandas-docs.github.io/pandas-docs-travis/extending.html#extension-types"&gt;ExtensionArray&lt;/a&gt;.
+For regular data types represented by NumPy, you'll get an ndarray.
+For extension types (implemented in pandas or elsewhere) you'll get an ExtensionArray.
+If you're using &lt;code&gt;Series.values&lt;/code&gt;, you can rely on the set of methods common to each.&lt;/p&gt;
+&lt;p&gt;But that raises the question: &lt;em&gt;why&lt;/em&gt; are you using &lt;code&gt;.values&lt;/code&gt; in the first place?
+There are some legitmate use cases (disabling automatic alignment, for example),
+but for many things, passing a &lt;code&gt;Series&lt;/code&gt; will hopefully work as well as a NumPy array.
+To users of pandas, I recommend avoiding &lt;code&gt;.values&lt;/code&gt; as much as possible.
+If you know that you need an ndarray, you're probably best of using &lt;code&gt;np.asarray(series)&lt;/code&gt;.
+That will do the right thing for any data type.&lt;/p&gt;
+&lt;h2&gt;The Far Future&lt;/h2&gt;
+&lt;p&gt;I'm hopeful that some day all we'll have a common language for these data types.
+There's a lot going on in the numeric Python ecosystem right now. Stay tuned!&lt;/p&gt;</content></entry><entry><title>Modern Pandas (Part 8): Scaling</title><link href="/modern-8-scaling.html" rel="alternate"></link><published>2018-04-23T00:00:00-05:00</published><updated>2018-04-23T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2018-04-23:/modern-8-scaling.html</id><summary type="html">&lt;hr&gt;
 &lt;p&gt;This is part 1 in my series on writing modern idiomatic pandas.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="modern-1-intro"&gt;Modern Pandas&lt;/a&gt;&lt;/li&gt;
