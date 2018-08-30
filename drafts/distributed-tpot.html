@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+  <link rel="stylesheet" type="text/css" href="theme/css/custom.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+<meta name="keywords" content="">
+
+  <title>
+    datas-frame
+&ndash; Distributed Auto-ML with TPOT with Dask  </title>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-48304175-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+      </p>
+    </header>
+
+<article>
+  <div class="article__title">
+    <h1><a href="/drafts/distributed-tpot.html">Distributed Auto-ML with TPOT with Dask</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Thu 30 August 2018</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>This post describes a recent improvement made to <a href="https://epistasislab.github.io/tpot/">TPOT</a>. TPOT is an
+<a href="https://en.wikipedia.org/wiki/Automated_machine_learning">automated machine learning</a> library for Python. It does some feature
+engineering and hyper-parameter optimization for you. TPOT uses <a href="https://en.wikipedia.org/wiki/Genetic_programming">genetic
+algorithms</a> to evaluate which models are performing well and how to choose
+new models to try out in the next generation.</p>
+<h2>Parallelizing TPOT</h2>
+<p>In <a href="https://github.com/EpistasisLab/tpot/pull/730">TPOT-730</a>, we made some modifications to TPOT to support
+distributed training. As a TPOT user, the only changes you need to make to your
+code are</p>
+<ol>
+<li>Connect a client to your Dask Cluster</li>
+<li>Specify the <code>use_dask=True</code> argument to your TPOT estimator</li>
+</ol>
+<p>From there, all the training will use your cluster of machines. This screencast
+shows an example on an 80-core Dask cluster.</p>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/uyx9nBuOYQQ?rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+<h2>Commentary</h2>
+<p>Fitting a TPOT estimator consists of several stages. The bulk of the time is
+spent evaluating individual scikit-learn pipelines. Dask-ML already had code for
+splitting apart a scikit-learn <code>Pipeline.fit</code> call into individual tasks. This
+is used in Dask-ML's hyper-parameter optimization to <a href="https://dask.github.io/dask-ml/hyper-parameter-search.html#avoid-repeated-work">avoid repeating
+work</a>. We were able to drop-in Dask-ML's fit and scoring method
+for the one already used in TPOT. That small change allows fitting the many
+individual models in a generation to be done on a cluster.</p>
+<p>There's still some room for improvement. Internal to TPOT, some time is spent
+determining the next set of models to try out (this is the "mutation and
+crossover phase"). That's not (yet) been parallelized with Dask, so you'll
+notice some periods of inactivity on the cluster.</p>
+<h2>Next Steps</h2>
+<p>This will be available in the next release of TPOT. You can try out a small
+example now on the <a href="https://mybinder.org/v2/gh/dask/dask-examples/master?filepath=machine-learning%2Ftpot.ipynb">dask-examples binder</a>.</p>
+<p>Stepping back a bit, I think this is a good example of how libraries can use
+Dask internally to parallelize workloads for their users. Deep down in TPOT
+there was a single method for fitting many scikit-learn models on some data and
+collecting the results. Dask-ML has code for <em>building a task graph</em> that does
+the same thing. We were able to swap out the eager TPOT code for the lazy dask
+version, and get things distributed on a cluster. Projects like <a href="http://xarray.pydata.org/en/stable/">xarray</a>
+have been able to do a similar thing with <a href="http://xarray.pydata.org/en/stable/dask.html">dask Arrays in place of NumPy
+arrays</a>. If Dask-ML hadn't already had that code,
+<a href="http://dask.pydata.org/en/latest/delayed.html"><code>dask.delayed</code></a> could have been used instead.</p>
+<p>If you have a library that you think could take advantage of Dask, please <a href="https://github.com/dask/dask">reach
+out</a>!</p>
+  </div>
+  <div id="article__comments">
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_identifier = "drafts/distributed-tpot.html";
+        (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = '//tomaugspurger.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+         })();
+    </script>
+  </div>
+
+</article>
+
+
+  </main>
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li><a href="/pages/article-1-cluster.html" title="article-1-cluster"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
+</body>
+</html>
