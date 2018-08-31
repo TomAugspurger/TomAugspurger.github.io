@@ -1,5 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame - misc</title><link href="/" rel="alternate"></link><link href="/feeds/misc.atom.xml" rel="self"></link><id>/</id><updated>2018-08-14T00:00:00-05:00</updated><entry><title>Moral Philosophy for pandas or: What is .values?</title><link href="/pandas-moral-philosophy.html" rel="alternate"></link><published>2018-08-14T00:00:00-05:00</published><updated>2018-08-14T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2018-08-14:/pandas-moral-philosophy.html</id><summary type="html">&lt;p&gt;The other day, I put up a &lt;a href="https://twitter.com/TomAugspurger/status/1026578613389455360"&gt;Twitter poll&lt;/a&gt; asking a simple question: What's the type of &lt;code&gt;series.values&lt;/code&gt;?&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame - misc</title><link href="/" rel="alternate"></link><link href="/feeds/misc.atom.xml" rel="self"></link><id>/</id><updated>2018-08-30T00:00:00-05:00</updated><entry><title>Distributed Auto-ML with TPOT with Dask</title><link href="/distributed-tpot.html" rel="alternate"></link><published>2018-08-30T00:00:00-05:00</published><updated>2018-08-30T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2018-08-30:/distributed-tpot.html</id><summary type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda Inc&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;This post describes a recent improvement made to &lt;a href="https://epistasislab.github.io/tpot/"&gt;TPOT&lt;/a&gt;. TPOT is an
+&lt;a href="https://en.wikipedia.org/wiki/Automated_machine_learning"&gt;automated machine learning&lt;/a&gt; library for Python. It does some feature
+engineering and hyper-parameter optimization for you. TPOT uses &lt;a href="https://en.wikipedia.org/wiki/Genetic_programming"&gt;genetic
+algorithms&lt;/a&gt; to evaluate which models are performing well and how to choose …&lt;/p&gt;</summary><content type="html">&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda Inc&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;This post describes a recent improvement made to &lt;a href="https://epistasislab.github.io/tpot/"&gt;TPOT&lt;/a&gt;. TPOT is an
+&lt;a href="https://en.wikipedia.org/wiki/Automated_machine_learning"&gt;automated machine learning&lt;/a&gt; library for Python. It does some feature
+engineering and hyper-parameter optimization for you. TPOT uses &lt;a href="https://en.wikipedia.org/wiki/Genetic_programming"&gt;genetic
+algorithms&lt;/a&gt; to evaluate which models are performing well and how to choose
+new models to try out in the next generation.&lt;/p&gt;
+&lt;h2&gt;Parallelizing TPOT&lt;/h2&gt;
+&lt;p&gt;In &lt;a href="https://github.com/EpistasisLab/tpot/pull/730"&gt;TPOT-730&lt;/a&gt;, we made some modifications to TPOT to support
+distributed training. As a TPOT user, the only changes you need to make to your
+code are&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Connect a client to your Dask Cluster&lt;/li&gt;
+&lt;li&gt;Specify the &lt;code&gt;use_dask=True&lt;/code&gt; argument to your TPOT estimator&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;From there, all the training will use your cluster of machines. This screencast
+shows an example on an 80-core Dask cluster.&lt;/p&gt;
+&lt;iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/uyx9nBuOYQQ?rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen&gt;&lt;/iframe&gt;
+
+&lt;h2&gt;Commentary&lt;/h2&gt;
+&lt;p&gt;Fitting a TPOT estimator consists of several stages. The bulk of the time is
+spent evaluating individual scikit-learn pipelines. Dask-ML already had code for
+splitting apart a scikit-learn &lt;code&gt;Pipeline.fit&lt;/code&gt; call into individual tasks. This
+is used in Dask-ML's hyper-parameter optimization to &lt;a href="https://dask.github.io/dask-ml/hyper-parameter-search.html#avoid-repeated-work"&gt;avoid repeating
+work&lt;/a&gt;. We were able to drop-in Dask-ML's fit and scoring method
+for the one already used in TPOT. That small change allows fitting the many
+individual models in a generation to be done on a cluster.&lt;/p&gt;
+&lt;p&gt;There's still some room for improvement. Internal to TPOT, some time is spent
+determining the next set of models to try out (this is the "mutation and
+crossover phase"). That's not (yet) been parallelized with Dask, so you'll
+notice some periods of inactivity on the cluster.&lt;/p&gt;
+&lt;h2&gt;Next Steps&lt;/h2&gt;
+&lt;p&gt;This will be available in the next release of TPOT. You can try out a small
+example now on the &lt;a href="https://mybinder.org/v2/gh/dask/dask-examples/master?filepath=machine-learning%2Ftpot.ipynb"&gt;dask-examples binder&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Stepping back a bit, I think this is a good example of how libraries can use
+Dask internally to parallelize workloads for their users. Deep down in TPOT
+there was a single method for fitting many scikit-learn models on some data and
+collecting the results. Dask-ML has code for &lt;em&gt;building a task graph&lt;/em&gt; that does
+the same thing. We were able to swap out the eager TPOT code for the lazy dask
+version, and get things distributed on a cluster. Projects like &lt;a href="http://xarray.pydata.org/en/stable/"&gt;xarray&lt;/a&gt;
+have been able to do a similar thing with &lt;a href="http://xarray.pydata.org/en/stable/dask.html"&gt;dask Arrays in place of NumPy
+arrays&lt;/a&gt;. If Dask-ML hadn't already had that code,
+&lt;a href="http://dask.pydata.org/en/latest/delayed.html"&gt;&lt;code&gt;dask.delayed&lt;/code&gt;&lt;/a&gt; could have been used instead.&lt;/p&gt;
+&lt;p&gt;If you have a library that you think could take advantage of Dask, please &lt;a href="https://github.com/dask/dask"&gt;reach
+out&lt;/a&gt;!&lt;/p&gt;</content></entry><entry><title>Moral Philosophy for pandas or: What is .values?</title><link href="/pandas-moral-philosophy.html" rel="alternate"></link><published>2018-08-14T00:00:00-05:00</published><updated>2018-08-14T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2018-08-14:/pandas-moral-philosophy.html</id><summary type="html">&lt;p&gt;The other day, I put up a &lt;a href="https://twitter.com/TomAugspurger/status/1026578613389455360"&gt;Twitter poll&lt;/a&gt; asking a simple question: What's the type of &lt;code&gt;series.values&lt;/code&gt;?&lt;/p&gt;
 &lt;blockquote class="twitter-tweet" data-lang="en"&gt;&lt;p lang="en" dir="ltr"&gt;Pop Quiz! What are the possible results for the following:&lt;br&gt;&lt;br&gt;&amp;gt;&amp;gt;&amp;gt; type(pandas.Series.values)&lt;/p&gt;&amp;mdash; Tom Augspurger (@TomAugspurger) &lt;a href="https://twitter.com/TomAugspurger/status/1026578613389455360?ref_src=twsrc%5Etfw"&gt;August 6, 2018&lt;/a&gt;&lt;/blockquote&gt;
 
 &lt;p&gt;&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt; &lt;/p&gt;
