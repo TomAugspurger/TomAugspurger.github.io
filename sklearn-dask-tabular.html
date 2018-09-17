@@ -221,7 +221,7 @@ The basic idea is to specify pairs of <code>(column_selection, transformer)</cod
 
 <p>We've likely overfitted, but that's not really the point of this article. We're more interested in the pre-processing side of things.</p>
 <h2><code>ColumnTransformer</code> in Dask-ML</h2>
-<p><code>ColumnTransfomrer</code> was added to Dask-ML in https://github.com/dask/dask-ml/pull/315.
+<p><code>ColumnTransformer</code> was added to Dask-ML in https://github.com/dask/dask-ml/pull/315.
 Ideally, we wouldn't need that PR at all. We would prefer for dask's collections (and pandas dataframes) to just be handled gracefully by scikit-learn. The main blocking issue is that the Python community doesn't currently have a way to write "concatenate this list of array-like objects together" in a generic way. That's being worked on in <a href="http://www.numpy.org/neps/nep-0018-array-function-protocol.html">NEP-18</a>.</p>
 <p>So for now, if you want to use <code>ColumnTransformer</code> with dask objects, you'll have to use <code>dask_ml.compose.ColumnTransformer</code>, otherwise your large Dask Array or DataFrame would be converted to an in-memory  NumPy array.</p>
 <p>As a footnote to this section, the initial PR in Dask-ML was much longer.
