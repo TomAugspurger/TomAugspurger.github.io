@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+  <link rel="stylesheet" type="text/css" href="theme/css/custom.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+<meta name="keywords" content="">
+
+  <title>
+    datas-frame
+&ndash; Tabular Data in Scikit-Learn and Dask-ML  </title>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-48304175-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+      </p>
+    </header>
+
+<article>
+  <div class="article__title">
+    <h1><a href="/sklearn-dask-tabular.html">Tabular Data in Scikit-Learn and Dask-ML</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 17 September 2018</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>Scikit-Learn 0.20.0 will contain some nice new features for working with tabular data.
+This blogpost will introduce those improvements with a small demo.
+We'll then see how Dask-ML was able to piggyback on the work done by scikit-learn to offer a version that works well with Dask Arrays and DataFrames.</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dask</span>
+<span class="kn">import</span> <span class="nn">dask.array</span> <span class="kn">as</span> <span class="nn">da</span>
+<span class="kn">import</span> <span class="nn">dask.dataframe</span> <span class="kn">as</span> <span class="nn">dd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">fastparquet</span>
+<span class="kn">from</span> <span class="nn">distributed</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">from</span> <span class="nn">distributed.utils</span> <span class="kn">import</span> <span class="n">format_bytes</span>
+</pre></div>
+
+
+<h2>Background</h2>
+<p>For the most part, Scikit-Learn uses NumPy ndarrays or SciPy sparse matricies for its in-memory data structures.
+This is great for many reasons, but one major drawback is that you can't store <em>heterogenous</em> (AKA <em>tabular</em>) data in these containers. These are datasets where different columns of the table have different data types (some ints, some floats, some strings, etc.).</p>
+<p>Pandas was built to work with tabular data.
+Scikit-Learn was built to work with NumPy ndarrays and SciPy sparse matricies.
+So there's some friction when you use the two together.
+Perhaps someday things will be perfectly smooth, but it's a challenging problem that will require work from several communities to fix.
+In <a href="https://www.youtube.com/watch?v=KLPtEBokqQ0">this PyData Chicago talk</a>, I discuss the differences between the two data models of scikit-learn and pandas, and some ways of working through it. The second half of the talk is mostly irrelevant now that <code>ColumnTransformer</code> is in scikit-learn.</p>
+<h2><code>ColumnTransformer</code> in Scikit-Learn</h2>
+<p>At <a href="https://www.youtube.com/watch?v=lXGcPbmxx8Q">SciPy 2018</a>, Joris Van den Bossche (a scikit-learn and pandas core developer) gives an update on some recent improvements to scikit-learn to make using pandas and scikit-learn together better.</p>
+<p>The biggest addition is <a href="http://scikit-learn.org/dev/modules/generated/sklearn.compose.ColumnTransformer.html"><code>sklearn.compose.ColumnTransformer</code></a>, a transformer for working with tabular data.
+The basic idea is to specify pairs of <code>(column_selection, transformer)</code>. The transformer will be applied just to the selected columns, and the remaining columns can be passed through or dropped. Column selections can be integer positions (for arrays), names (for DataFrames) or a callable.</p>
+<p>Here's a small example on the "tips" dataset.</p>
+<div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s1">&#39;tips&#39;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="output highlight">
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>total_bill</th>
+      <th>tip</th>
+      <th>sex</th>
+      <th>smoker</th>
+      <th>day</th>
+      <th>time</th>
+      <th>size</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>16.99</td>
+      <td>1.01</td>
+      <td>Female</td>
+      <td>No</td>
+      <td>Sun</td>
+      <td>Dinner</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>10.34</td>
+      <td>1.66</td>
+      <td>Male</td>
+      <td>No</td>
+      <td>Sun</td>
+      <td>Dinner</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>21.01</td>
+      <td>3.50</td>
+      <td>Male</td>
+      <td>No</td>
+      <td>Sun</td>
+      <td>Dinner</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>23.68</td>
+      <td>3.31</td>
+      <td>Male</td>
+      <td>No</td>
+      <td>Sun</td>
+      <td>Dinner</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>24.59</td>
+      <td>3.61</td>
+      <td>Female</td>
+      <td>No</td>
+      <td>Sun</td>
+      <td>Dinner</td>
+      <td>4</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Our target is whether the tip was larger than 15%.</p>
+<div class="highlight"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;tip&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;columns&#39;</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">tip</span> <span class="o">/</span> <span class="n">df</span><span class="o">.</span><span class="n">total_bill</span> <span class="o">&gt;</span> <span class="mf">0.15</span>
+</pre></div>
+
+
+<p>We'll make a small pipeline that one-hot encodes the categorical columns (sex, smoker, day, time) before fitting a random forest. The numeric columns (total_bill, size) will be passed through as-is.</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sklearn.compose</span>
+<span class="kn">import</span> <span class="nn">sklearn.ensemble</span>
+<span class="kn">import</span> <span class="nn">sklearn.pipeline</span>
+<span class="kn">import</span> <span class="nn">sklearn.preprocessing</span>
+</pre></div>
+
+
+<p>We use <code>make_column_transformer</code> to create the <code>ColumnTransformer</code>.</p>
+<div class="highlight"><pre><span></span><span class="n">categorical_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sex&#39;</span><span class="p">,</span> <span class="s1">&#39;smoker&#39;</span><span class="p">,</span> <span class="s1">&#39;day&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">]</span>
+<span class="n">categorical_encoder</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">OneHotEncoder</span><span class="p">(</span><span class="n">sparse</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="n">transformers</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">compose</span><span class="o">.</span><span class="n">make_column_transformer</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">categorical_columns</span><span class="p">,</span> <span class="n">categorical_encoder</span><span class="p">),</span>
+    <span class="n">remainder</span><span class="o">=</span><span class="s1">&#39;passthrough&#39;</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p>This is just a regular scikit-learn estimator, which can be placed in a pipeline.</p>
+<div class="highlight"><pre><span></span><span class="n">pipe</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">make_pipeline</span><span class="p">(</span>
+    <span class="n">transformers</span><span class="p">,</span>
+    <span class="n">sklearn</span><span class="o">.</span><span class="n">ensemble</span><span class="o">.</span><span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">pipe</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">pipe</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="output highlight">
+    <pre>
+1.0
+    </pre>
+</div>
+
+<p>We've likely overfitted, but that's not really the point of this article. We're more interested in the pre-processing side of things.</p>
+<h2><code>ColumnTransformer</code> in Dask-ML</h2>
+<p><code>ColumnTransfomrer</code> was added to Dask-ML in https://github.com/dask/dask-ml/pull/315.
+Ideally, we wouldn't need that PR at all. We would prefer for dask's collections (and pandas dataframes) to just be handled gracefully by scikit-learn. The main blocking issue is that the Python community doesn't currently have a way to write "concatenate this list of array-like objects together" in a generic way. That's being worked on in <a href="http://www.numpy.org/neps/nep-0018-array-function-protocol.html">NEP-18</a>.</p>
+<p>So for now, if you want to use <code>ColumnTransformer</code> with dask objects, you'll have to use <code>dask_ml.compose.ColumnTransformer</code>, otherwise your large Dask Array or DataFrame would be converted to an in-memory  NumPy array.</p>
+<p>As a footnote to this section, the initial PR in Dask-ML was much longer.
+I only needed to override one thing (the function <code>_hstack</code> used to glue the results back together). But that was being called from several places, and so I had to override all <em>those</em> places as well. I was able to work with the scikit-learn developers to make <code>_hstack</code> a staticmethod on <code>ColumnTranformer</code>, so any library wishing to extend <code>ColumnTransformer</code> can do so more easily now. The Dask project values working with the existing community.</p>
+<h2>Challenges with Scaling</h2>
+<p>Many strategies for dealing with large datasets rely on processing the data in chunks.
+That's the basic idea behind Dask DataFrame: a Dask DataFrame consists of many pandas DataFrames.
+When you write <code>ddf.column.value_counts()</code>, Dask builds a task graph with many <code>pandas.value_counts</code>, and a final aggregation step so that you end up with the same end result.</p>
+<p>But chunking can cause issues when there are variations in your dataset and the operation you're applying depends on the data. For example, consider scikit-learn's <code>OneHotEncoder</code>. By default, it looks at the data and creates a column for each unique value.</p>
+<div class="highlight"><pre><span></span><span class="n">enc</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">OneHotEncoder</span><span class="p">(</span><span class="n">sparse</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">enc</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">([[</span><span class="s1">&#39;a&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]])</span>
+</pre></div>
+
+
+<div class="output highlight">
+<pre>
+array([[1., 0., 0.],
+       [1., 0., 0.],
+       [0., 1., 0.],
+       [0., 0., 1.]])
+</pre>
+</div>
+
+<p>But let's suppose we wanted to process that in chunks of two, first <code>[['a'], ['a']]</code>, then <code>[['b'], ['c']]</code>.</p>
+<div class="highlight"><pre><span></span><span class="n">enc</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">([[</span><span class="s1">&#39;a&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]])</span>
+</pre></div>
+
+
+<div class="highlight output">
+<pre>
+array([[1.],
+       [1.]])
+</pre>
+</div>
+
+<div class="highlight"><pre><span></span><span class="n">enc</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">([[</span><span class="s1">&#39;b&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]])</span>
+</pre></div>
+
+
+<div class="highlight output">
+<pre>
+array([[1., 0.],
+       [0., 1.]])
+</pre>
+</div>
+
+<p>We have a problem! Two in fact:</p>
+<ol>
+<li>The shapes don't match. The first batch only saw "a", so the output shape is <code>(2, 1)</code>. We can't concatenate these results vertically</li>
+<li>The meaning of the first column of the output has changed. In the first batch, the first column meant "a" was present. In the second batch, it meant "b" was present.</li>
+</ol>
+<p>If we happened to know the set of possible values <em>ahead</em> of time, we could pass those to <code>CategoricalEncoder</code>. But storing that set of possible values separate from the data is fragile. It'd be better to store the possible values in the <em>data type</em> itself.</p>
+<p>That's exactly what pandas Categorical does. We can confidently know the number of columns in the categorical-encoded data by just looking at the type. Because this is so important in a distributed dataset context, <code>dask_ml.preprocessing.OneHotEncoder</code> differs from scikit-learn when passed categorical data: we use pandas' categorical information.</p>
+<h2>A larger Example</h2>
+<p>We'll work with the Criteo dataset. This has a mixture of numeric and categorical features. It's also a large dataset, which presents some challenges for many pre-processing methods.</p>
+<p>The full dataset is from http://labs.criteo.com/2013/12/download-terabyte-click-logs/.
+We'll work with a sample.</p>
+<div class="highlight"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">ordinal_columns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;category_0&#39;</span><span class="p">,</span> <span class="s1">&#39;category_1&#39;</span><span class="p">,</span> <span class="s1">&#39;category_2&#39;</span><span class="p">,</span> <span class="s1">&#39;category_3&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;category_4&#39;</span><span class="p">,</span> <span class="s1">&#39;category_6&#39;</span><span class="p">,</span> <span class="s1">&#39;category_7&#39;</span><span class="p">,</span> <span class="s1">&#39;category_9&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;category_10&#39;</span><span class="p">,</span> <span class="s1">&#39;category_11&#39;</span><span class="p">,</span> <span class="s1">&#39;category_13&#39;</span><span class="p">,</span> <span class="s1">&#39;category_14&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;category_17&#39;</span><span class="p">,</span> <span class="s1">&#39;category_19&#39;</span><span class="p">,</span> <span class="s1">&#39;category_20&#39;</span><span class="p">,</span> <span class="s1">&#39;category_21&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;category_22&#39;</span><span class="p">,</span> <span class="s1">&#39;category_23&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">onehot_columns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;category_5&#39;</span><span class="p">,</span> <span class="s1">&#39;category_8&#39;</span><span class="p">,</span> <span class="s1">&#39;category_12&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;category_15&#39;</span><span class="p">,</span> <span class="s1">&#39;category_16&#39;</span><span class="p">,</span> <span class="s1">&#39;category_18&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;category_24&#39;</span><span class="p">,</span> <span class="s1">&#39;category_25&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">numeric_columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;numeric_{i}&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">13</span><span class="p">)]</span>
+<span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;click&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">numeric_columns</span> <span class="o">+</span> <span class="n">onehot_columns</span> <span class="o">+</span> <span class="n">ordinal_columns</span>
+</pre></div>
+
+
+<p>The raw data is a single large CSV. That's been split with <a href="https://gist.github.com/TomAugspurger/4a058f00b32fc049ab5f2860d03fd579#file-split_csv-py">this script</a> and I took a 10% sample with <a href="https://gist.github.com/TomAugspurger/4a058f00b32fc049ab5f2860d03fd579#file-sample-py">this script</a>, which was written to a directory of parquet files. That's what we'll work with.</p>
+<div class="highlight"><pre><span></span><span class="n">sample</span> <span class="o">=</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;data/sample-10.parquet/&quot;</span><span class="p">)</span>
+
+<span class="c1"># Convert unknown categorical to known.</span>
+<span class="c1"># See note later on.</span>
+
+<span class="n">pf</span> <span class="o">=</span> <span class="n">fastparquet</span><span class="o">.</span><span class="n">ParquetFile</span><span class="p">(</span><span class="s2">&quot;data/sample-10.parquet/part.0.parquet&quot;</span><span class="p">)</span>
+<span class="n">cats</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">grab_cats</span><span class="p">(</span><span class="n">onehot_columns</span><span class="p">)</span>
+
+<span class="n">sample</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+    <span class="n">col</span><span class="p">:</span> <span class="n">sample</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">set_categories</span><span class="p">(</span><span class="n">cats</span><span class="p">[</span><span class="n">col</span><span class="p">])</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">onehot_columns</span>
+<span class="p">})</span>
+</pre></div>
+
+
+<p>Our goal is to predict 'click' using the other columns.</p>
+<div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;click&#39;</span><span class="p">]</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;click&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;columns&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Now, let's lay out our pre-processing pipeline. We have three types of columns</p>
+<ol>
+<li>Numeric columns</li>
+<li>Low-cardinality categorical columns</li>
+<li>High-cardinality categorical columns</li>
+</ol>
+<p>Each of those will be processed differently.</p>
+<ol>
+<li>Numeric columns will have missing values filled with the column average and standard scaled</li>
+<li>Low-cardinality categorical columns will be one-hot encoded</li>
+<li>High-cardinality categorical columns will be deterministically hashed and standard scaled</li>
+</ol>
+<p>You'll probably want to quibble with some of these choices, but right now, I'm
+just interested in the ability to do these kinds of transformations at all.</p>
+<p>We need to define a couple custom estimators, one for hashing the values of a dask dataframe, and one for converting a dask dataframe to a dask array.</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sklearn.base</span>
+
+<span class="k">def</span> <span class="nf">hash_block</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Hash the values in a DataFrame.&quot;&quot;&quot;</span>
+    <span class="n">hashed</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">hash_array</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">col</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">hashed</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;columns&#39;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">HashingEncoder</span><span class="p">(</span><span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">hash_block</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="n">hash_block</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unexpected type &#39;{}&#39; for &#39;X&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">X</span><span class="p">)))</span>
+
+
+<span class="k">class</span> <span class="nc">ArrayConverter</span><span class="p">(</span><span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert a Dask DataFrame to a Dask Array with known lengths&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span> <span class="o">=</span> <span class="n">lengths</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">to_dask_array</span><span class="p">(</span><span class="n">lengths</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span>
+</pre></div>
+
+
+<p>For the final stage, Dask-ML needs to have a Dask Array with known chunk lengths.
+So let's compute those ahead of time, and get a bit of info about how large the dataset is while we're at it.</p>
+<div class="highlight"><pre><span></span><span class="n">lengths</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;click&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="nb">len</span><span class="p">)</span>
+<span class="n">nbytes</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">memory_usage</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+<span class="n">lengths</span><span class="p">,</span> <span class="n">nbytes</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">lengths</span><span class="p">,</span> <span class="n">nbytes</span><span class="p">)</span>
+<span class="n">lengths</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span>
+
+<span class="n">format_bytes</span><span class="p">(</span><span class="n">nbytes</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="output highlight">
+<pre>
+'19.20 GB'
+</pre>
+</div>
+
+<p>We we'll be working with about 20GB of data on a laptop with 16GB of RAM. We'll clearly be relying on Dask to do the operations in parallel, while keeping things in a small memory footprint.</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dask_ml.compose</span> <span class="kn">import</span> <span class="n">make_column_transformer</span>
+<span class="kn">from</span> <span class="nn">dask_ml.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span><span class="p">,</span> <span class="n">OneHotEncoder</span>
+<span class="kn">from</span> <span class="nn">dask_ml.wrappers</span> <span class="kn">import</span> <span class="n">Incremental</span>
+<span class="kn">from</span> <span class="nn">dask_ml.impute</span> <span class="kn">import</span> <span class="n">SimpleImputer</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">make_pipeline</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">FunctionTransformer</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">SGDClassifier</span>
+</pre></div>
+
+
+<p>Now for the pipeline.</p>
+<div class="highlight"><pre><span></span><span class="n">onehot_encoder</span> <span class="o">=</span> <span class="n">OneHotEncoder</span><span class="p">(</span><span class="n">sparse</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">hashing_encoder</span> <span class="o">=</span> <span class="n">HashingEncoder</span><span class="p">()</span>
+<span class="n">nan_imputer</span> <span class="o">=</span> <span class="n">SimpleImputer</span><span class="p">()</span>
+
+<span class="n">to_numeric</span> <span class="o">=</span> <span class="n">make_column_transformer</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">onehot_columns</span><span class="p">,</span> <span class="n">onehot_encoder</span><span class="p">),</span>
+    <span class="p">(</span><span class="n">ordinal_columns</span><span class="p">,</span> <span class="n">hashing_encoder</span><span class="p">),</span>
+    <span class="n">remainder</span><span class="o">=</span><span class="s1">&#39;passthrough&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">fill_na</span> <span class="o">=</span> <span class="n">make_column_transformer</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">numeric_columns</span><span class="p">,</span> <span class="n">nan_imputer</span><span class="p">),</span>
+    <span class="n">remainder</span><span class="o">=</span><span class="s1">&#39;passthrough&#39;</span>
+<span class="p">)</span>
+
+<span class="n">scaler</span> <span class="o">=</span> <span class="n">make_column_transformer</span><span class="p">(</span>
+    <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">numeric_columns</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">ordinal_columns</span><span class="p">),</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="n">remainder</span><span class="o">=</span><span class="s1">&#39;passthrough&#39;</span>
+<span class="p">)</span>
+
+
+<span class="n">clf</span> <span class="o">=</span> <span class="n">Incremental</span><span class="p">(</span>
+    <span class="n">SGDClassifier</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s1">&#39;log&#39;</span><span class="p">,</span>
+                  <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                  <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">to_numeric</span><span class="p">,</span> <span class="n">fill_na</span><span class="p">,</span> <span class="n">scaler</span><span class="p">,</span> <span class="n">ArrayConverter</span><span class="p">(</span><span class="n">lengths</span><span class="o">=</span><span class="n">lengths</span><span class="p">),</span> <span class="n">clf</span><span class="p">)</span>
+<span class="n">pipe</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Pipeline(memory=None,
+     steps=[(&#39;columntransformer-1&#39;, ColumnTransformer(n_jobs=1, preserve_dataframe=True, remainder=&#39;passthrough&#39;,
+         sparse_threshold=0.3, transformer_weights=None,
+         transformers=[(&#39;onehotencoder&#39;, OneHotEncoder(categorical_features=None, categories=&#39;auto&#39;,
+       dtype=&lt;class &#39;numpy.float6...ion=0.1, verbose=0, warm_start=False),
+      random_state=None, scoring=None, shuffle_blocks=True))])
+</pre></div>
+
+
+<p>Overall it reads pretty similarly to how we described it in prose.
+We specify</p>
+<ol>
+<li>Onehot the low-cardinality categoricals, hash the others</li>
+<li>Fill missing values in the numeric columns</li>
+<li>Standard scale the numeric and hashed columns</li>
+<li>Fit the incremental SGD</li>
+</ol>
+<p>And again, these ColumnTransformers are just estimators so we stick them in a regular scikit-learn <code>Pipeline</code> before calling <code>.fit</code>:</p>
+<div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">time</span> <span class="n">pipe</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">to_dask_array</span><span class="p">(</span><span class="n">lengths</span><span class="o">=</span><span class="n">lengths</span><span class="p">),</span> <span class="n">incremental__classes</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+</pre></div>
+
+
+<div class="output highlight">
+<pre>
+CPU times: user 7min 7s, sys: 41.6 s, total: 7min 48s
+Wall time: 16min 42s
+
+Pipeline(memory=None,
+        steps=[('columntransformer-1', ColumnTransformer(n_jobs=1, preserve_dataframe=True, remainder='passthrough',
+            sparse_threshold=0.3, transformer_weights=None,
+            transformers=[('onehotencoder', OneHotEncoder(categorical_features=None, categories='auto',
+        dtype=<class 'numpy.float6...ion=0.1, verbose=0, warm_start=False),
+        random_state=None, scoring=None, shuffle_blocks=True))])
+</pre>
+</div>
+
+<h2>Discussion</h2>
+<p>Some aspects of this workflow could be improved.</p>
+<ol>
+<li>
+<p>Dask, fastparquet, pyarrow, and pandas don't currently have a way to
+   specify the categorical dtype of a column split across many files.
+   Each file (parition) is treated independently. This results in categorials
+   with unknown categories in the Dask DataFrame.
+   Since <em>we</em> know that the categories are all the same, we're able to read in
+   the first files categories and assign those to the entire DataFrame. But this
+   is a bit fragile, as it relies on an assumption not necessarily guaranteed
+   by the file structure.</p>
+</li>
+<li>
+<p>There's of IO. As written, each stage of the pipeline that
+   has to see the data does a full read of the dataset. We end up reading the
+   entire dataset something like 5 times.
+   https://github.com/dask/dask-ml/issues/192 has some discussion on ways
+   we can progress through a pipeline. If your pipeline consists entirely of
+   estimators that learn incrementally, it may make sense to send each block
+   of data through the entire pipeline, rather than sending all the data to
+   the first step, then all the data to the second, and so on.
+   I'll note, however, that you can avoid the redundant IO by loading your
+   data into distributed RAM on a Dask cluster. But I was just trying things
+   out on my laptop.</p>
+</li>
+</ol>
+<p>Still, it's worth noting that we've successfully fit a reasonably complex pipeline on a larger-than-RAM dataset using our laptop. That's something!</p>
+<p>ColumnTransformer will be available in scikit-learn 0.20.0.
+This also contains the changes for <a href="sklearn-dask-tabular">distributed joblib</a> I blogged about earlier.
+The <a href="https://pypi.org/project/scikit-learn/0.20rc1/">first release candidate</a> is available now.</p>
+<p>For more, visit the <a href="http://docs.dask.org">Dask</a>, <a href="http://ml.dask.org">Dask-ML</a>, and <a href="http://scikit-learn.org/dev/modules/generated/sklearn.compose.ColumnTransformer.html">scikit-learn</a> documentation.</p>
+  </div>
+  <div id="article__comments">
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_identifier = "sklearn-dask-tabular.html";
+        (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = '//tomaugspurger.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+         })();
+    </script>
+  </div>
+
+</article>
+
+
+  </main>
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li><a href="/pages/article-1-cluster.html" title="article-1-cluster"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
+</body>
+</html>
