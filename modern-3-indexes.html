@@ -1037,7 +1037,7 @@ And while sometimes you might work with indexes directly (like the set operation
 <p>Again, not terrible, but not as good.
 And, what if you had wanted to keep farenheit around as well, instead of overwriting it like we did?
 Then you'd need to make a copy of everything, including the <code>station</code> and <code>date</code> columns.
-We don't have that problem, since indexes are mutable and safely shared between DataFrames / Series.</p>
+We don't have that problem, since indexes are immutable and safely shared between DataFrames / Series.</p>
 <div class="highlight"><pre><span></span><span class="n">temp</span><span class="o">.</span><span class="n">index</span> <span class="ow">is</span> <span class="n">c</span><span class="o">.</span><span class="n">index</span>
 </pre></div>
 
