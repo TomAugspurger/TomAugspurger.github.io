@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+  <link rel="stylesheet" type="text/css" href="theme/css/custom.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+<meta name="keywords" content="">
+
+  <title>
+    datas-frame
+&ndash; A Confluence of Extension  </title>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-48304175-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+      </p>
+    </header>
+
+<article>
+  <div class="article__title">
+    <h1><a href="/confluence-extension.html">A Confluence of Extension</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Tue 18 June 2019</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>This post describes a few protocols taking shape in the scientific Python
+community. On their own, each is powerful. Together, I think they enable for an
+explosion of creativity in the community.</p>
+<p>Each of the protocols / interfaces we'll consider deal with extending.</p>
+<ul>
+<li><a href="https://www.numpy.org/neps/nep-0013-ufunc-overrides.html">NEP-13: NumPy <code>__array_ufunc__</code></a></li>
+<li><a href="https://www.numpy.org/neps/nep-0018-array-function-protocol.html">NEP-18: NumPy <code>__array_function__</code></a></li>
+<li><a href="http://pandas.pydata.org/pandas-docs/stable/development/extending.html#extension-types">Pandas Extension types</a></li>
+<li><a href="https://docs.dask.org/en/latest/custom-collections.html">Custom Dask Collections</a></li>
+</ul>
+<hr>
+<p>First, a bit of brief background on each. </p>
+<p>NEP-13 and NEP-18, each deal with using the NumPy API on non-NumPy ndarray
+objects. For example, you might want to apply a ufunc like <code>np.log</code> to a Dask
+array. </p>
+<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">a</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">dask</span><span class="o">.</span><span class="n">array</span><span class="o">&lt;</span><span class="n">log</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float64</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<p>Prior to NEP-13, <code>dask.array</code> needed it's own namespace of ufuncs like <code>da.log</code>,
+since <code>np.log</code> would convert the Dask array to an in-memory NumPy array
+(probably blowing up your machine's memory). With <code>__array_ufunc__</code> library
+authors and users can all just use NumPy ufuncs, without worrying about the type of
+the Array object.</p>
+<p>While NEP-13 is limited to ufuncs, NEP-18 applies the same idea to most of the
+NumPy API. With NEP-18, libraries written to deal with NumPy ndarrays may
+suddenly support any object implementing <code>__array_function__</code>.</p>
+<p>I highly recommend reading <a href="https://blog.dask.org/2018/05/27/beyond-numpy">this blog
+post</a> for more on the motivation
+for <code>__array_function__</code>. Ralph Gommers gave a nice talk on the current state of
+things at <a href="https://youtu.be/HVLPJnvInzM">PyData Amsterdam 2019</a>, though this is
+an active area of development.</p>
+<p>Pandas added extension types to allow third-party libraries to solve
+domain-specific problems in a way that gels nicely with the rest of pandas. For
+example, cyberpandas handles network data, while geopandas handles geographic
+data. When both implement extension arrays it's possible to operate on a dataset
+with a mixture of geographic and network data in the same DataFrame.</p>
+<p>Finally, Dask defines a <a href="https://docs.dask.org/en/latest/custom-collections.html">Collections Interface</a> so that any
+object can be a first-class citizen within Dask. This is what ensures <a href="http://xarray.pydata.org/">XArray's</a>
+DataArray and Dataset objects work well with Dask.</p>
+<h2><code>Series.__array_ufunc__</code></h2>
+<p>Now, onto the fun stuff: combining these interfaces across objects and
+libraries. https://github.com/pandas-dev/pandas/pull/23293 is a pull request
+adding <code>Series.__array_ufunc__</code>. There are a few subtleties, but the basic idea
+is that a ufunc applied to a Series should</p>
+<ol>
+<li>Unbox the array (ndarray or extension array) from the Series</li>
+<li>Apply the ufunc to the Series (honoring the array's <code>__array_ufunc__</code> if
+   needed)</li>
+<li>Rebox the output in a Series (with the original index and name)</li>
+</ol>
+<p>For example, pandas' <code>SparseArray</code> implements <code>__array_ufunc__</code>. It works by
+calling the ufunc twice, once on the sparse values (e.g. the non-zero values),
+and once on the scalar <code>fill_value</code>. The result is a new <code>SparseArray</code> with the
+same memory usage. With that PR, we achieve the same thing when operating on a
+Series containing an ExtensionArray.</p>
+<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">ser</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">SparseArray</span><span class="p">([</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100000</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">ser</span>
+<span class="mi">0</span>        <span class="o">-</span><span class="mi">10</span>
+<span class="mi">1</span>          <span class="mi">0</span>
+<span class="mi">2</span>         <span class="mi">10</span>
+<span class="mi">3</span>          <span class="mi">0</span>
+<span class="mi">4</span>          <span class="mi">0</span>
+          <span class="o">..</span>
+<span class="mi">99998</span>      <span class="mi">0</span>
+<span class="mi">99999</span>      <span class="mi">0</span>
+<span class="mi">100000</span>     <span class="mi">0</span>
+<span class="mi">100001</span>     <span class="mi">0</span>
+<span class="mi">100002</span>     <span class="mi">0</span>
+<span class="n">Length</span><span class="p">:</span> <span class="mi">100003</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">Sparse</span><span class="p">[</span><span class="n">int64</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">n</span> <span class="p">[</span><span class="mi">20</span><span class="p">]:</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">ser</span><span class="p">)</span>
+<span class="mi">0</span>        <span class="o">-</span><span class="mi">1</span>
+<span class="mi">1</span>         <span class="mi">0</span>
+<span class="mi">2</span>         <span class="mi">1</span>
+<span class="mi">3</span>         <span class="mi">0</span>
+<span class="mi">4</span>         <span class="mi">0</span>
+         <span class="o">..</span>
+<span class="mi">99998</span>     <span class="mi">0</span>
+<span class="mi">99999</span>     <span class="mi">0</span>
+<span class="mi">100000</span>    <span class="mi">0</span>
+<span class="mi">100001</span>    <span class="mi">0</span>
+<span class="mi">100002</span>    <span class="mi">0</span>
+<span class="n">Length</span><span class="p">:</span> <span class="mi">100003</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">Sparse</span><span class="p">[</span><span class="n">int64</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+
+<p>Previously, that would have converted the <code>SparseArray</code> to a <em>dense</em> NumPy
+array, blowing up your memory, slowing things down, and giving the incorrect result.</p>
+<h2><code>IPArray.__array_function__</code></h2>
+<p>To demonstrate <code>__array_function__</code>, we'll implement it on <code>IPArray</code>.</p>
+<div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">__array_function__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">issubclass</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">types</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="n">HANDLED_FUNCTIONS</span><span class="p">[</span><span class="n">func</span><span class="p">](</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+
+
+<p><code>IPArray</code> is pretty domain-specific, so we place ourself down at the bottom
+priority by returning <code>NotImplemented</code> if there are any types we don't recognize
+(we might consider handling Python's stdlib <code>ipaddres.IPv4Address</code> and
+<code>ipaddres.IPv6Address</code> objects too).</p>
+<p>And then we start implementing the interface. For example, <code>concatenate</code>.</p>
+<div class="highlight"><pre><span></span><span class="nd">@implements</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">concatenate</span><span class="p">(</span><span class="n">arrays</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">axis</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Axis != 0 is not supported. (Got {axis}).&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">IPArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">array</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays</span><span class="p">]))</span>
+</pre></div>
+
+
+<p>With this, we can successfully concatenate two IPArrays</p>
+<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">a</span> <span class="o">=</span> <span class="n">cyberpandas</span><span class="o">.</span><span class="n">ip_range</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">b</span> <span class="o">=</span> <span class="n">cyberpandas</span><span class="o">.</span><span class="n">ip_range</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">])</span>
+<span class="n">IPArray</span><span class="p">([</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.1&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.2&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.3&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.10&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.11&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.12&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.13&#39;</span><span class="p">])</span>
+</pre></div>
+
+
+<h2>Extending Dask</h2>
+<p>Finally, we may wish to make <code>IPArray</code> work well with <code>dask.dataframe</code>, to do
+normal cyberpandas operations in parallel, possibly distributed on a cluster.
+This requires a few changes:</p>
+<ol>
+<li>Updating <code>IPArray</code> to work on either NumPy or Dask arrays</li>
+<li>Implementing the Dask Collections interface on <code>IPArray</code>.</li>
+<li>Registering an <code>ip</code> accessor with <code>dask.dataframe</code>, just like with <code>pandas</code>.</li>
+</ol>
+<p>This is demonstrated in https://github.com/ContinuumIO/cyberpandas/pull/39</p>
+<div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">28</span><span class="p">]:</span> <span class="n">ddf</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">28</span><span class="p">]:</span>
+<span class="n">Dask</span> <span class="n">DataFrame</span> <span class="n">Structure</span><span class="p">:</span>
+                 <span class="n">A</span>
+<span class="n">npartitions</span><span class="o">=</span><span class="mi">2</span>
+<span class="mi">0</span>               <span class="n">ip</span>
+<span class="mi">6</span>              <span class="o">...</span>
+<span class="mi">11</span>             <span class="o">...</span>
+<span class="n">Dask</span> <span class="n">Name</span><span class="p">:</span> <span class="n">from_pandas</span><span class="p">,</span> <span class="mi">2</span> <span class="n">tasks</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">29</span><span class="p">]:</span> <span class="n">ddf</span><span class="o">.</span><span class="n">A</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">netmask</span><span class="p">()</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">29</span><span class="p">]:</span>
+<span class="n">Dask</span> <span class="n">Series</span> <span class="n">Structure</span><span class="p">:</span>
+<span class="n">npartitions</span><span class="o">=</span><span class="mi">2</span>
+<span class="mi">0</span>      <span class="n">ip</span>
+<span class="mi">6</span>     <span class="o">...</span>
+<span class="mi">11</span>    <span class="o">...</span>
+<span class="n">Name</span><span class="p">:</span> <span class="n">A</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">ip</span>
+<span class="n">Dask</span> <span class="n">Name</span><span class="p">:</span> <span class="n">from</span><span class="o">-</span><span class="n">delayed</span><span class="p">,</span> <span class="mi">22</span> <span class="n">tasks</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">30</span><span class="p">]:</span> <span class="n">ddf</span><span class="o">.</span><span class="n">A</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">netmask</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">30</span><span class="p">]:</span>
+<span class="mi">0</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
+<span class="mi">1</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
+<span class="mi">2</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
+<span class="mi">3</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
+<span class="mi">4</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
+<span class="mi">5</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
+<span class="mi">6</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
+<span class="mi">7</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
+<span class="mi">8</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
+<span class="mi">9</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
+<span class="mi">10</span>    <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
+<span class="mi">11</span>    <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
+<span class="n">dtype</span><span class="p">:</span> <span class="n">ip</span>
+</pre></div>
+
+
+<h2>Conclusion</h2>
+<p>I think that these points of extension.</p>
+  </div>
+
+</article>
+
+
+  </main>
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li><a href="/pages/article-1-cluster.html" title="article-1-cluster"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
+</body>
+</html>

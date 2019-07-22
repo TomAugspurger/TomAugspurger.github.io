@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+  <link rel="stylesheet" type="text/css" href="theme/css/custom.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+<meta name="keywords" content="">
+
+  <title>
+    datas-frame
+&ndash; pandas + binder  </title>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-48304175-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+      </p>
+    </header>
+
+<article>
+  <div class="article__title">
+    <h1><a href="/pandas-binder.html">pandas + binder</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 22 July 2019</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>This post describes the start of a journey to get pandas' documentation running
+on Binder. The end result is this nice button:</p>
+<p><a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb"><img alt="Binder" src="https://mybinder.org/badge_logo.svg"></a></p>
+<hr>
+<p>For a while now I've been jealous of <a href="https://github.com/dask/dask-examples">Dask's examples
+repository</a>. That's a repository containing a
+collection of Jupyter notebooks demonstrating Dask in action. It stitches
+together some tools to present a set of documentation that is both viewable
+as a static site at <a href="https://examples.dask.org">examples.dask.org</a>, and as a executable notebooks
+on <a href="https://mybinder.org/v2/gh/dask/dask-examples/master?urlpath=lab">mybinder</a>.</p>
+<p>A bit of background on binder: it's a tool for creating a shareable computing
+environment. This is perfect for introductory documentation. A prospective user
+may want to just try out a library to get a feel for it before they commit to
+installing. Binder<em>Hub</em> is a tool for deploying binder services. You point a
+binderhub deployment (like <a href="https://mybinder.org">mybinder</a>) at a git repository
+with a collection of notebooks and an environment specification, and out comes
+your executable documentation.</p>
+<p>Thanks to a lot of hard work by contributors and maintainers, the code examples
+in pandas' documentation are already runnable (and this is verified on each
+commit). We use the <a href="https://ipython.readthedocs.io/en/stable/sphinxext.html">IPython Sphinx
+Extension</a> to execute
+examples and include their output. We write documentation like</p>
+<div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">ipython</span><span class="p">::</span> <span class="n">python</span>
+
+   <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+   <span class="n">s</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+   <span class="n">s</span>
+</pre></div>
+
+
+<p>Which is then <em>executed</em> and rendered in the HTML docs as</p>
+<div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">s</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">s</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+<span class="mi">0</span>    <span class="mi">1</span>
+<span class="mi">1</span>    <span class="mi">2</span>
+<span class="mi">2</span>    <span class="mi">3</span>
+<span class="n">dtype</span><span class="p">:</span> <span class="n">int64</span>
+</pre></div>
+
+
+<p>So we have the most important thing: a rich source of documentation that's
+already runnable.</p>
+<p>There were a couple barriers to just pointing binder at
+<code>https://github.com/pandas-dev/pandas</code>, however. First, binder builds on top of
+a tool called <a href="https://repo2docker.readthedocs.io/en/latest/">repo2docker</a>. This
+is what takes your Git repository and turns it into a Docker image that users
+will be dropped into. When someone visits the URL, binder will first check to
+see if it's built a docker image. If it's already cached, then that will just be
+loaded. If not, binder will have to clone the repository and build it from
+scratch, a time-consuming process. Pandas receives 5-10 commits per day, meaning
+many users would visit the site and be stuck waiting for a 5-10 minute docker
+build.<sup id="fnref-1"><a class="footnote-ref" href="#fn-1">1</a></sup></p>
+<p>Second, pandas uses Sphinx and ReST for its documentation. Binder needs a collection
+of Notebooks. Fortunately, the fine folks at <a href="https://quantecon.org">QuantEcon</a>
+(a fellow NumFOCUS project) wrote
+<a href="https://sphinxcontrib-jupyter.readthedocs.io"><code>sphinxcontrib-jupyter</code></a>, a tool
+for turning ReST files to Jupyter notebooks. Just what we needed.</p>
+<p>So we had some great documentation that already runs, and a tool for converting
+ReST files to Jupyter notebooks. All the pieces were falling into place!</p>
+<p>Unfortunately, my first attempt failed. <code>sphinxcontrib-jupyter</code> looks for directives
+like</p>
+<div class="highlight"><pre><span></span><span class="p">..</span> <span class="ow">code</span><span class="p">::</span> python
+</pre></div>
+
+
+<p>while pandas uses</p>
+<div class="highlight"><pre><span></span><span class="p">..</span> <span class="ow">ipython</span><span class="p">::</span> python
+</pre></div>
+
+
+<p>I started slogging down a path to teach <code>sphinxcontrib-jupyter</code> how to recognize
+the IPython directive pandas uses when my kid woke up from his nap. Feeling
+dejected I gave up.</p>
+<p>But later in the day, I had the (obvious in hindsight) realization that we have
+plenty of tools for substituting lines of text. A few (non-obvious) <a href="https://github.com/TomAugspurger/pandas-binder/blob/20fc3e8f52a05d4b291211a41ed3015f37758f81/Makefile#L4">lines of
+bash
+later</a>
+and we were ready to go. All the <code>.. ipython:: python</code> directives were now <code>..
+code:: python</code>. Moral of the story: take breaks.</p>
+<p>My work currently lives in <a href="https://github.com/TomAugspurger/pandas-binder">this repository</a>, and
+the notebooks are runnable <a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb">on mybinder</a>. But the short version is</p>
+<ol>
+<li>We include github.com/pandas-dev/pandas as a submodule (which repo2docker
+   supports just fine)</li>
+<li>We patch pandas Sphinx config to include sphinxcontrib-jupyter and its
+   configuration</li>
+<li>We patch pandas source docs to change the ipython directives to be <code>.. code::
+   python</code> directives.</li>
+</ol>
+<p>I'm reasonably happy with how things are shaping up. I plan to migrate my repository
+to the pandas organization and propose a few changes to the pandas documentation
+(like a small header pointing from the rendered HTML docs to the binder). If you'd like to follow along,
+subscribe to <a href="https://github.com/pandas-dev/pandas/issues/27514">this pandas issue</a>.</p>
+<p>I'm also hopeful that other projects can apply a similar approach to their documentation too.</p>
+<div class="footnote">
+<hr>
+<ol>
+<li id="fn-1">
+<p>I realize now that binder can target a specific branch or commit. I'm not
+  sure if additional commits to that repository will trigger a rebuild, but
+  I suspect not. We still needed to solve problem 2 though.&#160;<a class="footnote-backref" href="#fnref-1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+  </div>
+
+</article>
+
+
+  </main>
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li><a href="/pages/article-1-cluster.html" title="article-1-cluster"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
+</body>
+</html>
