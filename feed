@@ -1,19 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Mon, 22 Jul 2019 00:00:00 -0500</lastBuildDate><item><title>pandas + binder</title><link>/pandas-binder.html</link><description>&lt;p&gt;This post describes the start of a journey to get pandas' documentation running
+<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Sun, 21 Jul 2019 00:00:00 -0500</lastBuildDate><item><title>pandas + binder</title><link>/pandas-binder.html</link><description>&lt;p&gt;This post describes the start of a journey to get pandas' documentation running
 on Binder. The end result is this nice button:&lt;/p&gt;
 &lt;p&gt;&lt;a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb"&gt;&lt;img alt="Binder" src="https://mybinder.org/badge_logo.svg"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;hr&gt;
 &lt;p&gt;For a while now I've been jealous of &lt;a href="https://github.com/dask/dask-examples"&gt;Dask's examples
 repository&lt;/a&gt;. That's a repository containing a
 collection of Jupyter notebooks demonstrating Dask in action. It stitches
-together some …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 22 Jul 2019 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2019-07-22:/pandas-binder.html</guid></item><item><title>A Confluence of Extension</title><link>/confluence-extension.html</link><description>&lt;p&gt;This post describes a few protocols taking shape in the scientific Python
-community. On their own, each is powerful. Together, I think they enable for an
-explosion of creativity in the community.&lt;/p&gt;
-&lt;p&gt;Each of the protocols / interfaces we'll consider deal with extending.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="https://www.numpy.org/neps/nep-0013-ufunc-overrides.html"&gt;NEP-13: NumPy &lt;code&gt;__array_ufunc__&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="https://www.numpy.org/neps/nep-0018-array-function-protocol.html"&gt;NEP-18: NumPy &lt;code&gt;__array_function__&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="http://pandas.pydata.org/pandas-docs/stable/development/extending.html#extension-types"&gt;Pandas Extension …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Tue, 18 Jun 2019 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2019-06-18:/confluence-extension.html</guid></item><item><title>Tabular Data in Scikit-Learn and Dask-ML</title><link>/sklearn-dask-tabular.html</link><description>&lt;p&gt;Scikit-Learn 0.20.0 will contain some nice new features for working with tabular data.
+together some …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Sun, 21 Jul 2019 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2019-07-21:/pandas-binder.html</guid></item><item><title>Tabular Data in Scikit-Learn and Dask-ML</title><link>/sklearn-dask-tabular.html</link><description>&lt;p&gt;Scikit-Learn 0.20.0 will contain some nice new features for working with tabular data.
 This blogpost will introduce those improvements with a small demo.
 We'll then see how Dask-ML was able to piggyback on the work done by scikit-learn to offer a version that works well with Dask Arrays …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Mon, 17 Sep 2018 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2018-09-17:/sklearn-dask-tabular.html</guid></item><item><title>Distributed Auto-ML with TPOT with Dask</title><link>/distributed-tpot.html</link><description>&lt;p&gt;&lt;em&gt;This work is supported by &lt;a href="https://www.anaconda.com/"&gt;Anaconda Inc&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;This post describes a recent improvement made to &lt;a href="https://epistasislab.github.io/tpot/"&gt;TPOT&lt;/a&gt;. TPOT is an
