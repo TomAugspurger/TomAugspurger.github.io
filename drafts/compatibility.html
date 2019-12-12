@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/">
+  <link rel="stylesheet" type="text/css" href="/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/css/hatena-bookmark-icon.css">
+  <link rel="stylesheet" type="text/css" href="theme/css/custom.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
+
+<meta name="keywords" content="">
+
+  <title>
+    datas-frame
+&ndash; Compatibility Code  </title>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-48304175-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="">datas-frame</a>
+      </div>
+      <p>
+        <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
+      </p>
+    </header>
+
+<article>
+  <div class="article__title">
+    <h1><a href="/drafts/compatibility.html">Compatibility Code</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Thu 12 December 2019</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <h1>Compatibility Code</h1>
+<p>Most libraries with dependencies will want to support multiple versions
+of that dependency. But supporting old version is a pain: it requires <em>compatibility code</em>,
+code that is around solely to get the same output from versions of a library. This post
+gives some advice on writing compatibility code.</p>
+<ol>
+<li>Don't write your own version parser</li>
+<li>Centralize all version parsing</li>
+<li>Use consistent version comparisons</li>
+<li>Use Python's argument unpacking</li>
+<li>Clean up unused compatibility code</li>
+</ol>
+<h2>1. Don't write your own version parser</h2>
+<p>It can be tempting just do something like</p>
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">my_library</span><span class="o">.</span><span class="n">__version__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="s2">&quot;25&quot;</span><span class="p">:</span>
+    <span class="o">...</span>
+</pre></div>
+
+
+<p>But that's probably going to break, sometimes in unexpected ways. Use either <code>distutils.version.LooseVersion</code>
+or <code>packaging.version.parse</code> which handles all the edge cases.</p>
+<div class="highlight"><pre><span></span><span class="n">PANDAS_VERSION</span> <span class="o">=</span> <span class="n">LooseVersion</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+</pre></div>
+
+
+<h2>2. Centralize all version parsing in a <code>_compat.py</code> file</h2>
+<p>The first section of compatibility code is typically a version check. It can be tempting
+to do the version-check inline with the compatibility code</p>
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">LooseVersion</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="s2">&quot;0.25.0&quot;</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Rather than that, I recommend centralizing the version checks in a central <code>_compat.py</code> file
+that defines constants for each library version you need compatibility code for.</p>
+<div class="highlight"><pre><span></span><span class="c1"># library/_compat.py</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+
+<span class="n">PANDAS_VERSION</span> <span class="o">=</span> <span class="n">LooseVersion</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+<span class="n">PANDAS_0240</span> <span class="o">=</span> <span class="n">PANDAS_VERSION</span> <span class="o">&gt;=</span> <span class="s2">&quot;0.24.0</span>
+<span class="n">PANDAS_0250</span> <span class="o">=</span> <span class="n">PANDAS_VERSION</span> <span class="o">&gt;=</span> <span class="s2">&quot;0.25.0</span>
+</pre></div>
+
+
+<p>This, combined with item 3, will make it easier to clean up your code (see below).</p>
+<h2>3. Use consistent version comparisons</h2>
+<p>Notice that I defined constants for each pandas version, <code>PANDAS_0240</code>,
+<code>PANDAS_0250</code>. Those mean "the installed version of pandas is at least this
+version", since I used the <code>&gt;=</code> comparison. You could instead define constants
+like</p>
+<div class="highlight"><pre><span></span><span class="n">PANDAS_LT_0240</span> <span class="o">=</span> <span class="n">PANDAS_VERSION</span> <span class="o">&lt;</span> <span class="s2">&quot;0.24.0&quot;</span>
+</pre></div>
+
+
+<p>That works too, just ensure that you're consistent.</p>
+<h2>4. Use Python's argument unpacking</h2>
+<p>Python's <a href="https://docs.python.org/3/tutorial/controlflow.html#unpacking-argument-lists">argument unpacking</a> helps avoid code duplication when the
+signature of a function changes.</p>
+<div class="highlight"><pre><span></span>    <span class="n">param_grid</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;estimator__alpha&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">10</span><span class="p">]}</span>
+    <span class="k">if</span> <span class="n">SK_022</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;iid&quot;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}</span>
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">model_selection</span><span class="o">.</span><span class="n">GridSearchCV</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Using <code>*args</code>, and <code>**kwargs</code> to pass through version-dependent arguments lets you
+have just a single call to the callable when the only difference is the
+arguments passed.</p>
+<h2>5. Clean up unused compatibility code</h2>
+<p>Actively developed libraries may eventually drop support for old versions
+of dependency libraries. At a minimum, this involves removing the old version
+from your test matrix and bumping your required version in your dependency list.
+But ideally you would also clean up the now-unused compatibility code. The
+strategies laid out here intend to make that as easy as possible.</p>
+<p>Consider the following.</p>
+<div class="highlight"><pre><span></span><span class="c1"># library/core.py</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">from</span> <span class="nn">._comapt</span> <span class="kn">import</span> <span class="n">PANDAS_0250</span>
+
+
+<span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="o">...</span>
+
+    <span class="k">if</span> <span class="n">PANDAS_0250</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Now suppose it's the future and we want to drop support for pandas older than 0.25.x
+Now all the conditions checking <code>if PANDAS_0250</code> are automatically true, so we'd</p>
+<ol>
+<li>Delete <code>PANDAS_0250</code> from <code>_compat.py</code></li>
+<li>Remove the import in <code>core.py</code></li>
+<li>Remove the <code>if PANDAS_0250</code> check, and always have the True part of that
+   condition</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="c1"># library/core.py</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+
+
+<p>I acknowledge that <a href="https://matthewrocklin.com/blog/work/2019/06/23/avoid-indirection">indirection can harm readability</a>. In this case
+I think it's warranted for actively maintained projects. Using inline version
+checks, perhaps with inconsistent comparisons, will make it harder to know when
+code is now unused. When integrated over the lifetime of the project, I find the
+strategies laid out here more readable.</p>
+  </div>
+
+</article>
+
+
+  </main>
+    <footer>
+      <div class="author__logo">
+          <img src="/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="/pages/about.html" title="About"><i class="fa fa-link"></i></a></li>
+            <li><a href="/pages/article-1-cluster.html" title="article-1-cluster"><i class="fa fa-link"></i></a></li>
+            <li>
+              <a href="/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fa fa-rss"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
+</body>
+</html>
