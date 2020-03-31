@@ -23,11 +23,10 @@
 
   <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
 
-<link href="/feeds/misc.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame misc Category Atom" />
 
   <title>
     datas-frame
-&ndash; Category: misc  </title>
+&ndash; Tag: pandas  </title>
 
 <script type="text/javascript">
   var _gaq = _gaq || [];
@@ -50,44 +49,90 @@
       </div>
       <p>
         <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
-&gt; Category: misc
-&brvbar; <a href="/feeds/misc.atom.xml">Atom</a>
+&gt; Tag: pandas
       </p>
     </header>
 
 <article>
   <div class="article__title">
-    <h1><a href="/scalable-ml-01.html">Scalable Machine Learning (Part 1)</a></h1>
+    <h1><a href="/pandas-binder.html">pandas + binder</a></h1>
   </div>
   <div class="article__meta">
-    <p class="article__meta__post-date">Posted on: Mon 11 September 2017</p>
-    </p>
+    <p class="article__meta__post-date">Posted on: Sun 21 July 2019</p>
+ Tags:
+      <a href="/tag/pandas.html">#pandas</a>    </p>
   </div>
   <div class="article__text">
-    <p><em>This work is supported by <a href="https://www.anaconda.com/">Anaconda Inc.</a> and the Data Driven Discovery
-Initiative from the <a href="https://www.moore.org/">Moore Foundation</a>.</em></p>
-<p>Anaconda is interested in scaling the scientific python ecosystem. My current
-focus is on out-of-core, parallel, and distributed machine learning. This series
-of posts will introduce those concepts, explore what we have available …</p>
+    <p>This post describes the start of a journey to get pandas' documentation running
+on Binder. The end result is this nice button:</p>
+<p><a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb"><img alt="Binder" src="https://mybinder.org/badge_logo.svg"></a></p>
+<hr>
+<p>For a while now I've been jealous of <a href="https://github.com/dask/dask-examples">Dask's examples
+repository</a>. That's a repository containing a
+collection of Jupyter notebooks demonstrating Dask in action. It stitches
+together some …</p>
   </div>
 </article>
 <hr />
 <article>
   <div class="article__title">
-    <h1><a href="/introducing-stitch.html">Introducing Stitch</a></h1>
+    <h1><a href="/pandas-moral-philosophy.html">Moral Philosophy for pandas or: What is <code>.values</code>?</a></h1>
   </div>
   <div class="article__meta">
-    <p class="article__meta__post-date">Posted on: Tue 30 August 2016</p>
-    </p>
+    <p class="article__meta__post-date">Posted on: Tue 14 August 2018</p>
+ Tags:
+      <a href="/tag/pandas.html">#pandas</a>    </p>
   </div>
   <div class="article__text">
-    <p>Today I released <a href="https://github.com/pystitch/stitch"><code>stitch</code></a> into the
-wild. If you haven't yet, check out the <a href="https://pystitch.github.io">examples
-page</a> to see an example of what stitch does,
-and the <a href="https://github.com/pystitch/stitch">Github repo</a> for how to
-install. I'm using this post to explain why I wrote stitch, and some
-issues it tries to solve.</p>
-<h2>Why …</h2>
+    <p>The other day, I put up a <a href="https://twitter.com/TomAugspurger/status/1026578613389455360">Twitter poll</a> asking a simple question: What's the type of <code>series.values</code>?</p>
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">Pop Quiz! What are the possible results for the following:<br><br>&gt;&gt;&gt; type(pandas.Series.values)</p>&mdash; Tom Augspurger (@TomAugspurger) <a href="https://twitter.com/TomAugspurger/status/1026578613389455360?ref_src=twsrc%5Etfw">August 6, 2018</a></blockquote>
+
+<p><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> </p>
+<p>I was a bit limited for space, so I'll expand on …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/modern-8-scaling.html">Modern Pandas (Part 8): Scaling</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 23 April 2018</p>
+ Tags:
+      <a href="/tag/pandas.html">#pandas</a>    </p>
+  </div>
+  <div class="article__text">
+    <hr>
+<p>This is part 1 in my series on writing modern idiomatic pandas.</p>
+<ul>
+<li><a href="modern-1-intro">Modern Pandas</a></li>
+<li><a href="method-chaining">Method Chaining</a></li>
+<li><a href="modern-3-indexes">Indexes</a></li>
+<li><a href="modern-4-performance">Fast Pandas</a></li>
+<li><a href="modern-5-tidy">Tidy Data</a></li>
+<li><a href="modern-6-visualization">Visualization</a></li>
+<li><a href="modern-7-timeseries">Time Series</a></li>
+<li><a href="modern-8-scaling">Scaling</a></li>
+</ul>
+<hr>
+<p>As I sit down to write this, the third-most popular pandas question on StackOverflow covers <a href="https://stackoverflow.com/q/14262433/1889400">how to use pandas for large datasets</a>. This is in …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="/pandas-extension-arrays.html">Extension Arrays for Pandas</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 12 February 2018</p>
+ Tags:
+      <a href="/tag/pandas.html">#pandas</a>    </p>
+  </div>
+  <div class="article__text">
+    <p>This is a status update on some enhancements for pandas. The goal of the work
+is to store things that are sufficiently array-like in a pandas <code>DataFrame</code>,
+even if they aren't a regular NumPy array. Pandas already does this in a few
+places for some blessed types (like <code>Categorical</code>); we'd …</p>
   </div>
 </article>
 <hr />
@@ -266,73 +311,26 @@ These aren't like the …</p>
 It's always been a style …</p>
   </div>
 </article>
-<hr />
-<article>
-  <div class="article__title">
-    <h1><a href="/modern-1-intro.html">Modern Pandas (Part 1)</a></h1>
-  </div>
-  <div class="article__meta">
-    <p class="article__meta__post-date">Posted on: Mon 21 March 2016</p>
- Tags:
-      <a href="/tag/pandas.html">#pandas</a>    </p>
-  </div>
-  <div class="article__text">
-    <hr>
-<p>This is part 1 in my series on writing modern idiomatic pandas.</p>
-<ul>
-<li><a href="modern-1-intro">Modern Pandas</a></li>
-<li><a href="method-chaining">Method Chaining</a></li>
-<li><a href="modern-3-indexes">Indexes</a></li>
-<li><a href="modern-4-performance">Fast Pandas</a></li>
-<li><a href="modern-5-tidy">Tidy Data</a></li>
-<li><a href="modern-6-visualization">Visualization</a></li>
-<li><a href="modern-7-timeseries">Time Series</a></li>
-<li><a href="modern-8-scaling">Scaling</a></li>
-</ul>
-<hr>
-<h1>Effective Pandas</h1>
-<h2>Introduction</h2>
-<p>This series is about how to make effective use of <a href="http://pandas.pydata.org">pandas</a>, a data analysis library for the Python programming language.
-It's targeted …</p>
-  </div>
-</article>
-<hr />
-<article>
-  <div class="article__title">
-    <h1><a href="/dplry-pandas.html">dplyr and pandas</a></h1>
-  </div>
-  <div class="article__meta">
-    <p class="article__meta__post-date">Posted on: Thu 16 October 2014</p>
- Tags:
-      <a href="/tag/python-data-science-pandas.html">#python, data science, pandas</a>    </p>
-  </div>
-  <div class="article__text">
-    <p>This notebook compares <a href="http://pandas.pydata.org">pandas</a>
-and <a href="http://cran.r-project.org/web/packages/dplyr/index.html">dplyr</a>.
-The comparison is just on syntax (verbage), not performance. Whether you're an R user looking to switch to pandas (or the other way around), I hope this guide will help ease the transition.</p>
-<p>We'll work through the <a href="http://cran.r-project.org/web/packages/dplyr/vignettes/introduction.html">introductory dplyr vignette</a> to analyze some flight …</p>
-  </div>
-</article>
 
 <div class="pagination">
     <ul>
         <li class="pagination__prev">
-            <a href="/category/misc.html">&laquo;</a>
+            <div class="pagination__prev--none">&laquo;</div>
         </li>
 
 
 
           <li>
-            <a  href="/category/misc.html">1</a>
+            <a class="pagination__page--current" href="/tag/pandas.html">1</a>
           </li>
 
 
           <li>
-            <a class="pagination__page--current" href="/category/misc2.html">2</a>
+            <a  href="/tag/pandas2.html">2</a>
           </li>
 
         <li class="pagination__next">
-            <div class="pagination__next--none">&raquo;</div>
+            <a href="/tag/pandas2.html">&raquo;</a>
         </li>
     </ul>
 </div>

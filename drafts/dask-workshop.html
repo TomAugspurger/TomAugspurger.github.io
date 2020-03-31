@@ -23,10 +23,11 @@
 
   <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datas-frame Atom" />
 
+<meta name="keywords" content="">
 
   <title>
     datas-frame
-&ndash; Tag: python, scripts, data science  </title>
+&ndash; Dask Workshop  </title>
 
 <script type="text/javascript">
   var _gaq = _gaq || [];
@@ -49,42 +50,53 @@
       </div>
       <p>
         <a href="/archives.html"><i class="fa fa-archive"></i> Archive</a>
-&gt; Tag: python, scripts, data science
       </p>
     </header>
 
 <article>
   <div class="article__title">
-    <h1><a href="/Tidy Data in Action.html">Tidy Data in Action</a></h1>
+    <h1><a href="/drafts/dask-workshop.html">Dask Workshop</a></h1>
   </div>
   <div class="article__meta">
-    <p class="article__meta__post-date">Posted on: Thu 27 March 2014</p>
- Tags:
-      <a href="/tag/python-scripts-data-science.html">#python, scripts, data science</a>    </p>
+    <p class="article__meta__post-date">Posted on: Thu 12 December 2019</p>
+    </p>
   </div>
   <div class="article__text">
-    <p><a href="http://had.co.nz">Hadley Whickham</a> wrote a famous paper (for a certain definition of famous) about the importance of <a href="http://vita.had.co.nz/papers/tidy-data.pdf">tidy data</a> when doing data analysis.
-I want to talk a bit about that, using an example from a StackOverflow post, with a solution using <a href="http://pandas.pydata.org">pandas</a>. The principles of tidy data aren't language specific …</p>
+    <p>Dask Summit Recap</p>
+<p>Last week was the first Dask Developer Workshop. This brought together many of
+the core Dask developers and its heavy users to discuss the project. I want to
+share some of the experience with those who weren't able to attend.</p>
+<p>This was a great event. Aside from any technical discussions, it was ncie to
+meet all the people. From new acquaintences to people you're on weekly calls
+with, it was great to interact with everyone.</p>
+<p>The workshop </p>
+<p>During our brief introductions, everyone included a one-phrase description of
+what they'd most-like to see improved in the project. These can roughly be
+grouped as</p>
+<ul>
+<li><strong>Project health</strong>: more maintainers, more maintainer diversity, more commercial
+  adoption</li>
+<li><strong>Deployments</strong>: Support for heterogeneous clusters (e.g. some workers with
+  different resources) on more cluster managers. Easier deployments for various
+  use cases (single user vs. small team of scientists vs. enterprise IT managing
+  things for a large team)</li>
+<li><strong>Documentation</strong>: Including example</li>
+<li><strong>Data Access</strong>: Loading data from various sources</li>
+<li><strong>Reliability</strong>: Especially on adaptive clusters, as workers come and go.</li>
+<li><strong>Features</strong>: Including things like approximate nearest neighbors, shared
+  clients between futures, multi-column sorting, MultiIndex for dask.dataframe</li>
+</ul>
+<p>One of the themes of the workshop was requests for honest, critical feedback
+about what needs to improve. Overall, people had great things to say about Dask
+and the various sub-projects but there's always things to improve.</p>
+<p>Dask sits at a pretty interesting place in the scientific Python ecosystem. It
+(and its users) are power-users of many libraries. It acts as a nice
+coordination point for many projects. We had maintainers from projects like
+NumPy, pandas, scikit-learn, Apache Arrow, cuDF, and others.</p>
   </div>
+
 </article>
 
-<div class="pagination">
-    <ul>
-        <li class="pagination__prev">
-            <div class="pagination__prev--none">&laquo;</div>
-        </li>
-
-
-
-          <li>
-            <a class="pagination__page--current" href="/tag/python-scripts-data-science.html">1</a>
-          </li>
-
-        <li class="pagination__next">
-            <div class="pagination__next--none">&raquo;</div>
-        </li>
-    </ul>
-</div>
 
   </main>
     <footer>
