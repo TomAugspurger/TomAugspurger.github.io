@@ -213,8 +213,8 @@ Apologies for the poor cabling.&lt;/p&gt;
 &lt;p&gt;We deploy the benchmarks (pandas and a few other NumFOCUS projects) using
 Ansible. The scripts get the benchmarks in place, Airflow to run them nightly,
 and supervisord to kick everything off. The outputs are &lt;code&gt;rsync&lt;/code&gt;ed over to the
-pandas webserver and served at https://pandas.pydata.org/speed/. You can see
-pandas' at https://pandas.pydata.org/speed/pandas/. If this seems like a house
+pandas webserver and served at &lt;a href="https://pandas.pydata.org/speed/"&gt;https://pandas.pydata.org/speed/&lt;/a&gt;. You can see
+pandas' at &lt;a href="https://pandas.pydata.org/speed/pandas"&gt;https://pandas.pydata.org/speed/pandas/&lt;/a&gt;. If this seems like a house
 of cards waiting to tumble, that's because it is.&lt;/p&gt;
 &lt;p&gt;Pandas has applied for a NumFOCUS small development grant to improve our
 benchmark process. Ideally maintainers would be able to ask a bot &lt;code&gt;@asv-bot run
