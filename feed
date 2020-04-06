@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Sun, 21 Jul 2019 00:00:00 -0500</lastBuildDate><item><title>pandas + binder</title><link>/pandas-binder.html</link><description>&lt;p&gt;This post describes the start of a journey to get pandas' documentation running
+<rss version="2.0"><channel><title>datas-frame</title><link>/</link><description></description><lastBuildDate>Wed, 01 Apr 2020 00:00:00 -0500</lastBuildDate><item><title>Maintaing Performance</title><link>/maintaing-performance.html</link><description>&lt;p&gt;As pandas' &lt;a href="https://pandas.pydata.org/docs/"&gt;documentation&lt;/a&gt; claims: pandas
+provides &lt;em&gt;high-performance&lt;/em&gt; data structures. But how do we verify that the claim
+is correct? And how do we ensure that it &lt;em&gt;stays&lt;/em&gt; correct over many releases.
+This post describes&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;pandas' current setup for monitoring performance&lt;/li&gt;
+&lt;li&gt;My personal debugging strategy for understanding and fixing performance
+   regressions …&lt;/li&gt;&lt;/ol&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Tom Augspurger</dc:creator><pubDate>Wed, 01 Apr 2020 00:00:00 -0500</pubDate><guid isPermaLink="false">tag:None,2020-04-01:/maintaing-performance.html</guid><category>pandas</category></item><item><title>pandas + binder</title><link>/pandas-binder.html</link><description>&lt;p&gt;This post describes the start of a journey to get pandas' documentation running
 on Binder. The end result is this nice button:&lt;/p&gt;
 &lt;p&gt;&lt;a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb"&gt;&lt;img alt="Binder" src="https://mybinder.org/badge_logo.svg"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;hr&gt;

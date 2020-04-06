@@ -55,6 +55,27 @@
 
 <article>
   <div class="article__title">
+    <h1><a href="/maintaing-performance.html">Maintaing Performance</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Wed 01 April 2020</p>
+ Tags:
+      <a href="/tag/pandas.html">#pandas</a>    </p>
+  </div>
+  <div class="article__text">
+    <p>As pandas' <a href="https://pandas.pydata.org/docs/">documentation</a> claims: pandas
+provides <em>high-performance</em> data structures. But how do we verify that the claim
+is correct? And how do we ensure that it <em>stays</em> correct over many releases.
+This post describes</p>
+<ol>
+<li>pandas' current setup for monitoring performance</li>
+<li>My personal debugging strategy for understanding and fixing performance
+   regressions …</li></ol>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
     <h1><a href="/pandas-binder.html">pandas + binder</a></h1>
   </div>
   <div class="article__meta">
@@ -280,35 +301,6 @@ These aren't like the …</p>
 </ul>
 <hr>
 <p><a href="https://twitter.com/wesmckinn">Wes McKinney</a>, the creator of pandas, is kind of obsessed with performance. From micro-optimizations for element access, to <a href="https://github.com/pydata/pandas/tree/master/pandas/src/klib">embedding</a> a fast hash table inside pandas …</p>
-  </div>
-</article>
-<hr />
-<article>
-  <div class="article__title">
-    <h1><a href="/method-chaining.html">Modern Pandas (Part 2): Method Chaining</a></h1>
-  </div>
-  <div class="article__meta">
-    <p class="article__meta__post-date">Posted on: Mon 04 April 2016</p>
- Tags:
-      <a href="/tag/pandas.html">#pandas</a>    </p>
-  </div>
-  <div class="article__text">
-    <hr>
-<p>This is part 2 in my series on writing modern idiomatic pandas.</p>
-<ul>
-<li><a href="modern-1-intro">Modern Pandas</a></li>
-<li><a href="method-chaining">Method Chaining</a></li>
-<li><a href="modern-3-indexes">Indexes</a></li>
-<li><a href="modern-4-performance">Fast Pandas</a></li>
-<li><a href="modern-5-tidy">Tidy Data</a></li>
-<li><a href="modern-6-visualization">Visualization</a></li>
-<li><a href="modern-7-timeseries">Time Series</a></li>
-<li><a href="modern-8-scaling">Scaling</a></li>
-</ul>
-<hr>
-<h1>Method Chaining</h1>
-<p>Method chaining, where you call methods on an object one after another, is in vogue at the moment.
-It's always been a style …</p>
   </div>
 </article>
 

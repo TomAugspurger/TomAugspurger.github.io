@@ -1,5 +1,249 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2019-07-21T00:00:00-05:00</updated><entry><title>pandas + binder</title><link href="/pandas-binder.html" rel="alternate"></link><published>2019-07-21T00:00:00-05:00</published><updated>2019-07-21T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2019-07-21:/pandas-binder.html</id><summary type="html">&lt;p&gt;This post describes the start of a journey to get pandas' documentation running
+<feed xmlns="http://www.w3.org/2005/Atom"><title>datas-frame</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2020-04-01T00:00:00-05:00</updated><entry><title>Maintaing Performance</title><link href="/maintaing-performance.html" rel="alternate"></link><published>2020-04-01T00:00:00-05:00</published><updated>2020-04-01T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2020-04-01:/maintaing-performance.html</id><summary type="html">&lt;p&gt;As pandas' &lt;a href="https://pandas.pydata.org/docs/"&gt;documentation&lt;/a&gt; claims: pandas
+provides &lt;em&gt;high-performance&lt;/em&gt; data structures. But how do we verify that the claim
+is correct? And how do we ensure that it &lt;em&gt;stays&lt;/em&gt; correct over many releases.
+This post describes&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;pandas' current setup for monitoring performance&lt;/li&gt;
+&lt;li&gt;My personal debugging strategy for understanding and fixing performance
+   regressions …&lt;/li&gt;&lt;/ol&gt;</summary><content type="html">&lt;p&gt;As pandas' &lt;a href="https://pandas.pydata.org/docs/"&gt;documentation&lt;/a&gt; claims: pandas
+provides &lt;em&gt;high-performance&lt;/em&gt; data structures. But how do we verify that the claim
+is correct? And how do we ensure that it &lt;em&gt;stays&lt;/em&gt; correct over many releases.
+This post describes&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;pandas' current setup for monitoring performance&lt;/li&gt;
+&lt;li&gt;My personal debugging strategy for understanding and fixing performance
+   regressions when they occur.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;I hope that the first section topic is useful for library maintainers and the
+second topic is generally useful for people writing performance-sensitive code.&lt;/p&gt;
+&lt;h2&gt;Know thyself&lt;/h2&gt;
+&lt;p&gt;The first rule of optimization is to measure first. It's a common trap to think
+you know the performance of some code just from looking at it. The difficulty is
+compounded when you're reviewing a diff in a pull request and you lack some
+important context. We use benchmarks to measure the performance of code.&lt;/p&gt;
+&lt;p&gt;There's a strong analogy between using unit tests to verify the correctness of
+code and using benchmarks to verify its performance. Each gives us some
+confidence that an implementation behaves as expected and that refactors are not
+introducing regressions (in correctness or performance). And just as you use can
+use a test runner like &lt;code&gt;unittest&lt;/code&gt; or &lt;code&gt;pytest&lt;/code&gt; to organize and run unit tests,
+you can use a tool to organize and run benchmarks.&lt;/p&gt;
+&lt;p&gt;For that, pandas uses &lt;a href="https://asv.readthedocs.io/en/stable/"&gt;asv&lt;/a&gt;.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;airspeed velocity (&lt;code&gt;asv&lt;/code&gt;) is a tool for benchmarking Python packages over
+their lifetime. Runtime, memory consumption and even custom-computed values
+may be tracked. The results are displayed in an interactive web frontend that
+requires only a basic static webserver to host.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;Detecting Regressions&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;asv&lt;/code&gt; is designed to be run continuously over a project's lifetime. In theory, a
+pull request could be accompanied with an &lt;code&gt;asv&lt;/code&gt; report demonstrating that the
+changes don't introduce a performance regression. There are a few issues
+preventing pandas from doing that reliably however, which I'll go into later.&lt;/p&gt;
+&lt;h2&gt;Handling Regressions&lt;/h2&gt;
+&lt;p&gt;Here's a high-level overview of my debugging process when a performance
+regression is discovered (either by ASV detecting one or a user reporting a
+regression).&lt;/p&gt;
+&lt;p&gt;To make things concrete, we'll walk through &lt;a href="https://github.com/pandas-dev/pandas/issues/33012"&gt;this recent pandas
+issue&lt;/a&gt;, where a slowdown was
+reported. User reports are often along the lines of&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;DataFrame.memory_usage&lt;/code&gt; is 100x slower in pandas 1.0 compared to 0.25&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;In this case, &lt;code&gt;DataFrame.memory_usage&lt;/code&gt; was slower with &lt;code&gt;object&lt;/code&gt;-dtypes and
+&lt;code&gt;deep=True&lt;/code&gt;.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;v1.0.3: memory_usage(deep=True) took 26.4566secs
+
+v0.24.0: memory_usage(deep=True) took 6.0479secs
+
+v0.23.4: memory_usage(deep=True) took 0.4633secs
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The first thing to verify is that it's purely a performance regression, and not
+a behavior change or bugfix, by &lt;a href="https://github.com/pandas-dev/pandas/issues/33012#issuecomment-603828279"&gt;ensuring that the outputs
+match&lt;/a&gt;
+between versions. Sometimes correctness requires sacrificing speed. In this
+example, we confirmed that the outputs from 0.24 and 1.0.3 matched, so we
+focused there.&lt;/p&gt;
+&lt;p&gt;Now that we have what seems like a legitimate slowdown, I'll reproduce it
+locally. I'll first activate environments for both the old and new versions (I
+use &lt;a href="https://conda.io/en/latest/"&gt;&lt;code&gt;conda&lt;/code&gt;&lt;/a&gt; for this, one environment per version
+of pandas, but &lt;code&gt;venv&lt;/code&gt; works as well assuming the error isn't specific to a
+version of Python). Then I ensure that I can reproduce the slowdown.&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Comparison of two benchmarks" src="images/performance-comparison.png"&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+
+&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DataFrame&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;A&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;list&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;10000&lt;/span&gt;&lt;span class="p"&gt;))},&lt;/span&gt; &lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nb"&gt;object&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="n"&gt;timeit&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;memory_usage&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;deep&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="mf"&gt;5.37&lt;/span&gt; &lt;span class="n"&gt;ms&lt;/span&gt; &lt;span class="err"&gt;±&lt;/span&gt; &lt;span class="mi"&gt;201&lt;/span&gt; &lt;span class="err"&gt;µ&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="n"&gt;per&lt;/span&gt; &lt;span class="n"&gt;loop&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mean&lt;/span&gt; &lt;span class="err"&gt;±&lt;/span&gt; &lt;span class="n"&gt;std&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="mi"&gt;7&lt;/span&gt; &lt;span class="n"&gt;runs&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt; &lt;span class="n"&gt;loops&lt;/span&gt; &lt;span class="n"&gt;each&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__version__&lt;/span&gt;
+&lt;span class="n"&gt;Out&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;0.25.1&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;versus&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+
+&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DataFrame&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;A&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;list&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;10000&lt;/span&gt;&lt;span class="p"&gt;))},&lt;/span&gt; &lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nb"&gt;object&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="n"&gt;timeit&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;memory_usage&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;deep&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="mf"&gt;17.5&lt;/span&gt; &lt;span class="n"&gt;ms&lt;/span&gt; &lt;span class="err"&gt;±&lt;/span&gt; &lt;span class="mf"&gt;98.7&lt;/span&gt; &lt;span class="err"&gt;µ&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="n"&gt;per&lt;/span&gt; &lt;span class="n"&gt;loop&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mean&lt;/span&gt; &lt;span class="err"&gt;±&lt;/span&gt; &lt;span class="n"&gt;std&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="mi"&gt;7&lt;/span&gt; &lt;span class="n"&gt;runs&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt; &lt;span class="n"&gt;loops&lt;/span&gt; &lt;span class="n"&gt;each&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;In&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__version__&lt;/span&gt;
+&lt;span class="n"&gt;Out&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;1.0.1&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;So we do have a slowdown, from 5.37ms -&amp;gt; 17.5ms on this example.&lt;/p&gt;
+&lt;p&gt;Once I've verified that the outputs match and the slowdown is real, I turn to
+&lt;a href="https://jiffyclub.github.io/snakeviz/"&gt;snakeviz&lt;/a&gt; (created by &lt;a href="https://twitter.com/jiffyclub"&gt;Matt
+Davis&lt;/a&gt;, which measures performance at the
+function-level. For large enough slowdowns, the issue will jump out immediately
+with snakeviz.&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://gistcdn.rawgit.org/TomAugspurger/bad09c3e4a03338590545033ad2da925/353fbf67bb1ff7c6f039854af1c2d51cb503c865/pandas-0.25_static.html"&gt;&lt;strong&gt;pandas 0.25&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;iframe title="pandas-0.25 snakeviz"
+        width="900px"
+        height="600px"
+        src="https://gistcdn.rawgit.org/TomAugspurger/bad09c3e4a03338590545033ad2da925/353fbf67bb1ff7c6f039854af1c2d51cb503c865/pandas-0.25_static.html"&gt;&lt;/iframe&gt;
+
+&lt;p&gt;&lt;a href="https://gistcdn.rawgit.org/TomAugspurger/98bc79523187f1fde3093b5af63ae68c/5b1d3815fb2319ff365c3881daeac70bf9077e77/pandas-1.0_static.html"&gt;&lt;strong&gt;pandas 1.0&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;iframe title="pandas 1.0.3 snakeviz"
+        width="900px"
+        height="600px"
+        src="https://gistcdn.rawgit.org/TomAugspurger/98bc79523187f1fde3093b5af63ae68c/5b1d3815fb2319ff365c3881daeac70bf9077e77/pandas-1.0_static.html"&gt;&lt;/iframe&gt;
+
+&lt;p&gt;From the &lt;a href="https://jiffyclub.github.io/snakeviz/#interpreting-results"&gt;snakeviz
+docs&lt;/a&gt;, these charts
+show&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;the fraction of time spent in a function is represented by the extent of a
+visualization element, either the width of a rectangle or the angular extent
+of an arc.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;I prefer the "sunburst" / angular extent style, but either works.&lt;/p&gt;
+&lt;p&gt;In this case, I noticed that ~95% of the time was being spent in
+&lt;code&gt;pandas._libs.lib.memory_usage_of_object&lt;/code&gt;, and most of that time was spent in
+&lt;code&gt;PandasArray.__getitem__&lt;/code&gt; in pandas 1.0.3. This is where a bit of
+pandas-specific knowledge comes in, but suffice to say, it looks fishy&lt;sup id="fnref-1"&gt;&lt;a class="footnote-ref" href="#fn-1"&gt;1&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+&lt;h2&gt;Line Profiling&lt;/h2&gt;
+&lt;p&gt;With snakeviz, we've identified a function or two that's slowing things down. If
+I need more details on &lt;em&gt;why&lt;/em&gt; that's function is slow, I'll use
+&lt;a href="https://github.com/rkern/line_profiler"&gt;line-profiler&lt;/a&gt;. In our example, we've
+identified a couple of functions, &lt;code&gt;IndexOpsMixin.memory_usage&lt;/code&gt; and
+&lt;code&gt;PandasArray.__getitem__&lt;/code&gt; that could be inspected in detail.&lt;/p&gt;
+&lt;p&gt;You point &lt;code&gt;line-profiler&lt;/code&gt; one or more functions with &lt;code&gt;-f&lt;/code&gt; and provide a
+statement to execute. It will measure things about each line in the function,
+including the number of times it's hit and how long is spent on that line (per
+hit and total)&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;In  [9]: %load_ext line_profiler
+In [10]: %lprun -f pd.core.base.IndexOpsMixin.memory_usage df.memory_usage(deep=True)
+Total time: 0.034319 s
+File: /Users/taugspurger/miniconda3/envs/pandas=1.0.1/lib/python3.8/site-packages/pandas/core/base.py
+Function: memory_usage at line 1340
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+  1340                                               def memory_usage(self, deep=False):
+  ...
+  1363         1         56.0     56.0      0.2          if hasattr(self.array, &amp;quot;memory_usage&amp;quot;):
+  1364                                                       return self.array.memory_usage(deep=deep)
+  1365
+  1366         1         11.0     11.0      0.0          v = self.array.nbytes
+  1367         1         18.0     18.0      0.1          if deep and is_object_dtype(self) and not PYPY:
+  1368         1      34233.0  34233.0     99.7              v += lib.memory_usage_of_objects(self.array)
+  1369         1          1.0      1.0      0.0          return v
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;THe &lt;code&gt;% time&lt;/code&gt; column clearly points to &lt;code&gt;lib.memory_usage_of_objects&lt;/code&gt;. This is a
+Cython function, so we can't use &lt;code&gt;line-profiler&lt;/code&gt; on it. But we know from the
+snakeviz output above that we eventually get to &lt;code&gt;PandasArray.__getitem__&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;In [11]: %lprun -f pd.arrays.PandasArray.__getitem__ df.memory_usage(deep=True)
+Timer unit: 1e-06 s
+
+Total time: 0.041508 s
+File: /Users/taugspurger/miniconda3/envs/pandas=1.0.1/lib/python3.8/site-packages/pandas/core/arrays/numpy_.py
+Function: __getitem__ at line 232
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   232                                               def __getitem__(self, item):
+   233     10000       4246.0      0.4     10.2          if isinstance(item, type(self)):
+   234                                                       item = item._ndarray
+   235
+   236     10000      25475.0      2.5     61.4          item = check_array_indexer(self, item)
+   237
+   238     10000       4394.0      0.4     10.6          result = self._ndarray[item]
+   239     10000       4386.0      0.4     10.6          if not lib.is_scalar(item):
+   240                                                       result = type(self)(result)
+   241     10000       3007.0      0.3      7.2          return result
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;In this particular example, the most notable thing is that fact that we're
+calling this function 10,000 times, which amounts to once per item on our 10,000
+row &lt;code&gt;DataFrame&lt;/code&gt;. Again, the details of this specific example and the fix aren't
+too important, but the solution was to just stop doing that&lt;sup id="fnref-2"&gt;&lt;a class="footnote-ref" href="#fn-2"&gt;2&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://github.com/pandas-dev/pandas/pull/33102"&gt;The fix&lt;/a&gt; was provided by
+&lt;a href="https://github.com/neilkg"&gt;@neilkg&lt;/a&gt; soon after the issue was identified, and
+crucially included a new asv benchmark for &lt;code&gt;memory_usage&lt;/code&gt; with object dtypes.
+Hopefully we won't regress on this again in the future.&lt;/p&gt;
+&lt;h2&gt;Workflow issues&lt;/h2&gt;
+&lt;p&gt;This setup is certainly better than nothing. But there are a few notable
+problems, some general and some specific to pandas:&lt;/p&gt;
+&lt;p&gt;Writing benchmarks is hard work (just like tests). There's the general issue of
+writing and maintaining code. And on top of that, writing a good ASV benchmark
+requires some knowledge specific to ASV. And again, just like tests, your
+benchmarks can be trusted only as far as their coverage. For a large codebase
+like pandas you'll need a decently large benchmark suite.&lt;/p&gt;
+&lt;p&gt;But that large benchmark suite comes with it's own costs. Currently pandas' full
+suite takes about 2 hours to run. This rules out running the benchmarks on most
+public CI providers. And even if we could finish it in time, we couldn't really
+trust the results. These benchmarks, at least as written, really do need
+dedicated hardware to be stable over time. Pandas has a machine in my basement,
+but maintaining that has been a time-consuming, challenging process.&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Pandas' benchmark server" src="images/benchmark-server.png"&gt;&lt;/p&gt;
+&lt;p&gt;This is my current setup, which stuffs the benchmark server (the black Intel
+NUC) and a router next to my wife's art storage. We reached this solution after
+my 2 year old unplugged the old setup (on my office floor) one too many times.
+Apologies for the poor cabling.&lt;/p&gt;
+&lt;p&gt;We deploy the benchmarks (pandas and a few other NumFOCUS projects) using
+Ansible. The scripts get the benchmarks in place, Airflow to run them nightly,
+and supervisord to kick everything off. The outputs are &lt;code&gt;rsync&lt;/code&gt;ed over to the
+pandas webserver and served at https://pandas.pydata.org/speed/. You can see
+pandas' at https://pandas.pydata.org/speed/pandas/. If this seems like a house
+of cards waiting to tumble, that's because it is.&lt;/p&gt;
+&lt;p&gt;Pandas has applied for a NumFOCUS small development grant to improve our
+benchmark process. Ideally maintainers would be able to ask a bot &lt;code&gt;@asv-bot run
+-b memory_usage&lt;/code&gt; which would kick off a process that pulled down the pull
+request and ran the requested benchmarks on a dedicated machine (that isn't
+easily accessible by my children).&lt;/p&gt;
+&lt;h2&gt;Recap&lt;/h2&gt;
+&lt;p&gt;To summarize:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;We need benchmarks to monitor performance&lt;/li&gt;
+&lt;li&gt;We use tools like &lt;code&gt;asv&lt;/code&gt; to organize and benchmarks continuously&lt;/li&gt;
+&lt;li&gt;When regressions occur, we use &lt;code&gt;snakeviz&lt;/code&gt; and &lt;code&gt;line-profiler&lt;/code&gt; to diagnose the
+   problem&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="footnote"&gt;
+&lt;hr&gt;
+&lt;ol&gt;
+&lt;li id="fn-1"&gt;
+&lt;p&gt;PandasArray is a very simple wrapper that implements pandas'
+  ExtensionArray interface for 1d NumPy ndarrays, so it's essentially just an
+  ndarray. But, crucially, it's a Python class so it's getitem is relatively
+  slow compared to numpy.ndarray's getitem.&amp;#160;&lt;a class="footnote-backref" href="#fnref-1" title="Jump back to footnote 1 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id="fn-2"&gt;
+&lt;p&gt;It still does an elementwise getitem, but NumPy's &lt;code&gt;__getitem__&lt;/code&gt; is much
+  faster than &lt;code&gt;PandasArray&lt;/code&gt;'s.&amp;#160;&lt;a class="footnote-backref" href="#fnref-2" title="Jump back to footnote 2 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;</content><category term="pandas"></category></entry><entry><title>pandas + binder</title><link href="/pandas-binder.html" rel="alternate"></link><published>2019-07-21T00:00:00-05:00</published><updated>2019-07-21T00:00:00-05:00</updated><author><name>Tom Augspurger</name></author><id>tag:None,2019-07-21:/pandas-binder.html</id><summary type="html">&lt;p&gt;This post describes the start of a journey to get pandas' documentation running
 on Binder. The end result is this nice button:&lt;/p&gt;
 &lt;p&gt;&lt;a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb"&gt;&lt;img alt="Binder" src="https://mybinder.org/badge_logo.svg"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;hr&gt;
