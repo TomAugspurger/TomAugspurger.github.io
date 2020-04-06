@@ -185,6 +185,12 @@ of an arc.</p>
 <code>pandas._libs.lib.memory_usage_of_object</code>, and most of that time was spent in
 <code>PandasArray.__getitem__</code> in pandas 1.0.3. This is where a bit of
 pandas-specific knowledge comes in, but suffice to say, it looks fishy<sup id="fnref-1"><a class="footnote-ref" href="#fn-1">1</a></sup>.</p>
+<p>As an aside, to create and share these snakeviz profiles, I ran the output of
+the <code>%snakeviz</code> command through
+<a href="https://gist.github.com/jiffyclub/6b5e0f0f05ab487ff607"><code>svstatic</code></a> and
+uploaded that as a gist (using <a href="https://github.com/defunkt/gist"><code>gist</code></a>). I
+then pasted the "raw" URL to https://rawgit.org/ to get the URL embedded here as
+an iframe.</p>
 <h2>Line Profiling</h2>
 <p>With snakeviz, we've identified a function or two that's slowing things down. If
 I need more details on <em>why</em> that's function is slow, I'll use

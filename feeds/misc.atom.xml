@@ -128,6 +128,12 @@ of an arc.&lt;/p&gt;
 &lt;code&gt;pandas._libs.lib.memory_usage_of_object&lt;/code&gt;, and most of that time was spent in
 &lt;code&gt;PandasArray.__getitem__&lt;/code&gt; in pandas 1.0.3. This is where a bit of
 pandas-specific knowledge comes in, but suffice to say, it looks fishy&lt;sup id="fnref-1"&gt;&lt;a class="footnote-ref" href="#fn-1"&gt;1&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+&lt;p&gt;As an aside, to create and share these snakeviz profiles, I ran the output of
+the &lt;code&gt;%snakeviz&lt;/code&gt; command through
+&lt;a href="https://gist.github.com/jiffyclub/6b5e0f0f05ab487ff607"&gt;&lt;code&gt;svstatic&lt;/code&gt;&lt;/a&gt; and
+uploaded that as a gist (using &lt;a href="https://github.com/defunkt/gist"&gt;&lt;code&gt;gist&lt;/code&gt;&lt;/a&gt;). I
+then pasted the "raw" URL to https://rawgit.org/ to get the URL embedded here as
+an iframe.&lt;/p&gt;
 &lt;h2&gt;Line Profiling&lt;/h2&gt;
 &lt;p&gt;With snakeviz, we've identified a function or two that's slowing things down. If
 I need more details on &lt;em&gt;why&lt;/em&gt; that's function is slow, I'll use
