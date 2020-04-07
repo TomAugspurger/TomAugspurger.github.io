@@ -35,6 +35,26 @@ their lifetime. Runtime, memory consumption and even custom-computed values
 may be tracked. The results are displayed in an interactive web frontend that
 requires only a basic static webserver to host.&lt;/p&gt;
 &lt;/blockquote&gt;
+&lt;p&gt;&lt;code&gt;asv&lt;/code&gt; provides a structured way to write benchmarks. For example, pandas &lt;code&gt;Series.isin&lt;/code&gt;
+&lt;a href="https://github.com/pandas-dev/pandas/blob/d1b1236f0d8402d1df6ad7cd916d07ba45706269/asv_bench/benchmarks/series_methods.py"&gt;benchmark&lt;/a&gt; looks roughly like&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;IsIn&lt;/span&gt;:
+
+    &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;setup&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;s&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;Series&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;np&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;random&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;randint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;100000&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;values&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;time_isin&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;s&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;isin&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;values&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;There's some setup, and then the benchmark method starting with &lt;code&gt;time_&lt;/code&gt;. Using
+the &lt;code&gt;asv&lt;/code&gt; CLI, benchmarks can be run for a specific commit with
+&lt;code&gt;asv run &amp;lt;commit HASH&amp;gt;&lt;/code&gt;, or multiple commits can be compared with
+&lt;code&gt;asv continuous &amp;lt;GIT RANGE&amp;gt;&lt;/code&gt;. Finally, &lt;code&gt;asv&lt;/code&gt; will collect performance over time
+and can visualize the output. You can see pandas' at
+&lt;a href="https://pandas.pydata.org/speed/pandas/"&gt;https://pandas.pydata.org/speed/pandas/&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img alt="pandas' asv overview" src="images/asv-overview.png"&gt;&lt;/p&gt;
 &lt;h2&gt;Detecting Regressions&lt;/h2&gt;
 &lt;p&gt;&lt;code&gt;asv&lt;/code&gt; is designed to be run continuously over a project's lifetime. In theory, a
 pull request could be accompanied with an &lt;code&gt;asv&lt;/code&gt; report demonstrating that the
@@ -140,7 +160,7 @@ I need more details on &lt;em&gt;why&lt;/em&gt; that's function is slow, I'll us
 &lt;a href="https://github.com/rkern/line_profiler"&gt;line-profiler&lt;/a&gt;. In our example, we've
 identified a couple of functions, &lt;code&gt;IndexOpsMixin.memory_usage&lt;/code&gt; and
 &lt;code&gt;PandasArray.__getitem__&lt;/code&gt; that could be inspected in detail.&lt;/p&gt;
-&lt;p&gt;You point &lt;code&gt;line-profiler&lt;/code&gt; one or more functions with &lt;code&gt;-f&lt;/code&gt; and provide a
+&lt;p&gt;You point &lt;code&gt;line-profiler&lt;/code&gt; at one or more functions with &lt;code&gt;-f&lt;/code&gt; and provide a
 statement to execute. It will measure things about each line in the function,
 including the number of times it's hit and how long is spent on that line (per
 hit and total)&lt;/p&gt;
@@ -216,12 +236,15 @@ but maintaining that has been a time-consuming, challenging process.&lt;/p&gt;
 NUC) and a router next to my wife's art storage. We reached this solution after
 my 2 year old unplugged the old setup (on my office floor) one too many times.
 Apologies for the poor cabling.&lt;/p&gt;
-&lt;p&gt;We deploy the benchmarks (pandas and a few other NumFOCUS projects) using
-Ansible. The scripts get the benchmarks in place, Airflow to run them nightly,
-and supervisord to kick everything off. The outputs are &lt;code&gt;rsync&lt;/code&gt;ed over to the
-pandas webserver and served at &lt;a href="https://pandas.pydata.org/speed/"&gt;https://pandas.pydata.org/speed/&lt;/a&gt;. You can see
-pandas' at &lt;a href="https://pandas.pydata.org/speed/pandas"&gt;https://pandas.pydata.org/speed/pandas/&lt;/a&gt;. If this seems like a house
-of cards waiting to tumble, that's because it is.&lt;/p&gt;
+&lt;p&gt;We &lt;a href="https://github.com/asv-runner/asv-runner"&gt;deploy the benchmarks&lt;/a&gt; (for pandas
+and a few other NumFOCUS projects) using Ansible. The scripts get the benchmarks
+in place, Airflow to run them nightly, and supervisord to kick everything off.
+The outputs are &lt;code&gt;rsync&lt;/code&gt;ed over to the pandas webserver and served at
+&lt;a href="https://pandas.pydata.org/speed/"&gt;https://pandas.pydata.org/speed/&lt;/a&gt;. You can
+see pandas' at
+&lt;a href="https://pandas.pydata.org/speed/pandas"&gt;https://pandas.pydata.org/speed/pandas/&lt;/a&gt;.
+If this seems like a house of cards waiting to tumble, that's because it is.&lt;/p&gt;
+&lt;p&gt;&lt;img alt="pandas' airflow server" src="images/performance-airflow.png"&gt;&lt;/p&gt;
 &lt;p&gt;Pandas has applied for a NumFOCUS small development grant to improve our
 benchmark process. Ideally maintainers would be able to ask a bot &lt;code&gt;@asv-bot run
 -b memory_usage&lt;/code&gt; which would kick off a process that pulled down the pull
@@ -230,8 +253,8 @@ easily accessible by my children).&lt;/p&gt;
 &lt;h2&gt;Recap&lt;/h2&gt;
 &lt;p&gt;To summarize:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;We need benchmarks to monitor performance&lt;/li&gt;
-&lt;li&gt;We use tools like &lt;code&gt;asv&lt;/code&gt; to organize and benchmarks continuously&lt;/li&gt;
+&lt;li&gt;We need benchmarks to monitor performance, especially over time&lt;/li&gt;
+&lt;li&gt;We use tools like &lt;code&gt;asv&lt;/code&gt; to organize and benchmark continuously&lt;/li&gt;
 &lt;li&gt;When regressions occur, we use &lt;code&gt;snakeviz&lt;/code&gt; and &lt;code&gt;line-profiler&lt;/code&gt; to diagnose the
    problem&lt;/li&gt;
 &lt;/ol&gt;
