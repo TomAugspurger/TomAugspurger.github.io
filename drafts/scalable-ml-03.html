@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="https://tomaugspurger.github.io/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="https://tomaugspurger.github.io/">
+  <link rel="stylesheet" type="text/css" href="https://tomaugspurger.github.io/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="https://tomaugspurger.github.io/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="https://tomaugspurger.github.io/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="https://tomaugspurger.github.io/theme/css/fontawesome-all.min.css">
+  <link rel="stylesheet" type="text/css" href="https://tomaugspurger.github.io/theme/css/hatena-bookmark-icon.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="https://tomaugspurger.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datasframe Atom" />
+
+<meta name="keywords" content="">
+
+  <title>
+    datasframe
+&ndash; Scalable Machine Learning (Part 3): Parallel  </title>
+
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="https://tomaugspurger.github.io">datasframe</a>
+      </div>
+      <p>
+        <a href="https://tomaugspurger.github.io/archives.html"><i class="fab fas-archive"></i> Archive</a>
+      </p>
+    </header>
+
+<article>
+  <div class="article__title">
+    <h1><a href="https://tomaugspurger.github.io/drafts/scalable-ml-03.html">Scalable Machine Learning (Part 3): Parallel</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Sat 16 September 2017</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p><em>This work is supported by <a href="https://www.anaconda.com/">Anaconda, Inc.</a> and the
+Data Driven Discovery Initiative from the <a href="https://www.moore.org/">Moore Foundation</a>.</em></p>
+<p>This is part three of my series on scalable machine learning.</p>
+<ul>
+<li><a href="scalable-ml-01">Small Fit, Big Predict</a></li>
+<li><a href="scalable-ml-02">Scikit-Learn Partial Fit</a></li>
+<li><a href="scalable-ml-03">Parallel Machine Learning</a></li>
+</ul>
+<p>You can download a notebook of this post [here][notebook].</p>
+<hr>
+<p>In <a href="scalable-ml-01">part one</a>, I talked about the type of constraints that push
+us to parallelize or distribute a machine learning workload. Today, we'll be
+talking about the second constraint, "I'm constrained by time, and would like to
+fit more models at once, by using all the cores of my laptop, or all the
+machines in my cluster".</p>
+<h2>An Aside on Parallelism</h2>
+<p>In the case of Python, we have two main avenues of parallelization (which we'll
+roughly define as using multiple "workers" to do some "work" in less time).
+Those two avenues are</p>
+<ol>
+<li>multi-threading</li>
+<li>multi-processing</li>
+</ol>
+<p>For python, the most important differences are that</p>
+<ol>
+<li>multi-threaded code can <em>potentially</em> be limited by the GIL</li>
+<li>multi-processing code requires that data be serialized between processes</li>
+</ol>
+<p>The GIL is the "Global Interpreter Lock", an implementation detail of CPython
+that means only one thread in your python process can be executing python code
+at once.</p>
+<p><a href="https://www.youtube.com/watch?v=9zinZmE3Ogk">This talk</a> by Python
+core-developer Raymond Hettinger does a good job summarizing things for Python,
+with an important caveat: much of what he says about the GIL doesn't apply to
+the <em>scientific</em> python stack. NumPy, scikit-learn, and much of pandas release
+the GIL and can run multi-threaded, using shared memory and so avoiding
+serialization costs. I'll highlight his quote, which summarizes the
+situation:</p>
+<blockquote>
+<blockquote>
+<p>Your weakness is your strength, and your strength is your weakness</p>
+</blockquote>
+<p>The strength of threads is shared state. The weakness of threads is shared
+state.</p>
+</blockquote>
+<p>Another wrinkle here is that when you move to a distributed cluster, you <em>have</em>
+to have multiple processes. And communication between processes becomes even
+more expensive since you'll have network overhead to worry about, in addition to
+the serialization costs.</p>
+<p>Fortunately, modules like <code>concurrent.futures</code> and libraries like <code>dask</code> make it
+easy to swap one mode in for another. Let's make a little dask array:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">dask.array</span> <span class="kn">as</span> <span class="nn">da</span>
+<span class="kn">import</span> <span class="nn">dask</span>
+<span class="kn">import</span> <span class="nn">dask.threaded</span>
+<span class="kn">import</span> <span class="nn">dask.multiprocessing</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">X</span> <span class="o">/</span> <span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="err">@</span> <span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+
+<p>We can swap out the scheduler with a context-manager:</p>
+<div class="highlight"><pre><span></span><code><span class="c">%%time</span>
+<span class="n">with</span> <span class="s">dask.set_options(get=dask.threaded.get):</span>
+    # <span class="n">threaded</span> <span class="n">is</span> <span class="n">the</span> <span class="n">default</span> <span class="k">for</span> <span class="n">dask</span><span class="p">.</span><span class="n">array</span> <span class="n">anyway</span>
+    <span class="n">result</span><span class="p">.</span><span class="n">compute</span><span class="p">()</span>
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code><span class="c">%%time</span>
+<span class="n">with</span> <span class="s">dask.set_options(get=dask.multiprocessing.get):</span>
+    <span class="n">result</span><span class="p">.</span><span class="n">compute</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Every dask collection (<code>dask.array</code>, <code>dask.dataframe</code>, <code>dask.bag</code>) has a default
+scheduler that typically works well for the kinds of operations it does. For
+<code>dask.array</code> and <code>dask.dataframe</code>, the shared-memory threaded scheduler is used.</p>
+<h2>Cost Models</h2>
+<p>In <a href="https://www.youtube.com/watch?v=tC94Mkg-oJU">this talk</a>, Simon Peyton Jones
+talks about parallel and distributed computing for Haskell. He stressed
+repeatedly that there's no silver bullet when it comes to parallelism. The type
+of parallelism appropriate for a web server, say, may be different than the type
+of parallelism appropriate for a machine learning algorithm.</p>
+<p>I mention all this, since we're about to talk about parallel machine learning.
+<em>In general</em>, for small data and many models you'll want to use the threaded
+scheduler. For bigger data (larger than memory), you'll want want to use the
+distributed scheduler. Assuming the underlying NumPy, SciPy, scikit-learn, or
+pandas operation releases the GIL, you'll be able to get nice speedups without
+the cost of serialization. But again, there isn't a silver bullet here, and the
+best type of parallelism will depend on your particular problem.</p>
+<h2>Where to Parallelize</h2>
+<p>In a typical machine-learning workflow, there are typically ample opportunities for
+parallelism.</p>
+<ol>
+<li>Over Hyper-parameters (one fit per combination of parameters)</li>
+<li>Over Cross-validation folds (one fit per fold)</li>
+<li>Within an algorithm (for some algorithms)</li>
+</ol>
+<p>Scikit-learn already uses parallelism in many places, anywhere you see an
+<code>n_jobs</code> keyword.</p>
+  </div>
+
+</article>
+
+
+  </main>
+    <footer>
+      <div class="author__logo">
+          <img src="https://tomaugspurger.github.io/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="https://tomaugspurger.github.io/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="https://tomaugspurger.github.io/pages/about.html" title="About"><i class="fab fa-link"></i></a></li>
+            <li>
+              <a href="https://tomaugspurger.github.io/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fas fa-rss-square"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
+</body>
+</html>

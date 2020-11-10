@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- ## for client-side less
+  <link rel="stylesheet/less" type="text/css" href="https://tomaugspurger.github.io/theme/css/style.less">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
+  -->
+  <link rel="icon" type="image/vnd.microsoft.icon" href="https://tomaugspurger.github.io/">
+  <link rel="stylesheet" type="text/css" href="https://tomaugspurger.github.io/theme/css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="https://tomaugspurger.github.io/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="https://tomaugspurger.github.io/theme/css/pygments.css">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto+Mono">
+  <link rel="stylesheet" type="text/css" href="https://tomaugspurger.github.io/theme/css/fontawesome-all.min.css">
+  <link rel="stylesheet" type="text/css" href="https://tomaugspurger.github.io/theme/css/hatena-bookmark-icon.css">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Tom Augspurger">
+  <meta name="description" content="Posts and writings by Tom Augspurger">
+
+  <link href="https://tomaugspurger.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="datasframe Atom" />
+
+<link href="https://tomaugspurger.github.io/feeds/{slug}.atom.xml" type="application/atom+xml" rel="alternate" title="datasframe misc Category Atom" />
+
+  <title>
+    datasframe
+&ndash; Category: misc  </title>
+
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="site-name">
+        <a href="https://tomaugspurger.github.io">datasframe</a>
+      </div>
+      <p>
+        <a href="https://tomaugspurger.github.io/archives.html"><i class="fab fas-archive"></i> Archive</a>
+&gt; Category: misc
+&brvbar; <a href="https://tomaugspurger.github.io/feeds/{slug}.atom.xml">Atom</a>
+      </p>
+    </header>
+
+<article>
+  <div class="article__title">
+    <h1><a href="https://tomaugspurger.github.io/maintaing-performance.html">Maintaing Performance</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Wed 01 April 2020</p>
+ Tags:
+      <a href="https://tomaugspurger.github.io/tag/pandas.html">#pandas</a>    </p>
+  </div>
+  <div class="article__text">
+    <p>As pandas' <a href="https://pandas.pydata.org/docs/">documentation</a> claims: pandas
+provides <em>high-performance</em> data structures. But how do we verify that the claim
+is correct? And how do we ensure that it <em>stays</em> correct over many releases.
+This post describes</p>
+<ol>
+<li>pandas' current setup for monitoring performance</li>
+<li>My personal debugging strategy for understanding and fixing performance
+   regressions …</li></ol>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="https://tomaugspurger.github.io/pandas-binder.html">pandas + binder</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Sun 21 July 2019</p>
+ Tags:
+      <a href="https://tomaugspurger.github.io/tag/pandas.html">#pandas</a>    </p>
+  </div>
+  <div class="article__text">
+    <p>This post describes the start of a journey to get pandas' documentation running
+on Binder. The end result is this nice button:</p>
+<p><a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb"><img alt="Binder" src="https://mybinder.org/badge_logo.svg"></a></p>
+<hr>
+<p>For a while now I've been jealous of <a href="https://github.com/dask/dask-examples">Dask's examples
+repository</a>. That's a repository containing a
+collection of Jupyter notebooks demonstrating Dask in action. It stitches
+together some …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="https://tomaugspurger.github.io/sklearn-dask-tabular.html">Tabular Data in Scikit-Learn and Dask-ML</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 17 September 2018</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>Scikit-Learn 0.20.0 will contain some nice new features for working with tabular data.
+This blogpost will introduce those improvements with a small demo.
+We'll then see how Dask-ML was able to piggyback on the work done by scikit-learn to offer a version that works well with Dask Arrays …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="https://tomaugspurger.github.io/distributed-tpot.html">Distributed Auto-ML with TPOT with Dask</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Thu 30 August 2018</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p><em>This work is supported by <a href="https://www.anaconda.com/">Anaconda Inc</a>.</em></p>
+<p>This post describes a recent improvement made to <a href="https://epistasislab.github.io/tpot/">TPOT</a>. TPOT is an
+<a href="https://en.wikipedia.org/wiki/Automated_machine_learning">automated machine learning</a> library for Python. It does some feature
+engineering and hyper-parameter optimization for you. TPOT uses <a href="https://en.wikipedia.org/wiki/Genetic_programming">genetic
+algorithms</a> to evaluate which models are performing well and how to choose …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="https://tomaugspurger.github.io/pandas-moral-philosophy.html">Moral Philosophy for pandas or: What is <code>.values</code>?</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Tue 14 August 2018</p>
+ Tags:
+      <a href="https://tomaugspurger.github.io/tag/pandas.html">#pandas</a>    </p>
+  </div>
+  <div class="article__text">
+    <p>The other day, I put up a <a href="https://twitter.com/TomAugspurger/status/1026578613389455360">Twitter poll</a> asking a simple question: What's the type of <code>series.values</code>?</p>
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">Pop Quiz! What are the possible results for the following:<br><br>&gt;&gt;&gt; type(pandas.Series.values)</p>&mdash; Tom Augspurger (@TomAugspurger) <a href="https://twitter.com/TomAugspurger/status/1026578613389455360?ref_src=twsrc%5Etfw">August 6, 2018</a></blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+<p>I was a bit limited for space, so I'll expand on …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="https://tomaugspurger.github.io/modern-8-scaling.html">Modern Pandas (Part 8): Scaling</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 23 April 2018</p>
+ Tags:
+      <a href="https://tomaugspurger.github.io/tag/pandas.html">#pandas</a>    </p>
+  </div>
+  <div class="article__text">
+    <hr>
+<p>This is part 1 in my series on writing modern idiomatic pandas.</p>
+<ul>
+<li><a href="modern-1-intro">Modern Pandas</a></li>
+<li><a href="method-chaining">Method Chaining</a></li>
+<li><a href="modern-3-indexes">Indexes</a></li>
+<li><a href="modern-4-performance">Fast Pandas</a></li>
+<li><a href="modern-5-tidy">Tidy Data</a></li>
+<li><a href="modern-6-visualization">Visualization</a></li>
+<li><a href="modern-7-timeseries">Time Series</a></li>
+<li><a href="modern-8-scaling">Scaling</a></li>
+</ul>
+<hr>
+<p>As I sit down to write this, the third-most popular pandas question on StackOverflow covers <a href="https://stackoverflow.com/q/14262433/1889400">how to use pandas for large datasets</a>. This is in …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="https://tomaugspurger.github.io/dask-ml-041.html">dask-ml 0.4.1 Released</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Tue 13 February 2018</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p><em>This work is supported by <a href="http://anaconda.com/">Anaconda Inc</a> and the Data
+Driven Discovery Initiative from the <a href="https://www.moore.org/">Moore
+Foundation</a>.</em></p>
+<p><a href="http://dask-ml.readthedocs.io/en/latest/">dask-ml</a> 0.4.1 was released today with a few enhancements. See the
+<a href="http://dask-ml.readthedocs.io/en/latest/changelog.html">changelog</a> for all the changes from 0.4.0.</p>
+<p>Conda packages are available on conda-forge</p>
+<div class="highlight"><pre><span></span><code>$ conda install -c conda-forge dask-ml …</code></pre></div>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="https://tomaugspurger.github.io/pandas-extension-arrays.html">Extension Arrays for Pandas</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 12 February 2018</p>
+ Tags:
+      <a href="https://tomaugspurger.github.io/tag/pandas.html">#pandas</a>    </p>
+  </div>
+  <div class="article__text">
+    <p>This is a status update on some enhancements for pandas. The goal of the work
+is to store things that are sufficiently array-like in a pandas <code>DataFrame</code>,
+even if they aren't a regular NumPy array. Pandas already does this in a few
+places for some blessed types (like <code>Categorical</code>); we'd …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="https://tomaugspurger.github.io/distributed-joblib.html">Easy distributed training with Joblib and dask</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 05 February 2018</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p><em>This work is supported by <a href="http://anaconda.com/">Anaconda Inc</a> and the Data
+Driven Discovery Initiative from the <a href="https://www.moore.org/">Moore
+Foundation</a>.</em></p>
+<p>This past week, I had a chance to visit some of the scikit-learn developers at
+Inria in Paris. It was a fun and productive week, and I'm thankful to them for
+hosting me …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
+    <h1><a href="https://tomaugspurger.github.io/dask-ml-announce.html">dask-ml</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Thu 26 October 2017</p>
+    </p>
+  </div>
+  <div class="article__text">
+    <p>Today we released the first version of <code>dask-ml</code>, a library for parallel and
+distributed machine learning. Read the <a href="http://dask-ml.readthedocs.io/en/latest/">documentation</a> or install it with</p>
+<div class="highlight"><pre><span></span><code><span class="err">pip install dask-ml</span>
+</code></pre></div>
+
+<p>Packages are currently building for conda-forge, and will be up later today.</p>
+<div class="highlight"><pre><span></span><code><span class="err">conda install -c conda-forge dask-ml</span>
+</code></pre></div>
+
+<h2>The Goals</h2>
+<p><a href="http://dask.pydata.org/en/latest/">dask</a> is, to quote the …</p>
+  </div>
+</article>
+
+<div class="pagination">
+    <ul>
+        <li class="pagination__prev">
+            <div class="pagination__prev--none">&laquo;</div>
+        </li>
+
+
+
+          <li>
+            <a class="pagination__page--current" href="https://tomaugspurger.github.io/category/misc.html">1</a>
+          </li>
+
+
+          <li>
+            <a  href="https://tomaugspurger.github.io/category/misc2.html">2</a>
+          </li>
+
+
+          <li>
+            <a  href="https://tomaugspurger.github.io/category/misc3.html">3</a>
+          </li>
+
+        <li class="pagination__next">
+            <a href="https://tomaugspurger.github.io/category/misc2.html">&raquo;</a>
+        </li>
+    </ul>
+</div>
+
+  </main>
+    <footer>
+      <div class="author__logo">
+          <img src="https://tomaugspurger.github.io/theme/images/logo.png" alt="logo">
+      </div>
+      <section class="author">
+        <div class="author__name">
+          <a href="https://tomaugspurger.github.io/pages/about.html">Tom Augspurger</a>
+          <p></p>
+        </div>
+        <div class="author__link">
+          <ul>
+            <li><a href="https://tomaugspurger.github.io/pages/about.html" title="About"><i class="fab fa-link"></i></a></li>
+            <li>
+              <a href="https://tomaugspurger.github.io/feeds/all.atom.xml" target="_blank" title="Feed">
+                <i class="fas fa-rss-square"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <div class="ending-message">
+        <p>&copy; Tom Augspurger. Powered by <a href="http://getpelican.com" target="_blank">Pelican</a>, Theme is using <a href="https://github.com/laughk/pelican-hss" target="_blank">HSS</a>. </p>
+      </div>
+    </footer>
+</body>
+</html>
