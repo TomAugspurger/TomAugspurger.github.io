@@ -1,5 +1,5 @@
 ---
-title: "dask-ml"
+title: dask-ml
 date: 2017-10-26
 slug: dask-ml-announce
 ---
