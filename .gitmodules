@@ -1,0 +1,3 @@
+[submodule "pelican-hss"]
+	path = pelican-hss
+	url = https://github.com/tomaugspurger/pelican-hss
