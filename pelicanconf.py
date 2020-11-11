@@ -45,3 +45,11 @@ RELATIVE_URLS = True
 EXTRA_PATH_METADATA = {
     "extras/custom.css": {"path": "theme/css/custom.css"},
 }
+MARKDOWN = {
+    'extension_configs': {
+        'markdown.extensions.extra': {},
+        'markdown.extensions.meta': {},
+        'markdown.extensions.toc': {},
+    },
+    'output_format': 'html5',
+}
