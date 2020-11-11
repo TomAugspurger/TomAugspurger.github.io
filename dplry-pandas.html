@@ -57,41 +57,34 @@ The comparison is just on syntax (verbage), not performance. Whether you're an R
 <p>We'll work through the <a href="http://cran.r-project.org/web/packages/dplyr/vignettes/introduction.html">introductory dplyr vignette</a> to analyze some flight data.</p>
 <p>I'm working on a better layout to show the two packages side by side.
 But for now I'm just putting the <code>dplyr</code> code in a comment above each python call.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Some prep work to get the data from R and into pandas</span>
-<span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
-<span class="o">%</span><span class="n">load_ext</span> <span class="n">rmagic</span>
+<pre><code class="language-python"># Some prep work to get the data from R and into pandas
+%matplotlib inline
+%load_ext rmagic
 
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+import pandas as pd
+import seaborn as sns
 
-<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;display.max_rows&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">/Users/tom/Envs/py3/lib/python3.4/site-packages/IPython/extensions/rmagic.py:693: UserWarning: The rmagic extension in IPython is deprecated in favour of rpy2.ipython. If available, that will be loaded instead.</span>
-<span class="c">http://rpy.sourceforge.net/</span>
-<span class="c">  warnings.warn(&quot;The rmagic extension in IPython is deprecated in favour of &quot;</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="o">%%</span><span class="n">R</span>
-<span class="nf">library</span><span class="p">(</span><span class="s">&quot;nycflights13&quot;</span><span class="p">)</span>
-<span class="nf">write.csv</span><span class="p">(</span><span class="n">flights</span><span class="p">,</span> <span class="s">&quot;flights.csv&quot;</span><span class="p">)</span>
-</code></pre></div>
-
-<h1>Data: nycflights13</h1>
-<div class="highlight"><pre><span></span><code><span class="n">flights</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;flights.csv&quot;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="c1"># dim(flights)   &lt;--- The R code</span>
-<span class="n">flights</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># &lt;--- The python code</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">(336776, 16)</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="c1"># head(flights)</span>
-<span class="n">flights</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
+pd.set_option(&quot;display.max_rows&quot;, 5)
+</code></pre>
+<pre><code>/Users/tom/Envs/py3/lib/python3.4/site-packages/IPython/extensions/rmagic.py:693: UserWarning: The rmagic extension in IPython is deprecated in favour of rpy2.ipython. If available, that will be loaded instead.
+http://rpy.sourceforge.net/
+  warnings.warn("The rmagic extension in IPython is deprecated in favour of "
+</code></pre>
+<pre><code class="language-r">%%R
+library(&quot;nycflights13&quot;)
+write.csv(flights, &quot;flights.csv&quot;)
+</code></pre>
+<h1 id="data-nycflights13">Data: nycflights13</h1>
+<pre><code class="language-python">flights = pd.read_csv(&quot;flights.csv&quot;, index_col=0)
+</code></pre>
+<pre><code class="language-python"># dim(flights)   &lt;--- The R code
+flights.shape  # &lt;--- The python code
+</code></pre>
+<pre><code>(336776, 16)
+</code></pre>
+<pre><code class="language-python"># head(flights)
+flights.head()
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -215,7 +208,7 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 </table>
 </div>
 
-<h1>Single table verbs</h1>
+<h1 id="single-table-verbs">Single table verbs</h1>
 <p><code>dplyr</code> has a small set of nicely defined verbs. I've listed their closest pandas verbs.</p>
 <table>
   <tr>
@@ -253,11 +246,10 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 </table>
 
 <p>Some of the "missing" verbs in pandas are because there are other, different ways of achieving the same goal. For example <code>summarise</code> is spread across <code>mean</code>, <code>std</code>, etc. Others, like <code>sample_n</code>, just haven't been implemented yet.</p>
-<h1>Filter rows with filter(), query()</h1>
-<div class="highlight"><pre><span></span><code><span class="c1"># filter(flights, month == 1, day == 1)</span>
-<span class="n">flights</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;month == 1 &amp; day == 1&quot;</span><span class="p">)</span>
-</code></pre></div>
-
+<h1 id="filter-rows-with-filter-query">Filter rows with filter(), query()</h1>
+<pre><code class="language-python"># filter(flights, month == 1, day == 1)
+flights.query(&quot;month == 1 &amp; day == 1&quot;)
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -383,10 +375,9 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 </div>
 
 <p>The more verbose version:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># flights[flights$month == 1 &amp; flights$day == 1, ]</span>
-<span class="n">flights</span><span class="p">[(</span><span class="n">flights</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">flights</span><span class="o">.</span><span class="n">day</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)]</span>
-</code></pre></div>
-
+<pre><code class="language-python"># flights[flights$month == 1 &amp; flights$day == 1, ]
+flights[(flights.month == 1) &amp; (flights.day == 1)]
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -511,10 +502,9 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 <p>842 rows × 16 columns</p>
 </div>
 
-<div class="highlight"><pre><span></span><code><span class="c1"># slice(flights, 1:10)</span>
-<span class="n">flights</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="mi">9</span><span class="p">]</span>
-</code></pre></div>
-
+<pre><code class="language-python"># slice(flights, 1:10)
+flights.iloc[:9]
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -639,11 +629,10 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 <p>9 rows × 16 columns</p>
 </div>
 
-<h1>Arrange rows with arrange(), sort()</h1>
-<div class="highlight"><pre><span></span><code><span class="c1"># arrange(flights, year, month, day) </span>
-<span class="n">flights</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="s1">&#39;month&#39;</span><span class="p">,</span> <span class="s1">&#39;day&#39;</span><span class="p">])</span>
-</code></pre></div>
-
+<h1 id="arrange-rows-with-arrange-sort">Arrange rows with arrange(), sort()</h1>
+<pre><code class="language-python"># arrange(flights, year, month, day) 
+flights.sort(['year', 'month', 'day'])
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -768,10 +757,9 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 <p>336776 rows × 16 columns</p>
 </div>
 
-<div class="highlight"><pre><span></span><code><span class="c1"># arrange(flights, desc(arr_delay))</span>
-<span class="n">flights</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">&#39;arr_delay&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</code></pre></div>
-
+<pre><code class="language-python"># arrange(flights, desc(arr_delay))
+flights.sort('arr_delay', ascending=False)
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -896,11 +884,10 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 <p>336776 rows × 16 columns</p>
 </div>
 
-<h1>Select columns with select(), []</h1>
-<div class="highlight"><pre><span></span><code><span class="c1"># select(flights, year, month, day) </span>
-<span class="n">flights</span><span class="p">[[</span><span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="s1">&#39;month&#39;</span><span class="p">,</span> <span class="s1">&#39;day&#39;</span><span class="p">]]</span>
-</code></pre></div>
-
+<h1 id="select-columns-with-select">Select columns with select(), []</h1>
+<pre><code class="language-python"># select(flights, year, month, day) 
+flights[['year', 'month', 'day']]
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -947,36 +934,31 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 <p>336776 rows × 3 columns</p>
 </div>
 
-<div class="highlight"><pre><span></span><code><span class="c1"># select(flights, year:day) </span>
+<pre><code class="language-python"># select(flights, year:day) 
 
-<span class="c1"># No real equivalent here. Although I think this is OK.</span>
-<span class="c1"># Typically I&#39;ll have the columns I want stored in a list</span>
-<span class="c1"># somewhere, which can be passed right into __getitem__ ([]).</span>
-</code></pre></div>
+# No real equivalent here. Although I think this is OK.
+# Typically I'll have the columns I want stored in a list
+# somewhere, which can be passed right into __getitem__ ([]).
+</code></pre>
+<pre><code class="language-python"># select(flights, -(year:day)) 
 
-<div class="highlight"><pre><span></span><code><span class="c1"># select(flights, -(year:day)) </span>
-
-<span class="c1"># Again, simliar story. I would just use</span>
-<span class="c1"># flights.drop(cols_to_drop, axis=1)</span>
-<span class="c1"># or fligths[flights.columns.difference(pd.Index(cols_to_drop))]</span>
-<span class="c1"># point to dplyr!</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="c1"># select(flights, tail_num = tailnum)</span>
-<span class="n">flights</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;tailnum&#39;</span><span class="p">:</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">})[</span><span class="s1">&#39;tail_num&#39;</span><span class="p">]</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">1    N14228</span>
-<span class="err">...</span>
-<span class="err">336776    N839MQ</span>
-<span class="c">Name: tail_num, Length: 336776, dtype: object</span>
-</code></pre></div>
-
+# Again, simliar story. I would just use
+# flights.drop(cols_to_drop, axis=1)
+# or fligths[flights.columns.difference(pd.Index(cols_to_drop))]
+# point to dplyr!
+</code></pre>
+<pre><code class="language-python"># select(flights, tail_num = tailnum)
+flights.rename(columns={'tailnum': 'tail_num'})['tail_num']
+</code></pre>
+<pre><code>1    N14228
+...
+336776    N839MQ
+Name: tail_num, Length: 336776, dtype: object
+</code></pre>
 <p>But like Hadley mentions, not that useful since it only returns the one column. <code>dplyr</code> and <code>pandas</code> compare well here.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># rename(flights, tail_num = tailnum)</span>
-<span class="n">flights</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;tailnum&#39;</span><span class="p">:</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">})</span>
-</code></pre></div>
-
+<pre><code class="language-python"># rename(flights, tail_num = tailnum)
+flights.rename(columns={'tailnum': 'tail_num'})
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -1102,19 +1084,16 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 </div>
 
 <p>Pandas is more verbose, but the the argument to <code>columns</code> can be any mapping. So it's often used with a function to perform a common task, say <code>df.rename(columns=lambda x: x.replace('-', '_'))</code> to replace any dashes with underscores. Also, <code>rename</code> (the pandas version) can be applied to the Index.</p>
-<h1>Extract distinct (unique) rows</h1>
-<div class="highlight"><pre><span></span><code><span class="c1"># distinct(select(flights, tailnum))</span>
-<span class="n">flights</span><span class="o">.</span><span class="n">tailnum</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">array([&#39;N14228&#39;, &#39;N24211&#39;, &#39;N619AA&#39;, ..., &#39;N776SK&#39;, &#39;N785SK&#39;, &#39;N557AS&#39;], dtype=object)</span>
-</code></pre></div>
-
+<h1 id="extract-distinct-unique-rows">Extract distinct (unique) rows</h1>
+<pre><code class="language-python"># distinct(select(flights, tailnum))
+flights.tailnum.unique()
+</code></pre>
+<pre><code>array(['N14228', 'N24211', 'N619AA', ..., 'N776SK', 'N785SK', 'N557AS'], dtype=object)
+</code></pre>
 <p>FYI this returns a numpy array instead of a Series.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># distinct(select(flights, origin, dest))</span>
-<span class="n">flights</span><span class="p">[[</span><span class="s1">&#39;origin&#39;</span><span class="p">,</span> <span class="s1">&#39;dest&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python"># distinct(select(flights, origin, dest))
+flights[['origin', 'dest']].drop_duplicates()
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -1156,16 +1135,15 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 </div>
 
 <p>OK, so <code>dplyr</code> wins there from a consistency point of view. <code>unique</code> is only defined on Series, not DataFrames. The original intention for <code>drop_duplicates</code> is to check for records that were accidentally included twice. This feels a bit hacky using it to select the distinct combinations, but it works!</p>
-<h1>Add new columns with mutate()</h1>
-<div class="highlight"><pre><span></span><code><span class="c1"># mutate(flights,</span>
-<span class="c1">#   gain = arr_delay - dep_delay,</span>
-<span class="c1">#   speed = distance / air_time * 60)</span>
+<h1 id="add-new-columns-with-mutate">Add new columns with mutate()</h1>
+<pre><code class="language-python"># mutate(flights,
+#   gain = arr_delay - dep_delay,
+#   speed = distance / air_time * 60)
 
-<span class="n">flights</span><span class="p">[</span><span class="s1">&#39;gain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">arr_delay</span> <span class="o">-</span> <span class="n">flights</span><span class="o">.</span><span class="n">dep_delay</span>
-<span class="n">flights</span><span class="p">[</span><span class="s1">&#39;speed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">distance</span> <span class="o">/</span> <span class="n">flights</span><span class="o">.</span><span class="n">air_time</span> <span class="o">*</span> <span class="mi">60</span>
-<span class="n">flights</span>
-</code></pre></div>
-
+flights['gain'] = flights.arr_delay - flights.dep_delay
+flights['speed'] = flights.distance / flights.air_time * 60
+flights
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -1302,16 +1280,15 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 <p>336776 rows × 18 columns</p>
 </div>
 
-<div class="highlight"><pre><span></span><code><span class="c1"># mutate(flights,</span>
-<span class="c1">#   gain = arr_delay - dep_delay,</span>
-<span class="c1">#   gain_per_hour = gain / (air_time / 60)</span>
-<span class="c1"># )</span>
+<pre><code class="language-python"># mutate(flights,
+#   gain = arr_delay - dep_delay,
+#   gain_per_hour = gain / (air_time / 60)
+# )
 
-<span class="n">flights</span><span class="p">[</span><span class="s1">&#39;gain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">arr_delay</span> <span class="o">-</span> <span class="n">flights</span><span class="o">.</span><span class="n">dep_delay</span>
-<span class="n">flights</span><span class="p">[</span><span class="s1">&#39;gain_per_hour&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">gain</span> <span class="o">/</span> <span class="p">(</span><span class="n">flights</span><span class="o">.</span><span class="n">air_time</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span>
-<span class="n">flights</span>
-</code></pre></div>
-
+flights['gain'] = flights.arr_delay - flights.dep_delay
+flights['gain_per_hour'] = flights.gain / (flights.air_time / 60)
+flights
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -1455,16 +1432,15 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 </div>
 
 <p><code>dplyr's</code> approach may be nicer here since you get to refer to the variables in subsequent statements within the <code>mutate()</code>. To achieve this with pandas, you have to add the <code>gain</code> variable as another column in <code>flights</code>. If I don't want it around I would have to explicitly drop it.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># transmute(flights,</span>
-<span class="c1">#   gain = arr_delay - dep_delay,</span>
-<span class="c1">#   gain_per_hour = gain / (air_time / 60)</span>
-<span class="c1"># )</span>
+<pre><code class="language-python"># transmute(flights,
+#   gain = arr_delay - dep_delay,
+#   gain_per_hour = gain / (air_time / 60)
+# )
 
-<span class="n">flights</span><span class="p">[</span><span class="s1">&#39;gain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">arr_delay</span> <span class="o">-</span> <span class="n">flights</span><span class="o">.</span><span class="n">dep_delay</span>
-<span class="n">flights</span><span class="p">[</span><span class="s1">&#39;gain_per_hour&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">gain</span> <span class="o">/</span> <span class="p">(</span><span class="n">flights</span><span class="o">.</span><span class="n">air_time</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span>
-<span class="n">flights</span><span class="p">[[</span><span class="s1">&#39;gain&#39;</span><span class="p">,</span> <span class="s1">&#39;gain_per_hour&#39;</span><span class="p">]]</span>
-</code></pre></div>
-
+flights['gain'] = flights.arr_delay - flights.dep_delay
+flights['gain_per_hour'] = flights.gain / (flights.air_time / 60)
+flights[['gain', 'gain_per_hour']]
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -1505,19 +1481,16 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 <p>336776 rows × 2 columns</p>
 </div>
 
-<h1>Summarise values with summarise()</h1>
-<div class="highlight"><pre><span></span><code><span class="n">flights</span><span class="o">.</span><span class="n">dep_delay</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">12.639070257304708</span>
-</code></pre></div>
-
-<h1>Randomly sample rows with sample_n() and sample_frac()</h1>
+<h1 id="summarise-values-with-summarise">Summarise values with summarise()</h1>
+<pre><code class="language-python">flights.dep_delay.mean()
+</code></pre>
+<pre><code>12.639070257304708
+</code></pre>
+<h1 id="randomly-sample-rows-with-sample_n-and-sample_frac">Randomly sample rows with sample_n() and sample_frac()</h1>
 <p>There's an open PR on <a href="https://github.com/pydata/pandas/pull/7274">Github</a> to make this nicer (closer to <code>dplyr</code>). For now you can drop down to numpy.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># sample_n(flights, 10)</span>
-<span class="n">flights</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">flights</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="mi">10</span><span class="p">)]</span>
-</code></pre></div>
-
+<pre><code class="language-python"># sample_n(flights, 10)
+flights.loc[np.random.choice(flights.index, 10)]
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -1660,11 +1633,10 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 <p>10 rows × 19 columns</p>
 </div>
 
-<div class="highlight"><pre><span></span><code><span class="c1"># sample_frac(flights, 0.01)</span>
-<span class="n">flights</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">flights</span><span class="p">),</span>
-                               <span class="o">.</span><span class="mi">1</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">flights</span><span class="p">))]</span>
-</code></pre></div>
-
+<pre><code class="language-python"># sample_frac(flights, 0.01)
+flights.iloc[np.random.randint(0, len(flights),
+                               .1 * len(flights))]
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -1807,21 +1779,20 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 <p>33677 rows × 19 columns</p>
 </div>
 
-<h1>Grouped operations</h1>
-<div class="highlight"><pre><span></span><code><span class="c1"># planes &lt;- group_by(flights, tailnum)</span>
-<span class="c1"># delay &lt;- summarise(planes,</span>
-<span class="c1">#   count = n(),</span>
-<span class="c1">#   dist = mean(distance, na.rm = TRUE),</span>
-<span class="c1">#   delay = mean(arr_delay, na.rm = TRUE))</span>
-<span class="c1"># delay &lt;- filter(delay, count &gt; 20, dist &lt; 2000)</span>
+<h1 id="grouped-operations">Grouped operations</h1>
+<pre><code class="language-python"># planes &lt;- group_by(flights, tailnum)
+# delay &lt;- summarise(planes,
+#   count = n(),
+#   dist = mean(distance, na.rm = TRUE),
+#   delay = mean(arr_delay, na.rm = TRUE))
+# delay &lt;- filter(delay, count &gt; 20, dist &lt; 2000)
 
-<span class="n">planes</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;tailnum&quot;</span><span class="p">)</span>
-<span class="n">delay</span> <span class="o">=</span> <span class="n">planes</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="s2">&quot;count&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;arr_delay&quot;</span><span class="p">:</span> <span class="s2">&quot;mean&quot;</span><span class="p">})</span>
-<span class="n">delay</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;year &gt; 20 &amp; distance &lt; 2000&quot;</span><span class="p">)</span>
-</code></pre></div>
-
+planes = flights.groupby(&quot;tailnum&quot;)
+delay = planes.agg({&quot;year&quot;: &quot;count&quot;,
+                    &quot;distance&quot;: &quot;mean&quot;,
+                    &quot;arr_delay&quot;: &quot;mean&quot;})
+delay.query(&quot;year &gt; 20 &amp; distance &lt; 2000&quot;)
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -1878,20 +1849,19 @@ But for now I'm just putting the <code>dplyr</code> code in a comment above each
 <p>I think pandas is more difficult for this particular example.
 There isn't as natural a way to mix column-agnostic aggregations (like <code>count</code>) with column-specific aggregations like the other two. You end up writing could like <code>.agg{'year': 'count'}</code> which reads, "I want the count of <code>year</code>", even though you don't care about <code>year</code> specifically.
 Additionally assigning names can't be done as cleanly in pandas; you have to just follow it up with a <code>rename</code> like before.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># destinations &lt;- group_by(flights, dest)</span>
-<span class="c1"># summarise(destinations,</span>
-<span class="c1">#   planes = n_distinct(tailnum),</span>
-<span class="c1">#   flights = n()</span>
-<span class="c1"># )</span>
+<pre><code class="language-python"># destinations &lt;- group_by(flights, dest)
+# summarise(destinations,
+#   planes = n_distinct(tailnum),
+#   flights = n()
+# )
 
-<span class="n">destinations</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;dest&#39;</span><span class="p">)</span>
-<span class="n">destinations</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
-    <span class="s1">&#39;tailnum&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">unique</span><span class="p">()),</span>
-    <span class="s1">&#39;year&#39;</span><span class="p">:</span> <span class="s1">&#39;count&#39;</span>
-    <span class="p">})</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;tailnum&#39;</span><span class="p">:</span> <span class="s1">&#39;planes&#39;</span><span class="p">,</span>
-                       <span class="s1">&#39;year&#39;</span><span class="p">:</span> <span class="s1">&#39;flights&#39;</span><span class="p">})</span>
-</code></pre></div>
-
+destinations = flights.groupby('dest')
+destinations.agg({
+    'tailnum': lambda x: len(x.unique()),
+    'year': 'count'
+    }).rename(columns={'tailnum': 'planes',
+                       'year': 'flights'})
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -1938,60 +1908,53 @@ Additionally assigning names can't be done as cleanly in pandas; you have to jus
 </div>
 
 <p>Similar to how <code>dplyr</code> provides optimized C++ versions of most of the <code>summarise</code> functions, pandas uses <a href="http://cython.org">cython</a> optimized versions for most of the <code>agg</code> methods.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># daily &lt;- group_by(flights, year, month, day)</span>
-<span class="c1"># (per_day   &lt;- summarise(daily, flights = n()))</span>
+<pre><code class="language-python"># daily &lt;- group_by(flights, year, month, day)
+# (per_day   &lt;- summarise(daily, flights = n()))
 
-<span class="n">daily</span> <span class="o">=</span> <span class="n">flights</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="s1">&#39;month&#39;</span><span class="p">,</span> <span class="s1">&#39;day&#39;</span><span class="p">])</span>
-<span class="n">per_day</span> <span class="o">=</span> <span class="n">daily</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
-<span class="n">per_day</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">year  month  day</span>
-<span class="err">2013  1      1      842</span>
-<span class="err">...</span>
-<span class="err">2013  12     31     776</span>
-<span class="c">Name: distance, Length: 365, dtype: int64</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="c1"># (per_month &lt;- summarise(per_day, flights = sum(flights)))</span>
-<span class="n">per_month</span> <span class="o">=</span> <span class="n">per_day</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="s1">&#39;month&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="n">per_month</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">year  month</span>
-<span class="err">2013  1        27004</span>
-<span class="err">...</span>
-<span class="err">2013  12       28135</span>
-<span class="c">Name: distance, Length: 12, dtype: int64</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="c1"># (per_year  &lt;- summarise(per_month, flights = sum(flights)))</span>
-<span class="n">per_year</span> <span class="o">=</span> <span class="n">per_month</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="n">per_year</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">336776</span>
-</code></pre></div>
-
+daily = flights.groupby(['year', 'month', 'day'])
+per_day = daily['distance'].count()
+per_day
+</code></pre>
+<pre><code>year  month  day
+2013  1      1      842
+...
+2013  12     31     776
+Name: distance, Length: 365, dtype: int64
+</code></pre>
+<pre><code class="language-python"># (per_month &lt;- summarise(per_day, flights = sum(flights)))
+per_month = per_day.groupby(level=['year', 'month']).sum()
+per_month
+</code></pre>
+<pre><code>year  month
+2013  1        27004
+...
+2013  12       28135
+Name: distance, Length: 12, dtype: int64
+</code></pre>
+<pre><code class="language-python"># (per_year  &lt;- summarise(per_month, flights = sum(flights)))
+per_year = per_month.sum()
+per_year
+</code></pre>
+<pre><code>336776
+</code></pre>
 <p>I'm not sure how <code>dplyr</code> is handling the other columns, like <code>year</code>, in the last example. With pandas, it's clear that we're grouping by them since they're included in the groupby. For the last example, we didn't group by anything, so they aren't included in the result.</p>
-<h1>Chaining</h1>
+<h1 id="chaining">Chaining</h1>
 <p>Any follower of Hadley's <a href="https://twitter.com/hadleywickham/">twitter account</a> will know how much R users <em>love</em> the <code>%&gt;%</code> (pipe) operator. And for good reason!</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># flights %&gt;%</span>
-<span class="c1">#   group_by(year, month, day) %&gt;%</span>
-<span class="c1">#   select(arr_delay, dep_delay) %&gt;%</span>
-<span class="c1">#   summarise(</span>
-<span class="c1">#     arr = mean(arr_delay, na.rm = TRUE),</span>
-<span class="c1">#     dep = mean(dep_delay, na.rm = TRUE)</span>
-<span class="c1">#   ) %&gt;%</span>
-<span class="c1">#   filter(arr &gt; 30 | dep &gt; 30)</span>
-<span class="p">(</span>
-<span class="n">flights</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="s1">&#39;month&#39;</span><span class="p">,</span> <span class="s1">&#39;day&#39;</span><span class="p">])</span>
-    <span class="p">[[</span><span class="s1">&#39;arr_delay&#39;</span><span class="p">,</span> <span class="s1">&#39;dep_delay&#39;</span><span class="p">]]</span>
-    <span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-    <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;arr_delay &gt; 30 | dep_delay &gt; 30&#39;</span><span class="p">)</span>
-<span class="p">)</span>
-</code></pre></div>
-
+<pre><code class="language-python"># flights %&gt;%
+#   group_by(year, month, day) %&gt;%
+#   select(arr_delay, dep_delay) %&gt;%
+#   summarise(
+#     arr = mean(arr_delay, na.rm = TRUE),
+#     dep = mean(dep_delay, na.rm = TRUE)
+#   ) %&gt;%
+#   filter(arr &gt; 30 | dep &gt; 30)
+(
+flights.groupby(['year', 'month', 'day'])
+    [['arr_delay', 'dep_delay']]
+    .mean()
+    .query('arr_delay &gt; 30 | dep_delay &gt; 30')
+)
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -2045,9 +2008,9 @@ Additionally assigning names can't be done as cleanly in pandas; you have to jus
 <p>49 rows × 2 columns</p>
 </div>
 
-<h1>Other Data Sources</h1>
+<h1 id="other-data-sources">Other Data Sources</h1>
 <p>Pandas has tons <a href="http://pandas.pydata.org/pandas-docs/version/0.15.0/io.html">IO tools</a> to help you get data in and out, including SQL databases via <a href="http://www.sqlalchemy.org">SQLAlchemy</a>.</p>
-<h1>Summary</h1>
+<h1 id="summary">Summary</h1>
 <p>I think pandas held up pretty well, considering this was a vignette written for dplyr. I found the degree of similarity more interesting than the differences. The most difficult task was renaming of columns within an operation; they had to be followed up with a call to <code>rename</code> <em>after</em> the operation, which isn't that burdensome honestly.</p>
 <p>More and more it looks like we're moving towards future where being a language or package partisan just doesn't make sense. Not when you can load up a <a href="http://jupyter.org">Jupyter</a> (formerly IPython) notebook to call up a library written in R, and hand those results off to python or Julia or whatever for followup, before going back to R to make a cool <a href="http://shiny.rstudio.com">shiny</a> web app.</p>
 <p>There will always be a place for your "utility belt" package like dplyr or pandas, but it wouldn't hurt to be familiar with both.</p>

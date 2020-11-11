@@ -64,11 +64,11 @@
 <li><a href="modern-8-scaling">Scaling</a></li>
 </ul>
 <hr>
-<h1>Effective Pandas</h1>
-<h2>Introduction</h2>
+<h1 id="effective-pandas">Effective Pandas</h1>
+<h2 id="introduction">Introduction</h2>
 <p>This series is about how to make effective use of <a href="http://pandas.pydata.org">pandas</a>, a data analysis library for the Python programming language.
 It's targeted at an intermediate level: people who have some experience with pandas, but are looking to improve.</p>
-<h2>Prior Art</h2>
+<h2 id="prior-art">Prior Art</h2>
 <p>There are many great resources for learning pandas; this is not one of them.
 For beginners, I typically recommend <a href="https://twitter.com/gjreda">Greg Reda's</a> <a href="http://gregreda.com/2013/10/26/intro-to-pandas-data-structures/">3-part introduction</a>, especially if they're familiar with SQL. Of course, there's the pandas <a href="http://pandas.pydata.org/">documentation</a> itself. I gave <a href="https://www.youtube.com/watch?v=otCriSKVV_8">a talk</a> at PyData Seattle targeted as an introduction if you prefer video form. Wes McKinney's <a href="http://shop.oreilly.com/product/0636920023784.do">Python for Data Analysis</a> is still the goto book (and is also a really good introduction to NumPy as well). Jake VanderPlas's <a href="http://shop.oreilly.com/product/0636920034919.do">Python Data Science Handbook</a>, in early release, is great too.
 Kevin Markham has a <a href="http://www.dataschool.io/easier-data-analysis-with-pandas/">video series</a> for beginners learning pandas.</p>
@@ -79,102 +79,98 @@ or NumPy and pandas.
 By luck, this first post happened to cover topics that are relatively introductory,
 so read some of the linked material and come back, or <a href="https://twitter.com/tomaugspurger">let me know</a> if you
 have questions.</p>
-<h2>Get the Data</h2>
+<h2 id="get-the-data">Get the Data</h2>
 <p>We'll be working with <a href="http://www.transtats.bts.gov/databases.asp?Mode_ID=1&amp;Mode_Desc=Aviation&amp;Subject_ID2=0">flight delay data</a> from the BTS (R users can install Hadley's <a href="https://github.com/hadley/nycflights13">NYCFlights13</a> dataset for similar data.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">zipfile</span>
+<pre><code class="language-python">import os
+import zipfile
 
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+import requests
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-<span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MODERN_PANDAS_EPUB&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)):</span>
-    <span class="kn">import</span> <span class="nn">prep</span>
-</code></pre></div>
+if int(os.environ.get(&quot;MODERN_PANDAS_EPUB&quot;, 0)):
+    import prep
+</code></pre>
+<pre><code class="language-python">import requests
 
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">requests</span>
+headers = {
+    'Referer': 'https://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&amp;DB_Short_Name=On-Time',
+    'Origin': 'https://www.transtats.bts.gov',
+    'Content-Type': 'application/x-www-form-urlencoded',
+}
 
-<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;Referer&#39;</span><span class="p">:</span> <span class="s1">&#39;https://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&amp;DB_Short_Name=On-Time&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;Origin&#39;</span><span class="p">:</span> <span class="s1">&#39;https://www.transtats.bts.gov&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s1">&#39;application/x-www-form-urlencoded&#39;</span><span class="p">,</span>
-<span class="p">}</span>
+params = (
+    ('Table_ID', '236'),
+    ('Has_Group', '3'),
+    ('Is_Zipped', '0'),
+)
 
-<span class="n">params</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="p">(</span><span class="s1">&#39;Table_ID&#39;</span><span class="p">,</span> <span class="s1">&#39;236&#39;</span><span class="p">),</span>
-    <span class="p">(</span><span class="s1">&#39;Has_Group&#39;</span><span class="p">,</span> <span class="s1">&#39;3&#39;</span><span class="p">),</span>
-    <span class="p">(</span><span class="s1">&#39;Is_Zipped&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">),</span>
-<span class="p">)</span>
+with open('modern-1-url.txt', encoding='utf-8') as f:
+    data = f.read().strip()
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;modern-1-url.txt&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+os.makedirs('data', exist_ok=True)
+dest = &quot;data/flights.csv.zip&quot;
 
-<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">dest</span> <span class="o">=</span> <span class="s2">&quot;data/flights.csv.zip&quot;</span>
+if not os.path.exists(dest):
+    r = requests.post('https://www.transtats.bts.gov/DownLoad_Table.asp',
+                      headers=headers, params=params, data=data, stream=True)
 
-<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dest</span><span class="p">):</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;https://www.transtats.bts.gov/DownLoad_Table.asp&#39;</span><span class="p">,</span>
-                      <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;data/flights.csv.zip&quot;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">102400</span><span class="p">):</span> 
-            <span class="k">if</span> <span class="n">chunk</span><span class="p">:</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
-</code></pre></div>
-
+    with open(&quot;data/flights.csv.zip&quot;, 'wb') as f:
+        for chunk in r.iter_content(chunk_size=102400): 
+            if chunk:
+                f.write(chunk)
+</code></pre>
 <p>That download returned a ZIP file.
 There's an open <a href="https://github.com/pydata/pandas/pull/12175">Pull Request</a> for automatically decompressing ZIP archives with a single CSV,
 but for now we have to extract it ourselves and then read it in.</p>
-<div class="highlight"><pre><span></span><code><span class="n">zf</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="s2">&quot;data/flights.csv.zip&quot;</span><span class="p">)</span>
-<span class="n">fp</span> <span class="o">=</span> <span class="n">zf</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">zf</span><span class="o">.</span><span class="n">filelist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;data/&#39;</span><span class="p">)</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;FL_DATE&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span>
+<pre><code class="language-python">zf = zipfile.ZipFile(&quot;data/flights.csv.zip&quot;)
+fp = zf.extract(zf.filelist[0].filename, path='data/')
+df = pd.read_csv(fp, parse_dates=[&quot;FL_DATE&quot;]).rename(columns=str.lower)
 
-<span class="n">df</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="s1">&#39;pandas.core.frame.DataFrame&#39;</span><span class="o">&gt;</span><span class="w"></span>
-<span class="nl">RangeIndex</span><span class="p">:</span><span class="w"> </span><span class="mi">450017</span><span class="w"> </span><span class="n">entries</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mi">450016</span><span class="w"></span>
-<span class="k">Data</span><span class="w"> </span><span class="n">columns</span><span class="w"> </span><span class="p">(</span><span class="n">total</span><span class="w"> </span><span class="mi">33</span><span class="w"> </span><span class="n">columns</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
-<span class="n">fl_date</span><span class="w">                  </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">datetime64</span><span class="o">[</span><span class="n">ns</span><span class="o">]</span><span class="w"></span>
-<span class="n">unique_carrier</span><span class="w">           </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="k">object</span><span class="w"></span>
-<span class="n">airline_id</span><span class="w">               </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">tail_num</span><span class="w">                 </span><span class="mi">449378</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="k">object</span><span class="w"></span>
-<span class="n">fl_num</span><span class="w">                   </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">origin_airport_id</span><span class="w">        </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">origin_airport_seq_id</span><span class="w">    </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">origin_city_market_id</span><span class="w">    </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">origin</span><span class="w">                   </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="k">object</span><span class="w"></span>
-<span class="n">origin_city_name</span><span class="w">         </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="k">object</span><span class="w"></span>
-<span class="n">dest_airport_id</span><span class="w">          </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">dest_airport_seq_id</span><span class="w">      </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">dest_city_market_id</span><span class="w">      </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">dest</span><span class="w">                     </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="k">object</span><span class="w"></span>
-<span class="n">dest_city_name</span><span class="w">           </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="k">object</span><span class="w"></span>
-<span class="n">crs_dep_time</span><span class="w">             </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">dep_time</span><span class="w">                 </span><span class="mi">441476</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">dep_delay</span><span class="w">                </span><span class="mi">441476</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">taxi_out</span><span class="w">                 </span><span class="mi">441244</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">wheels_off</span><span class="w">               </span><span class="mi">441244</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">wheels_on</span><span class="w">                </span><span class="mi">440746</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">taxi_in</span><span class="w">                  </span><span class="mi">440746</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">crs_arr_time</span><span class="w">             </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">arr_time</span><span class="w">                 </span><span class="mi">440746</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">arr_delay</span><span class="w">                </span><span class="mi">439645</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">cancelled</span><span class="w">                </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">cancellation_code</span><span class="w">        </span><span class="mi">8886</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="k">object</span><span class="w"></span>
-<span class="n">carrier_delay</span><span class="w">            </span><span class="mi">97699</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">weather_delay</span><span class="w">            </span><span class="mi">97699</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">nas_delay</span><span class="w">                </span><span class="mi">97699</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">security_delay</span><span class="w">           </span><span class="mi">97699</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">late_aircraft_delay</span><span class="w">      </span><span class="mi">97699</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="nl">unnamed</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="w">              </span><span class="mi">0</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="nl">dtypes</span><span class="p">:</span><span class="w"> </span><span class="n">datetime64</span><span class="o">[</span><span class="n">ns</span><span class="o">]</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">float64</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span><span class="w"> </span><span class="n">int64</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span><span class="w"> </span><span class="k">object</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span><span class="w"></span>
-<span class="n">memory</span><span class="w"> </span><span class="k">usage</span><span class="err">:</span><span class="w"> </span><span class="mf">113.3</span><span class="o">+</span><span class="w"> </span><span class="n">MB</span><span class="w"></span>
-</code></pre></div>
-
-<h2>Indexing</h2>
+df.info()
+</code></pre>
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 450017 entries, 0 to 450016
+Data columns (total 33 columns):
+fl_date                  450017 non-null datetime64[ns]
+unique_carrier           450017 non-null object
+airline_id               450017 non-null int64
+tail_num                 449378 non-null object
+fl_num                   450017 non-null int64
+origin_airport_id        450017 non-null int64
+origin_airport_seq_id    450017 non-null int64
+origin_city_market_id    450017 non-null int64
+origin                   450017 non-null object
+origin_city_name         450017 non-null object
+dest_airport_id          450017 non-null int64
+dest_airport_seq_id      450017 non-null int64
+dest_city_market_id      450017 non-null int64
+dest                     450017 non-null object
+dest_city_name           450017 non-null object
+crs_dep_time             450017 non-null int64
+dep_time                 441476 non-null float64
+dep_delay                441476 non-null float64
+taxi_out                 441244 non-null float64
+wheels_off               441244 non-null float64
+wheels_on                440746 non-null float64
+taxi_in                  440746 non-null float64
+crs_arr_time             450017 non-null int64
+arr_time                 440746 non-null float64
+arr_delay                439645 non-null float64
+cancelled                450017 non-null float64
+cancellation_code        8886 non-null object
+carrier_delay            97699 non-null float64
+weather_delay            97699 non-null float64
+nas_delay                97699 non-null float64
+security_delay           97699 non-null float64
+late_aircraft_delay      97699 non-null float64
+unnamed: 32              0 non-null float64
+dtypes: datetime64[ns](1), float64(15), int64(10), object(7)
+memory usage: 113.3+ MB
+</code></pre>
+<h2 id="indexing">Indexing</h2>
 <p>Or, <em>explicit is better than implicit</em>.
 By my count, 7 of the top-15 voted pandas questions on <a href="http://stackoverflow.com/questions/tagged/pandas?sort=votes&amp;pageSize=15">Stackoverflow</a> are about indexing. This seems as good a place as any to start.</p>
 <p>By indexing, we mean the selection of subsets of a DataFrame or Series.
@@ -190,23 +186,21 @@ By my count, 7 of the top-15 voted pandas questions on <a href="http://stackover
 <p>The complexity of pandas' indexing is a microcosm for the complexity of the pandas API in general.
 There's a reason for the complexity (well, most of it), but that's not <em>much</em> consolation while you're learning.
 Still, all of these ways of indexing really are useful enough to justify their inclusion in the library.</p>
-<h2>Slicing</h2>
+<h2 id="slicing">Slicing</h2>
 <p>Or, <em>explicit is better than implicit</em>.</p>
 <p>By my count, 7 of the top-15 voted pandas questions on <a href="http://stackoverflow.com/questions/tagged/pandas?sort=votes&amp;pageSize=15">Stackoverflow</a> are about slicing. This seems as good a place as any to start.</p>
 <p>Brief history digression: For years the preferred method for row and/or column selection was <code>.ix</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="n">df</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">]]</span>
-</code></pre></div>
+<pre><code class="language-python">df.ix[10:15, ['fl_date', 'tail_num']]
+</code></pre>
+<pre><code>/Users/taugspurger/Envs/blog/lib/python3.6/site-packages/ipykernel_launcher.py:1: DeprecationWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
 
-<div class="highlight"><pre><span></span><code><span class="err">/</span><span class="nf">Users</span><span class="err">/</span><span class="no">taugspurger</span><span class="err">/</span><span class="no">Envs</span><span class="err">/</span><span class="no">blog</span><span class="err">/</span><span class="no">lib</span><span class="err">/</span><span class="no">python3.6</span><span class="err">/</span><span class="no">site-packages</span><span class="err">/</span><span class="no">ipykernel_launcher.py</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span> <span class="no">DeprecationWarning</span><span class="p">:</span> 
-<span class="no">.ix</span> <span class="no">is</span> <span class="no">deprecated.</span> <span class="no">Please</span> <span class="no">use</span>
-<span class="na">.loc</span> <span class="no">for</span> <span class="no">label</span> <span class="no">based</span> <span class="no">indexing</span> <span class="no">or</span>
-<span class="na">.iloc</span> <span class="no">for</span> <span class="no">positional</span> <span class="no">indexing</span>
-
-<span class="nf">See</span> <span class="no">the</span> <span class="no">documentation</span> <span class="no">here</span><span class="p">:</span>
-<span class="nl">http:</span><span class="c1">//pandas.pydata.org/pandas-docs/stable/indexing.html#deprecate_ix</span>
-  <span class="err">&quot;&quot;&quot;</span><span class="nf">Entry</span> <span class="no">point</span> <span class="no">for</span> <span class="no">launching</span> <span class="no">an</span> <span class="no">IPython</span> <span class="no">kernel.</span>
-</code></pre></div>
-
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/indexing.html#deprecate_ix
+  """Entry point for launching an IPython kernel.
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -265,15 +259,13 @@ Still, all of these ways of indexing really are useful enough to justify their i
 </div>
 
 <p>As you can see, this method is now deprecated. Why's that? This simple little operation hides some complexity. What if, rather than our default <code>range(n)</code> index, we had an integer index like</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># filter the warning for now on</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="n">first</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;airline_id&#39;</span><span class="p">)[[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;unique_carrier&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
-<span class="n">first</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python"># filter the warning for now on
+import warnings
+warnings.simplefilter(&quot;ignore&quot;, DeprecationWarning)
+</code></pre>
+<pre><code class="language-python">first = df.groupby('airline_id')[['fl_date', 'unique_carrier']].first()
+first.head()
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -332,9 +324,8 @@ Still, all of these ways of indexing really are useful enough to justify their i
 </div>
 
 <p>Can you predict ahead of time what our slice from above will give when passed to <code>.ix</code>?</p>
-<div class="highlight"><pre><span></span><code><span class="n">first</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">]]</span>
-</code></pre></div>
-
+<pre><code class="language-python">first.ix[10:15, ['fl_date', 'tail_num']]
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -370,10 +361,9 @@ Still, all of these ways of indexing really are useful enough to justify their i
 <p>Surprise, an empty DataFrame! Which in data analysis is rarely a good thing. What happened?</p>
 <p>We had an integer index, so the call to <code>.ix</code> used its label-based mode. It was looking for integer <em>labels</em> between 10:15 (inclusive). It didn't find any. Since we sliced a range it returned an empty DataFrame, rather than raising a KeyError.</p>
 <p>By way of contrast, suppose we had a string index, rather than integers.</p>
-<div class="highlight"><pre><span></span><code><span class="n">first</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;unique_carrier&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
-<span class="n">first</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">]]</span>
-</code></pre></div>
-
+<pre><code class="language-python">first = df.groupby('unique_carrier').first()
+first.ix[10:15, ['fl_date', 'tail_num']]
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -424,9 +414,8 @@ In general, methods whose behavior depends on the data, like <code>.ix</code> di
 <li><code>.loc</code> for label-based indexing</li>
 <li><code>.iloc</code> for positional indexing</li>
 </ol>
-<div class="highlight"><pre><span></span><code><span class="n">first</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s1">&#39;AA&#39;</span><span class="p">,</span> <span class="s1">&#39;AS&#39;</span><span class="p">,</span> <span class="s1">&#39;DL&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">]]</span>
-</code></pre></div>
-
+<pre><code class="language-python">first.loc[['AA', 'AS', 'DL'], ['fl_date', 'tail_num']]
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -474,9 +463,8 @@ In general, methods whose behavior depends on the data, like <code>.ix</code> di
 </table>
 </div>
 
-<div class="highlight"><pre><span></span><code><span class="n">first</span><span class="o">.</span><span class="n">iloc</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
-</code></pre></div>
-
+<pre><code class="language-python">first.iloc[[0, 1, 3], [0, 1]]
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -528,12 +516,11 @@ In general, methods whose behavior depends on the data, like <code>.ix</code> di
 But if you've been using <code>.ix</code> out of habit, or if you didn't know any better, maybe give <code>.loc</code> and <code>.iloc</code> a shot. I'd recommend carefully updating your code to decide if you've been using positional or label indexing, and choose the appropriate indexer. For the intrepid reader, Joris Van den Bossche (a core pandas dev) <a href="https://github.com/pydata/pandas/issues/9595">compiled a great overview</a> of the pandas <code>__getitem__</code> API.
 A later post in this series will go into more detail on using Indexes effectively;
 they are useful objects in their own right, but for now we'll move on to a closely related topic.</p>
-<h2>SettingWithCopy</h2>
+<h2 id="settingwithcopy">SettingWithCopy</h2>
 <p>Pandas used to get <em>a lot</em> of questions about assignments seemingly not working. We'll take <a href="http://stackoverflow.com/q/16553298/1889400">this StackOverflow</a> question as a representative question.</p>
-<div class="highlight"><pre><span></span><code><span class="n">f</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="s1">&#39;b&#39;</span><span class="p">:[</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">40</span><span class="p">,</span><span class="mi">50</span><span class="p">]})</span>
-<span class="n">f</span>
-</code></pre></div>
-
+<pre><code class="language-python">f = pd.DataFrame({'a':[1,2,3,4,5], 'b':[10,20,30,40,50]})
+f
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -588,12 +575,11 @@ they are useful objects in their own right, but for now we'll move on to a close
 
 <p>The user wanted to take the rows of <code>b</code> where <code>a</code> was 3 or less, and set them equal to <code>b / 10</code>
 We'll use boolean indexing to select those rows <code>f['a'] &lt;= 3</code>,</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># ignore the context manager for now</span>
-<span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">option_context</span><span class="p">(</span><span class="s1">&#39;mode.chained_assignment&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-    <span class="n">f</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">3</span> <span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">10</span>
-<span class="n">f</span>
-</code></pre></div>
-
+<pre><code class="language-python"># ignore the context manager for now
+with pd.option_context('mode.chained_assignment', None):
+    f[f['a'] &lt;= 3]['b'] = f[f['a'] &lt;= 3 ]['b'] / 10
+f
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -660,10 +646,9 @@ The changes <em>will</em> be made to the thing I called <code>_</code> above, th
 But we don't know that <code>_</code> shares the same memory as our original <code>f</code>.
 And so we can't be sure that whatever changes are being made to <code>_</code> will be reflected in <code>f</code>.</p>
 <p>Done properly, you would write</p>
-<div class="highlight"><pre><span></span><code><span class="n">f</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">10</span>
-<span class="n">f</span>
-</code></pre></div>
-
+<pre><code class="language-python">f.loc[f['a'] &lt;= 3, 'b'] = f.loc[f['a'] &lt;= 3, 'b'] / 10
+f
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -720,7 +705,7 @@ And so we can't be sure that whatever changes are being made to <code>_</code> w
 <p>The rough rule is any time you see back-to-back square brackets, <code>][</code>, you're in asking for trouble. Replace that with a <code>.loc[..., ...]</code> and you'll be set.</p>
 <p>The other bit of advice is that a SettingWithCopy warning is raised when the <em>assignment</em> is made.
 The potential copy could be made earlier in your code.</p>
-<h2>Multidimensional Indexing</h2>
+<h2 id="multidimensional-indexing">Multidimensional Indexing</h2>
 <p>MultiIndexes might just be my favorite feature of pandas.
 They let you represent higher-dimensional datasets in a familiar two-dimensional table, which my brain can sometimes handle.
 Each additional level of the MultiIndex represents another dimension.
@@ -735,11 +720,10 @@ Also, from that bug report</p>
 <p>Adorable.</p>
 <p>That operation was made much easier by <a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/whatsnew.html#multiindexing-using-slicers">this</a> addition in 2014, which lets you slice arbitrary levels of a MultiIndex..
 Let's make a MultiIndexed DataFrame to work with.</p>
-<div class="highlight"><pre><span></span><code><span class="n">hdf</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;unique_carrier&#39;</span><span class="p">,</span> <span class="s1">&#39;origin&#39;</span><span class="p">,</span> <span class="s1">&#39;dest&#39;</span><span class="p">,</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;fl_date&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
-<span class="n">hdf</span><span class="p">[</span><span class="n">hdf</span><span class="o">.</span><span class="n">columns</span><span class="p">[:</span><span class="mi">4</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python">hdf = df.set_index(['unique_carrier', 'origin', 'dest', 'tail_num',
+                    'fl_date']).sort_index()
+hdf[hdf.columns[:4]].head()
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -831,9 +815,8 @@ former column names (<code>unique_carrier</code>, <code>origin</code>...).
 The labels are the actual values in a level, (<code>'AA'</code>, <code>'ABQ'</code>, ...).
 Levels can be referred to by name or position, with 0 being the outermost level.</p>
 <p>Slicing the outermost index level is pretty easy, we just use our regular <code>.loc[row_indexer, column_indexer]</code>. We'll select the columns <code>dep_time</code> and <code>dep_delay</code> where the carrier was American Airlines, Delta, or US Airways.</p>
-<div class="highlight"><pre><span></span><code><span class="n">hdf</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s1">&#39;AA&#39;</span><span class="p">,</span> <span class="s1">&#39;DL&#39;</span><span class="p">,</span> <span class="s1">&#39;US&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;dep_time&#39;</span><span class="p">,</span> <span class="s1">&#39;dep_delay&#39;</span><span class="p">]]</span>
-</code></pre></div>
-
+<pre><code class="language-python">hdf.loc[['AA', 'DL', 'US'], ['dep_time', 'dep_delay']]
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -1243,9 +1226,8 @@ Levels can be referred to by name or position, with 0 being the outermost level.
 
 <p>So far, so good. What if you wanted to select the rows whose origin was Chicago O'Hare (<code>ORD</code>) or Des Moines International Airport (DSM).
 Well, <code>.loc</code> wants <code>[row_indexer, column_indexer]</code> so let's wrap the two elements of our row indexer (the list of carriers and the list of origins) in a tuple to make it a single unit:</p>
-<div class="highlight"><pre><span></span><code><span class="n">hdf</span><span class="o">.</span><span class="n">loc</span><span class="p">[([</span><span class="s1">&#39;AA&#39;</span><span class="p">,</span> <span class="s1">&#39;DL&#39;</span><span class="p">,</span> <span class="s1">&#39;US&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;ORD&#39;</span><span class="p">,</span> <span class="s1">&#39;DSM&#39;</span><span class="p">]),</span> <span class="p">[</span><span class="s1">&#39;dep_time&#39;</span><span class="p">,</span> <span class="s1">&#39;dep_delay&#39;</span><span class="p">]]</span>
-</code></pre></div>
-
+<pre><code class="language-python">hdf.loc[(['AA', 'DL', 'US'], ['ORD', 'DSM']), ['dep_time', 'dep_delay']]
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -1652,9 +1634,8 @@ Well, <code>.loc</code> wants <code>[row_indexer, column_indexer]</code> so let'
 This used to be a pain.
 You might have to turn to the <code>.xs</code> method, or pass in <code>df.index.get_level_values(0)</code> and zip that up with the indexers your wanted, or maybe reset the index and do a boolean mask, and set the index again... ugh.</p>
 <p>But now, you can use an <code>IndexSlice</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="n">hdf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;ORD&#39;</span><span class="p">,</span> <span class="s1">&#39;DSM&#39;</span><span class="p">]],</span> <span class="p">[</span><span class="s1">&#39;dep_time&#39;</span><span class="p">,</span> <span class="s1">&#39;dep_delay&#39;</span><span class="p">]]</span>
-</code></pre></div>
-
+<pre><code class="language-python">hdf.loc[pd.IndexSlice[:, ['ORD', 'DSM']], ['dep_time', 'dep_delay']]
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -2061,14 +2042,12 @@ You might have to turn to the <code>.xs</code> method, or pass in <code>df.index
 
 <p>The <code>:</code> says include every label in this level.
 The <code>IndexSlice</code> object is just sugar for the actual python <code>slice</code> object needed to remove slice each level.</p>
-<div class="highlight"><pre><span></span><code><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;ORD&#39;</span><span class="p">,</span> <span class="s1">&#39;DSM&#39;</span><span class="p">]]</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">(slice(None, None, None), [&#39;ORD&#39;, &#39;DSM&#39;])</span>
-</code></pre></div>
-
+<pre><code class="language-python">pd.IndexSlice[:, ['ORD', 'DSM']]
+</code></pre>
+<pre><code>(slice(None, None, None), ['ORD', 'DSM'])
+</code></pre>
 <p>We'll talk more about working with Indexes (including MultiIndexes) in a later post. I have an unproven thesis that they're underused because <code>IndexSlice</code> is underused, causing people to think they're more unwieldy than they actually are. But let's close out part one.</p>
-<h2>WrapUp</h2>
+<h2 id="wrapup">WrapUp</h2>
 <p>This first post covered Indexing, a topic that's central to pandas.
 The power provided by the DataFrame comes with some unavoidable complexities.
 Best practices (using <code>.loc</code> and <code>.iloc</code>) will spare you many a headache.

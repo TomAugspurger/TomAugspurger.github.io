@@ -75,7 +75,7 @@ addresses were too specialized for inclusion pandas (which matched my own
 feelings). But, the community was interested in allowing 3rd party libraries to
 define their own types and having pandas "do the right thing" when it encounters
 them.</p>
-<h2>Pandas Internals</h2>
+<h2 id="pandas-internals">Pandas Internals</h2>
 <p>While not technically true, you could reasonably describe a <code>DataFrame</code> as a
 dictionary of NumPy arrays. There are a few complications that invalidate that
 caricature , but the one I want to focus on is pandas' <em>extension dtypes</em>.</p>
@@ -101,7 +101,7 @@ messier.</p>
 <p>Anyway, the upshot of my <a href="https://github.com/pandas-dev/pandas/issues/18767">proposal</a> was to make changes to pandas'
 internals to support 3rd-party objects going down that "is this an extension
 dtype" path.</p>
-<h2>Pandas' Array Interface</h2>
+<h2 id="pandas-array-interface">Pandas' Array Interface</h2>
 <p>To support external libraries defining extension array types, we defined an interface.</p>
 <p>In <a href="https://github.com/pandas-dev/pandas/pull/19268">pandas-19268</a> we laid out exactly what pandas considers
 sufficiently "array-like" for an extension array type. When pandas comes across
@@ -128,58 +128,56 @@ structured array with two uint64 fields. So we're making pandas treat this 2-D
 array as a single array, like how <code>Interval</code> works. Here's a taste:</p>
 <p>As a taste for what's possible, here's a preview of our IP Address library,
 <code>cyberpandas</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">cyberpandas</span>
+<pre><code class="language-python">In [1]: import cyberpandas
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+In [2]: import pandas as pd
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">ips</span> <span class="o">=</span> <span class="n">cyberpandas</span><span class="o">.</span><span class="n">IPAddress</span><span class="p">([</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="s1">&#39;192.168.1.1&#39;</span><span class="p">,</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="s1">&#39;2001:0db8:85a3:0000:0000:8a2e:0370:7334&#39;</span><span class="p">,</span>
-   <span class="o">...</span><span class="p">:</span> <span class="p">])</span>
+In [3]: ips = cyberpandas.IPAddress([
+   ...:     '0.0.0.0',
+   ...:     '192.168.1.1',
+   ...:     '2001:0db8:85a3:0000:0000:8a2e:0370:7334',
+   ...: ])
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">ips</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">IPAddress</span><span class="p">([</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="s1">&#39;192.168.1.1&#39;</span><span class="p">,</span> <span class="s1">&#39;2001:db8:85a3::8a2e:370:7334&#39;</span><span class="p">])</span>
+In [4]: ips
+Out[4]: IPAddress(['0.0.0.0', '192.168.1.1', '2001:db8:85a3::8a2e:370:7334'])
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">ips</span><span class="o">.</span><span class="n">data</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span>
-<span class="n">array</span><span class="p">([(</span>                  <span class="mi">0</span><span class="p">,</span>               <span class="mi">0</span><span class="p">),</span>
-       <span class="p">(</span>                  <span class="mi">0</span><span class="p">,</span>      <span class="mi">3232235777</span><span class="p">),</span>
-       <span class="p">(</span><span class="mi">2306139570357600256</span><span class="p">,</span> <span class="mi">151930230829876</span><span class="p">)],</span>
-      <span class="n">dtype</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;hi&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;u8&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;lo&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;u8&#39;</span><span class="p">)])</span>
-</code></pre></div>
+In [5]: ips.data
+Out[5]:
+array([(                  0,               0),
+       (                  0,      3232235777),
+       (2306139570357600256, 151930230829876)],
+      dtype=[('hi', '&gt;u8'), ('lo', '&gt;u8')])
 
+</code></pre>
 <p><code>ips</code> satisfies pandas' <code>ExtensionArray</code> interface, so it can be stored inside
 pandas' containers.</p>
-<div class="highlight"><pre><span></span><code><span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">ser</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">ips</span><span class="p">)</span>
+<pre><code class="language-python">In [6]: ser = pd.Series(ips)
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">ser</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">7</span><span class="p">]:</span>
-<span class="mi">0</span>                         <span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span>
-<span class="mi">1</span>                     <span class="mf">192.168</span><span class="o">.</span><span class="mf">1.1</span>
-<span class="mi">2</span>    <span class="mi">2001</span><span class="p">:</span><span class="n">db8</span><span class="p">:</span><span class="mi">85</span><span class="n">a3</span><span class="p">::</span><span class="mi">8</span><span class="n">a2e</span><span class="p">:</span><span class="mi">370</span><span class="p">:</span><span class="mi">7334</span>
-<span class="n">dtype</span><span class="p">:</span> <span class="n">ip</span>
-</code></pre></div>
-
+In [7]: ser
+Out[7]:
+0                         0.0.0.0
+1                     192.168.1.1
+2    2001:db8:85a3::8a2e:370:7334
+dtype: ip
+</code></pre>
 <p>Note the <code>dtype</code> in that output. That's a custom dtype (like <code>category</code>) defined
 <em>outside</em> pandas.</p>
 <p>We register a <a href="http://pandas-docs.github.io/pandas-docs-travis/developer.html#developer-register-accessors">custom accessor</a> with pandas claiming the <code>.ip</code>
 namespace (just like pandas uses <code>.str</code> or <code>.dt</code> or <code>.cat</code>):</p>
-<div class="highlight"><pre><span></span><code><span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">ser</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">isna</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">8</span><span class="p">]:</span>
-<span class="mi">0</span>     <span class="kc">True</span>
-<span class="mi">1</span>    <span class="kc">False</span>
-<span class="mi">2</span>    <span class="kc">False</span>
-<span class="n">dtype</span><span class="p">:</span> <span class="nb">bool</span>
+<pre><code class="language-python">In [8]: ser.ip.isna
+Out[8]:
+0     True
+1    False
+2    False
+dtype: bool
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">ser</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">is_ipv6</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span>
-<span class="mi">0</span>    <span class="kc">False</span>
-<span class="mi">1</span>    <span class="kc">False</span>
-<span class="mi">2</span>     <span class="kc">True</span>
-<span class="n">dtype</span><span class="p">:</span> <span class="nb">bool</span>
-</code></pre></div>
-
+In [9]: ser.ip.is_ipv6
+Out[9]:
+0    False
+1    False
+2     True
+dtype: bool
+</code></pre>
 <p>I'm <em>extremely</em> interested in seeing what the community builds on top of this
 interface. Joris has already tested out the <a href="geopandas">Cythonized geopandas</a>
 extension, which stores a NumPy array of pointers to geometry objects, and
@@ -189,7 +187,7 @@ things seem great. I could see someone (perhaps you, dear reader?) building a
 a powerful combination.</p>
 <p>I'm also happy to have to say "Closed, out of scope; sorry." less often. Now it
 can be "Closed, out of scope; do it outside of pandas." :)</p>
-<h2>Open Source Success Story</h2>
+<h2 id="open-source-success-story">Open Source Success Story</h2>
 <p>It's worth taking a moment to realize that this was a great example of open
 source at its best.</p>
 <ol>

@@ -56,13 +56,11 @@ Foundation</a>.</em></p>
 <p><a href="http://dask-ml.readthedocs.io/en/latest/">dask-ml</a> 0.4.1 was released today with a few enhancements. See the
 <a href="http://dask-ml.readthedocs.io/en/latest/changelog.html">changelog</a> for all the changes from 0.4.0.</p>
 <p>Conda packages are available on conda-forge</p>
-<div class="highlight"><pre><span></span><code>$ conda install -c conda-forge dask-ml
-</code></pre></div>
-
+<pre><code>$ conda install -c conda-forge dask-ml
+</code></pre>
 <p>and wheels and the source are available on PyPI</p>
-<div class="highlight"><pre><span></span><code>$ pip install dask-ml
-</code></pre></div>
-
+<pre><code>$ pip install dask-ml
+</code></pre>
 <p>I wanted to highlight one change, that touches on a topic I mentioned in my
 first post on <a href="scalable-ml-01">scalable Machine Learning</a>. I discussed how, in
 my limited experience, a common workflow was to train on a small batch of data
@@ -77,46 +75,42 @@ the learned attributes. This means <code>ParalellPostFit</code> is not suitable 
 <code>.predict</code>, or <code>.transform</code>.</p>
 <p>As an example, we'll fit a scikit-learn <code>GradientBoostingClassifier</code> on a small
 in-memory dataset.</p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">GradientBoostingClassifier</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">sklearn.datasets</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">dask_ml.datasets</span>
+<pre><code class="language-python">&gt;&gt;&gt; from sklearn.ensemble import GradientBoostingClassifier
+&gt;&gt;&gt; import sklearn.datasets
+&gt;&gt;&gt; import dask_ml.datasets
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">make_classification</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-<span class="o">...</span>                                             <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">clf</span> <span class="o">=</span> <span class="n">ParallelPostFit</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">GradientBoostingClassifier</span><span class="p">())</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="n">ParallelPostFit</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">GradientBoostingClassifier</span><span class="p">(</span><span class="o">...</span><span class="p">))</span>
-</code></pre></div>
-
+&gt;&gt;&gt; X, y = sklearn.datasets.make_classification(n_samples=1000,
+...                                             random_state=0)
+&gt;&gt;&gt; clf = ParallelPostFit(estimator=GradientBoostingClassifier())
+&gt;&gt;&gt; clf.fit(X, y)
+ParallelPostFit(estimator=GradientBoostingClassifier(...))
+</code></pre>
 <p>Nothing special so far. But now, let's suppose we had a "large" dataset for
 prediction. We'll use <code>dask_ml.datasets.make_classification</code>, but in practice
 you would read this from a file system or database.</p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">X_big</span><span class="p">,</span> <span class="n">y_big</span> <span class="o">=</span> <span class="n">dask_ml</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">make_classification</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
-                                                        <span class="n">chunks</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-                                                        <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</code></pre></div>
-
+<pre><code class="language-python">&gt;&gt;&gt; X_big, y_big = dask_ml.datasets.make_classification(n_samples=100000,
+                                                        chunks=1000,
+                                                        random_state=0)
+</code></pre>
 <p>In this case we have a dataset with 100,000 samples split into blocks of 1,000.
 We can now predict for this large dataset.</p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-<span class="n">dask</span><span class="o">.</span><span class="n">array</span><span class="o">&lt;</span><span class="n">predict</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">10000</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int64</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,)</span><span class="o">&gt;</span>
-</code></pre></div>
-
+<pre><code class="language-python">&gt;&gt;&gt; clf.predict(X)
+dask.array&lt;predict, shape=(10000,), dtype=int64, chunksize=(1000,)&gt;
+</code></pre>
 <p>Now things are different. <code>ParallelPostFit.predict</code>, <code>.predict_proba</code>, and
 <code>.transform</code>, all return dask arrays instead of immediately computing the
 result. We've built up task graph of computations to be performed, which allows
 dask to step in and compute things in parallel. When you're ready for the
 answer, call <code>compute</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
-<span class="n">array</span><span class="p">([[</span><span class="mf">0.99141094</span><span class="p">,</span> <span class="mf">0.00858906</span><span class="p">],</span>
-       <span class="p">[</span><span class="mf">0.93178389</span><span class="p">,</span> <span class="mf">0.06821611</span><span class="p">],</span>
-       <span class="p">[</span><span class="mf">0.99129105</span><span class="p">,</span> <span class="mf">0.00870895</span><span class="p">],</span>
-       <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span><span class="mf">0.97996652</span><span class="p">,</span> <span class="mf">0.02003348</span><span class="p">],</span>
-       <span class="p">[</span><span class="mf">0.98087444</span><span class="p">,</span> <span class="mf">0.01912556</span><span class="p">],</span>
-       <span class="p">[</span><span class="mf">0.99407016</span><span class="p">,</span> <span class="mf">0.00592984</span><span class="p">]])</span>
-</code></pre></div>
-
+<pre><code class="language-python">&gt;&gt;&gt; clf.predict_proba(X).compute()
+array([[0.99141094, 0.00858906],
+       [0.93178389, 0.06821611],
+       [0.99129105, 0.00870895],
+       ...,
+       [0.97996652, 0.02003348],
+       [0.98087444, 0.01912556],
+       [0.99407016, 0.00592984]])
+</code></pre>
 <p>At that point the dask scheduler comes in and executes your compute in parallel,
 using all the cores of your laptop or workstation, or all the machines on your
 cluster.</p>

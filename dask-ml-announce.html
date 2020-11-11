@@ -52,26 +52,23 @@
   <div class="article__text">
     <p>Today we released the first version of <code>dask-ml</code>, a library for parallel and
 distributed machine learning. Read the <a href="http://dask-ml.readthedocs.io/en/latest/">documentation</a> or install it with</p>
-<div class="highlight"><pre><span></span><code><span class="err">pip install dask-ml</span>
-</code></pre></div>
-
+<pre><code>pip install dask-ml
+</code></pre>
 <p>Packages are currently building for conda-forge, and will be up later today.</p>
-<div class="highlight"><pre><span></span><code><span class="err">conda install -c conda-forge dask-ml</span>
-</code></pre></div>
-
-<h2>The Goals</h2>
+<pre><code>conda install -c conda-forge dask-ml
+</code></pre>
+<h2 id="the-goals">The Goals</h2>
 <p><a href="http://dask.pydata.org/en/latest/">dask</a> is, to quote the docs, "a flexible parallel computing library for
 analytic computing." <code>dask.array</code> and <code>dask.dataframe</code> have done a great job
 scaling NumPy arrays and pandas dataframes; <code>dask-ml</code> hopes to do the same in
 the machine learning domain.</p>
 <p>Put simply, we want</p>
-<div class="highlight"><pre><span></span><code><span class="n">est</span> <span class="o">=</span> <span class="n">MyEstimator</span><span class="p">()</span>
-<span class="n">est</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-</code></pre></div>
-
+<pre><code class="language-python">est = MyEstimator()
+est.fit(X, y)
+</code></pre>
 <p>to work well in parallel and potentially distributed across a cluster. <code>dask</code>
 provides us with the building blocks to do that.</p>
-<h2>What's Been Done</h2>
+<h2 id="whats-been-done">What's Been Done</h2>
 <p><code>dask-ml</code> collects some efforts that others already built:</p>
 <ul>
 <li><a href="http://dask-ml.readthedocs.io/en/latest/joblib.html">distributed joblib</a>:
@@ -108,7 +105,7 @@ across a cluster.</p>
   overhead from parallelizing, and whether or not the scikit-learn
   implementation is already parallel).</li>
 </ul>
-<h2>Help Contribute!</h2>
+<h2 id="help-contribute">Help Contribute!</h2>
 <p>Scikit-learn is a robust, mature, stable library. <code>dask-ml</code> is... not. Which
 means there are plenty of places to contribute! Dask makes writing parallel and
 distributed implementations of algorithms fun. For the most part, you don't even

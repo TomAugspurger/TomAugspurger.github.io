@@ -65,7 +65,7 @@ us to parallelize or distribute a machine learning workload. Today, we'll be
 talking about the second constraint, "I'm constrained by time, and would like to
 fit more models at once, by using all the cores of my laptop, or all the
 machines in my cluster".</p>
-<h2>An Aside on Parallelism</h2>
+<h2 id="an-aside-on-parallelism">An Aside on Parallelism</h2>
 <p>In the case of Python, we have two main avenues of parallelization (which we'll
 roughly define as using multiple "workers" to do some "work" in less time).
 Those two avenues are</p>
@@ -101,31 +101,28 @@ more expensive since you'll have network overhead to worry about, in addition to
 the serialization costs.</p>
 <p>Fortunately, modules like <code>concurrent.futures</code> and libraries like <code>dask</code> make it
 easy to swap one mode in for another. Let's make a little dask array:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">dask.array</span> <span class="kn">as</span> <span class="nn">da</span>
-<span class="kn">import</span> <span class="nn">dask</span>
-<span class="kn">import</span> <span class="nn">dask.threaded</span>
-<span class="kn">import</span> <span class="nn">dask.multiprocessing</span>
+<pre><code python="python">import dask.array as da
+import dask
+import dask.threaded
+import dask.multiprocessing
 
-<span class="n">X</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">X</span> <span class="o">/</span> <span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="err">@</span> <span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-</code></pre></div>
-
+X = da.random.uniform(size=(10000, 10), chunks=(1000, 10))
+result = X / (X.T @ X).sum(1)
+</code></pre>
 <p>We can swap out the scheduler with a context-manager:</p>
-<div class="highlight"><pre><span></span><code><span class="c">%%time</span>
-<span class="n">with</span> <span class="s">dask.set_options(get=dask.threaded.get):</span>
-    # <span class="n">threaded</span> <span class="n">is</span> <span class="n">the</span> <span class="n">default</span> <span class="k">for</span> <span class="n">dask</span><span class="p">.</span><span class="n">array</span> <span class="n">anyway</span>
-    <span class="n">result</span><span class="p">.</span><span class="n">compute</span><span class="p">()</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="c">%%time</span>
-<span class="n">with</span> <span class="s">dask.set_options(get=dask.multiprocessing.get):</span>
-    <span class="n">result</span><span class="p">.</span><span class="n">compute</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code python="python">%%time
+with dask.set_options(get=dask.threaded.get):
+    # threaded is the default for dask.array anyway
+    result.compute()
+</code></pre>
+<pre><code python="python">%%time
+with dask.set_options(get=dask.multiprocessing.get):
+    result.compute()
+</code></pre>
 <p>Every dask collection (<code>dask.array</code>, <code>dask.dataframe</code>, <code>dask.bag</code>) has a default
 scheduler that typically works well for the kinds of operations it does. For
 <code>dask.array</code> and <code>dask.dataframe</code>, the shared-memory threaded scheduler is used.</p>
-<h2>Cost Models</h2>
+<h2 id="cost-models">Cost Models</h2>
 <p>In <a href="https://www.youtube.com/watch?v=tC94Mkg-oJU">this talk</a>, Simon Peyton Jones
 talks about parallel and distributed computing for Haskell. He stressed
 repeatedly that there's no silver bullet when it comes to parallelism. The type
@@ -138,7 +135,7 @@ distributed scheduler. Assuming the underlying NumPy, SciPy, scikit-learn, or
 pandas operation releases the GIL, you'll be able to get nice speedups without
 the cost of serialization. But again, there isn't a silver bullet here, and the
 best type of parallelism will depend on your particular problem.</p>
-<h2>Where to Parallelize</h2>
+<h2 id="where-to-parallelize">Where to Parallelize</h2>
 <p>In a typical machine-learning workflow, there are typically ample opportunities for
 parallelism.</p>
 <ol>

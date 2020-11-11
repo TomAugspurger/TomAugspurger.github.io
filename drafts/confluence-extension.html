@@ -65,11 +65,10 @@ explosion of creativity in the community.</p>
 <p>NEP-13 and NEP-18, each deal with using the NumPy API on non-NumPy ndarray
 objects. For example, you might want to apply a ufunc like <code>np.log</code> to a Dask
 array. </p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">a</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-<span class="n">dask</span><span class="o">.</span><span class="n">array</span><span class="o">&lt;</span><span class="n">log</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float64</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span><span class="o">&gt;</span>
-</code></pre></div>
-
+<pre><code class="language-python">&gt;&gt;&gt; a = da.random.random((10, 10))
+&gt;&gt;&gt; np.log(a)
+dask.array&lt;log, shape=(10, 10), dtype=float64, chunksize=(10, 10)&gt;
+</code></pre>
 <p>Prior to NEP-13, <code>dask.array</code> needed it's own namespace of ufuncs like <code>da.log</code>,
 since <code>np.log</code> would convert the Dask array to an in-memory NumPy array
 (probably blowing up your machine's memory). With <code>__array_ufunc__</code> library
@@ -91,7 +90,7 @@ with a mixture of geographic and network data in the same DataFrame.</p>
 <p>Finally, Dask defines a <a href="https://docs.dask.org/en/latest/custom-collections.html">Collections Interface</a> so that any
 object can be a first-class citizen within Dask. This is what ensures <a href="http://xarray.pydata.org/">XArray's</a>
 DataArray and Dataset objects work well with Dask.</p>
-<h2><code>Series.__array_ufunc__</code></h2>
+<h2 id="series__array_ufunc__"><code>Series.__array_ufunc__</code></h2>
 <p>Now, onto the fun stuff: combining these interfaces across objects and
 libraries. https://github.com/pandas-dev/pandas/pull/23293 is a pull request
 adding <code>Series.__array_ufunc__</code>. There are a few subtleties, but the basic idea
@@ -107,67 +106,63 @@ calling the ufunc twice, once on the sparse values (e.g. the non-zero values),
 and once on the scalar <code>fill_value</code>. The result is a new <code>SparseArray</code> with the
 same memory usage. With that PR, we achieve the same thing when operating on a
 Series containing an ExtensionArray.</p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">ser</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">SparseArray</span><span class="p">([</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100000</span><span class="p">))</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">ser</span>
-<span class="mi">0</span>        <span class="o">-</span><span class="mi">10</span>
-<span class="mi">1</span>          <span class="mi">0</span>
-<span class="mi">2</span>         <span class="mi">10</span>
-<span class="mi">3</span>          <span class="mi">0</span>
-<span class="mi">4</span>          <span class="mi">0</span>
-          <span class="o">..</span>
-<span class="mi">99998</span>      <span class="mi">0</span>
-<span class="mi">99999</span>      <span class="mi">0</span>
-<span class="mi">100000</span>     <span class="mi">0</span>
-<span class="mi">100001</span>     <span class="mi">0</span>
-<span class="mi">100002</span>     <span class="mi">0</span>
-<span class="n">Length</span><span class="p">:</span> <span class="mi">100003</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">Sparse</span><span class="p">[</span><span class="n">int64</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<pre><code class="language-python">&gt;&gt;&gt; ser = pd.Series(pd.SparseArray([-10, 0, 10] + [0] * 100000))
+&gt;&gt;&gt; ser
+0        -10
+1          0
+2         10
+3          0
+4          0
+          ..
+99998      0
+99999      0
+100000     0
+100001     0
+100002     0
+Length: 100003, dtype: Sparse[int64, 0]
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">n</span> <span class="p">[</span><span class="mi">20</span><span class="p">]:</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">ser</span><span class="p">)</span>
-<span class="mi">0</span>        <span class="o">-</span><span class="mi">1</span>
-<span class="mi">1</span>         <span class="mi">0</span>
-<span class="mi">2</span>         <span class="mi">1</span>
-<span class="mi">3</span>         <span class="mi">0</span>
-<span class="mi">4</span>         <span class="mi">0</span>
-         <span class="o">..</span>
-<span class="mi">99998</span>     <span class="mi">0</span>
-<span class="mi">99999</span>     <span class="mi">0</span>
-<span class="mi">100000</span>    <span class="mi">0</span>
-<span class="mi">100001</span>    <span class="mi">0</span>
-<span class="mi">100002</span>    <span class="mi">0</span>
-<span class="n">Length</span><span class="p">:</span> <span class="mi">100003</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">Sparse</span><span class="p">[</span><span class="n">int64</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-</code></pre></div>
-
+&gt;&gt;&gt; n [20]: np.sign(ser)
+0        -1
+1         0
+2         1
+3         0
+4         0
+         ..
+99998     0
+99999     0
+100000    0
+100001    0
+100002    0
+Length: 100003, dtype: Sparse[int64, 0]
+</code></pre>
 <p>Previously, that would have converted the <code>SparseArray</code> to a <em>dense</em> NumPy
 array, blowing up your memory, slowing things down, and giving the incorrect result.</p>
-<h2><code>IPArray.__array_function__</code></h2>
+<h2 id="iparray__array_function__"><code>IPArray.__array_function__</code></h2>
 <p>To demonstrate <code>__array_function__</code>, we'll implement it on <code>IPArray</code>.</p>
-<div class="highlight"><pre><span></span><code>    <span class="k">def</span> <span class="nf">__array_function__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">issubclass</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">types</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">NotImplemented</span>
-        <span class="k">return</span> <span class="n">HANDLED_FUNCTIONS</span><span class="p">[</span><span class="n">func</span><span class="p">](</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre></div>
-
+<pre><code class="language-python">    def __array_function__(self, func, types, args, kwargs):
+        cls = type(self)
+        if not all(issubclass(t, cls) for t in types):
+            return NotImplemented
+        return HANDLED_FUNCTIONS[func](*args, **kwargs)
+</code></pre>
 <p><code>IPArray</code> is pretty domain-specific, so we place ourself down at the bottom
 priority by returning <code>NotImplemented</code> if there are any types we don't recognize
 (we might consider handling Python's stdlib <code>ipaddres.IPv4Address</code> and
 <code>ipaddres.IPv6Address</code> objects too).</p>
 <p>And then we start implementing the interface. For example, <code>concatenate</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="nd">@implements</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">concatenate</span><span class="p">(</span><span class="n">arrays</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">axis</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Axis != 0 is not supported. (Got </span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">IPArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">array</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays</span><span class="p">]))</span>
-</code></pre></div>
-
+<pre><code class="language-python">@implements(np.concatenate)
+def concatenate(arrays, axis=0, out=None):
+    if axis != 0:
+        raise NotImplementedError(f&quot;Axis != 0 is not supported. (Got {axis}).&quot;)
+    return IPArray(np.concatenate([array.data for array in arrays]))
+</code></pre>
 <p>With this, we can successfully concatenate two IPArrays</p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">a</span> <span class="o">=</span> <span class="n">cyberpandas</span><span class="o">.</span><span class="n">ip_range</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">b</span> <span class="o">=</span> <span class="n">cyberpandas</span><span class="o">.</span><span class="n">ip_range</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">])</span>
-<span class="n">IPArray</span><span class="p">([</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.1&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.2&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.3&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.10&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.11&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.12&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.13&#39;</span><span class="p">])</span>
-</code></pre></div>
-
-<h2>Extending Dask</h2>
+<pre><code class="language-python">&gt;&gt;&gt; a = cyberpandas.ip_range(4)
+&gt;&gt;&gt; b = cyberpandas.ip_range(10, 14)
+&gt;&gt;&gt; np.concatenate([a, b])
+IPArray(['0.0.0.0', '0.0.0.1', '0.0.0.2', '0.0.0.3', '0.0.0.10', '0.0.0.11', '0.0.0.12', '0.0.0.13'])
+</code></pre>
+<h2 id="extending-dask">Extending Dask</h2>
 <p>Finally, we may wish to make <code>IPArray</code> work well with <code>dask.dataframe</code>, to do
 normal cyberpandas operations in parallel, possibly distributed on a cluster.
 This requires a few changes:</p>
@@ -177,44 +172,43 @@ This requires a few changes:</p>
 <li>Registering an <code>ip</code> accessor with <code>dask.dataframe</code>, just like with <code>pandas</code>.</li>
 </ol>
 <p>This is demonstrated in https://github.com/ContinuumIO/cyberpandas/pull/39</p>
-<div class="highlight"><pre><span></span><code><span class="n">In</span> <span class="p">[</span><span class="mi">28</span><span class="p">]:</span> <span class="n">ddf</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">28</span><span class="p">]:</span>
-<span class="n">Dask</span> <span class="n">DataFrame</span> <span class="n">Structure</span><span class="p">:</span>
-                 <span class="n">A</span>
-<span class="n">npartitions</span><span class="o">=</span><span class="mi">2</span>
-<span class="mi">0</span>               <span class="n">ip</span>
-<span class="mi">6</span>              <span class="o">...</span>
-<span class="mi">11</span>             <span class="o">...</span>
-<span class="n">Dask</span> <span class="n">Name</span><span class="p">:</span> <span class="n">from_pandas</span><span class="p">,</span> <span class="mi">2</span> <span class="n">tasks</span>
+<pre><code class="language-python">In [28]: ddf
+Out[28]:
+Dask DataFrame Structure:
+                 A
+npartitions=2
+0               ip
+6              ...
+11             ...
+Dask Name: from_pandas, 2 tasks
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">29</span><span class="p">]:</span> <span class="n">ddf</span><span class="o">.</span><span class="n">A</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">netmask</span><span class="p">()</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">29</span><span class="p">]:</span>
-<span class="n">Dask</span> <span class="n">Series</span> <span class="n">Structure</span><span class="p">:</span>
-<span class="n">npartitions</span><span class="o">=</span><span class="mi">2</span>
-<span class="mi">0</span>      <span class="n">ip</span>
-<span class="mi">6</span>     <span class="o">...</span>
-<span class="mi">11</span>    <span class="o">...</span>
-<span class="n">Name</span><span class="p">:</span> <span class="n">A</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">ip</span>
-<span class="n">Dask</span> <span class="n">Name</span><span class="p">:</span> <span class="n">from</span><span class="o">-</span><span class="n">delayed</span><span class="p">,</span> <span class="mi">22</span> <span class="n">tasks</span>
+In [29]: ddf.A.ip.netmask()
+Out[29]:
+Dask Series Structure:
+npartitions=2
+0      ip
+6     ...
+11    ...
+Name: A, dtype: ip
+Dask Name: from-delayed, 22 tasks
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">30</span><span class="p">]:</span> <span class="n">ddf</span><span class="o">.</span><span class="n">A</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">netmask</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">30</span><span class="p">]:</span>
-<span class="mi">0</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
-<span class="mi">1</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
-<span class="mi">2</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
-<span class="mi">3</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
-<span class="mi">4</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
-<span class="mi">5</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
-<span class="mi">6</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
-<span class="mi">7</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
-<span class="mi">8</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
-<span class="mi">9</span>     <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
-<span class="mi">10</span>    <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
-<span class="mi">11</span>    <span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span>
-<span class="n">dtype</span><span class="p">:</span> <span class="n">ip</span>
-</code></pre></div>
-
-<h2>Conclusion</h2>
+In [30]: ddf.A.ip.netmask().compute()
+Out[30]:
+0     255.255.255.255
+1     255.255.255.255
+2     255.255.255.255
+3     255.255.255.255
+4     255.255.255.255
+5     255.255.255.255
+6     255.255.255.255
+7     255.255.255.255
+8     255.255.255.255
+9     255.255.255.255
+10    255.255.255.255
+11    255.255.255.255
+dtype: ip
+</code></pre>
+<h2 id="conclusion">Conclusion</h2>
 <p>I think that these points of extension.</p>
   </div>
 

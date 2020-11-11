@@ -56,7 +56,7 @@
 engineering and hyper-parameter optimization for you. TPOT uses <a href="https://en.wikipedia.org/wiki/Genetic_programming">genetic
 algorithms</a> to evaluate which models are performing well and how to choose
 new models to try out in the next generation.</p>
-<h2>Parallelizing TPOT</h2>
+<h2 id="parallelizing-tpot">Parallelizing TPOT</h2>
 <p>In <a href="https://github.com/EpistasisLab/tpot/pull/730">TPOT-730</a>, we made some modifications to TPOT to support
 distributed training. As a TPOT user, the only changes you need to make to your
 code are</p>
@@ -68,7 +68,7 @@ code are</p>
 shows an example on an 80-core Dask cluster.</p>
 <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/uyx9nBuOYQQ?rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
-<h2>Commentary</h2>
+<h2 id="commentary">Commentary</h2>
 <p>Fitting a TPOT estimator consists of several stages. The bulk of the time is
 spent evaluating individual scikit-learn pipelines. Dask-ML already had code for
 splitting apart a scikit-learn <code>Pipeline.fit</code> call into individual tasks. This
@@ -80,7 +80,7 @@ individual models in a generation to be done on a cluster.</p>
 determining the next set of models to try out (this is the "mutation and
 crossover phase"). That's not (yet) been parallelized with Dask, so you'll
 notice some periods of inactivity on the cluster.</p>
-<h2>Next Steps</h2>
+<h2 id="next-steps">Next Steps</h2>
 <p>This will be available in the next release of TPOT. You can try out a small
 example now on the <a href="https://mybinder.org/v2/gh/dask/dask-examples/master?filepath=machine-learning%2Ftpot.ipynb">dask-examples binder</a>.</p>
 <p>Stepping back a bit, I think this is a good example of how libraries can use

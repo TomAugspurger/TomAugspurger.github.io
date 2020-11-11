@@ -63,7 +63,7 @@
 <li>None or all of the above</li>
 </ol>
 <p>I was prompted to write this post because <em>a.)</em> this is an (unfortunately) confusing topic and <em>b.)</em> it's undergoing a lot of change right now (and, <em>c.)</em> I had this awesome title in my head).</p>
-<h2>The Answer</h2>
+<h2 id="the-answer">The Answer</h2>
 <p>Unfortunately I kind of messed up the poll. Things are even more complex than I initially thought.</p>
 <p>As best I can tell, the possible types for <code>series.values</code> are</p>
 <ul>
@@ -73,7 +73,7 @@
 </ul>
 <p>So going with the cop-out "best-available" answer, I would have said that <em>2</em> was the best answer in the poll.
 SparseArray is <em>technically</em> and ndarray subclass (for now), so <em>technically</em> 2 is correct, but that's a few too many <em>technically</em>s for me.</p>
-<h2>The Explanation</h2>
+<h2 id="the-explanation">The Explanation</h2>
 <p>So, that's a bit of a mess. How'd we get here? Or, stepping back a bit, what even is an array? What's a dataframe?</p>
 <p>NumPy arrays are N-dimensional and <em>homogenous</em>. Every element in the array has to have the same data type.</p>
 <p>Pandas dataframes are 2-dimensional and <em>heterogenous</em>. Different columns can have different data types. But every element in a single column (Series) has the same data type.
@@ -90,25 +90,24 @@ Or should it faithfully represent the data, even if that means not returning an 
 <p>I don't think there's a clear answer to this question. Both options have their downsides.
 In the end, we ended up with a messy compromise, where some things return ndarrays, some things return something else (Categorical), and some things do a bit of conversion before returning an <code>ndarary</code>.</p>
 <p>For example, off the top of your head, do you know what the type of <code>Series.values</code> is for timezone-aware data?</p>
-<div class="highlight"><pre><span></span><code><span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;2017&#39;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;US/Eastern&#39;</span><span class="p">))</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
-<span class="mi">0</span>   <span class="mi">2017</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="o">-</span><span class="mi">05</span><span class="p">:</span><span class="mi">00</span>
-<span class="mi">1</span>   <span class="mi">2017</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">02</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="o">-</span><span class="mi">05</span><span class="p">:</span><span class="mi">00</span>
-<span class="mi">2</span>   <span class="mi">2017</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">03</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="o">-</span><span class="mi">05</span><span class="p">:</span><span class="mi">00</span>
-<span class="mi">3</span>   <span class="mi">2017</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">04</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="o">-</span><span class="mi">05</span><span class="p">:</span><span class="mi">00</span>
-<span class="n">dtype</span><span class="p">:</span> <span class="n">datetime64</span><span class="p">[</span><span class="n">ns</span><span class="p">,</span> <span class="n">US</span><span class="o">/</span><span class="n">Eastern</span><span class="p">]</span>
+<pre><code class="language-python">In [2]: pd.Series(pd.date_range('2017', periods=4, tz='US/Eastern'))
+Out[2]:
+0   2017-01-01 00:00:00-05:00
+1   2017-01-02 00:00:00-05:00
+2   2017-01-03 00:00:00-05:00
+3   2017-01-04 00:00:00-05:00
+dtype: datetime64[ns, US/Eastern]
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;2017&#39;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;US/Eastern&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">values</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
-<span class="n">array</span><span class="p">([</span><span class="s1">&#39;2017-01-01T05:00:00.000000000&#39;</span><span class="p">,</span> <span class="s1">&#39;2017-01-02T05:00:00.000000000&#39;</span><span class="p">,</span>
-       <span class="s1">&#39;2017-01-03T05:00:00.000000000&#39;</span><span class="p">,</span> <span class="s1">&#39;2017-01-04T05:00:00.000000000&#39;</span><span class="p">],</span>
-      <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
-</code></pre></div>
-
+In [3]: pd.Series(pd.date_range('2017', periods=4, tz='US/Eastern')).values
+Out[3]:
+array(['2017-01-01T05:00:00.000000000', '2017-01-02T05:00:00.000000000',
+       '2017-01-03T05:00:00.000000000', '2017-01-04T05:00:00.000000000'],
+      dtype='datetime64[ns]')
+</code></pre>
 <p>With the wisdom of Solomon, we decided to have it both ways; the values are converted to UTC and the timezone is dropped.
 I don't think anyone would claim this is ideal, but it was backwards compatibile-ish.
 Given the constraints, it wasn't the worst choice in the world.</p>
-<h2>The Near Future</h2>
+<h2 id="the-near-future">The Near Future</h2>
 <p>In pandas 0.24, we'll (hopefully) have a good answer for what <code>series.values</code> is: a NumPy array or an <a href="http://pandas-docs.github.io/pandas-docs-travis/extending.html#extension-types">ExtensionArray</a>.
 For regular data types represented by NumPy, you'll get an ndarray.
 For extension types (implemented in pandas or elsewhere) you'll get an ExtensionArray.
@@ -119,7 +118,7 @@ but for many things, passing a <code>Series</code> will hopefully work as well a
 To users of pandas, I recommend avoiding <code>.values</code> as much as possible.
 If you know that you need an ndarray, you're probably best of using <code>np.asarray(series)</code>.
 That will do the right thing for any data type.</p>
-<h2>The Far Future</h2>
+<h2 id="the-far-future">The Far Future</h2>
 <p>I'm hopeful that some day all we'll have a common language for these data types.
 There's a lot going on in the numeric Python ecosystem right now. Stay tuned!</p>
   </div>

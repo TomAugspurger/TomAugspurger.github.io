@@ -64,7 +64,7 @@
 <li><a href="modern-8-scaling">Scaling</a></li>
 </ul>
 <hr>
-<h1>Reshaping &amp; Tidy Data</h1>
+<h1 id="reshaping-tidy-data">Reshaping &amp; Tidy Data</h1>
 <blockquote>
 <p>Structuring datasets to facilitate analysis <a href="http://www.jstatsoft.org/v59/i10/paper">(Wickham 2014)</a></p>
 </blockquote>
@@ -83,37 +83,35 @@ With a tidy dataset, it's relatively easy to do all of those.</p>
 </ol>
 <p>And today we'll only concern ourselves with the first two.
 As quoted at the top, this really is about facilitating analysis: going as quickly as possible from question to answer.</p>
-<div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+<pre><code class="language-python">%matplotlib inline
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+import os
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-<span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MODERN_PANDAS_EPUB&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)):</span>
-    <span class="kn">import</span> <span class="nn">prep</span> <span class="c1"># noqa</span>
+if int(os.environ.get(&quot;MODERN_PANDAS_EPUB&quot;, 0)):
+    import prep # noqa
 
-<span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">max_rows</span> <span class="o">=</span> <span class="mi">10</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s1">&#39;ticks&#39;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="s1">&#39;talk&#39;</span><span class="p">)</span>
-</code></pre></div>
-
-<h2>NBA Data</h2>
+pd.options.display.max_rows = 10
+sns.set(style='ticks', context='talk')
+</code></pre>
+<h2 id="nba-data">NBA Data</h2>
 <p><a href="http://stackoverflow.com/questions/22695680/python-pandas-timedelta-specific-rows">This</a> StackOverflow question asked about calculating the number of days of rest NBA teams have between games.
 The answer would have been difficult to compute with the raw data.
 After transforming the dataset to be tidy, we're able to quickly get the answer.</p>
 <p>We'll grab some NBA game data from basketball-reference.com using pandas' <code>read_html</code> function, which returns a list of DataFrames.</p>
-<div class="highlight"><pre><span></span><code><span class="n">fp</span> <span class="o">=</span> <span class="s1">&#39;data/nba.csv&#39;</span>
+<pre><code class="language-python">fp = 'data/nba.csv'
 
-<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
-    <span class="n">tables</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s2">&quot;http://www.basketball-reference.com/leagues/NBA_2016_games.html&quot;</span><span class="p">)</span>
-    <span class="n">games</span> <span class="o">=</span> <span class="n">tables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">games</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">games</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
-<span class="n">games</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
+if not os.path.exists(fp):
+    tables = pd.read_html(&quot;http://www.basketball-reference.com/leagues/NBA_2016_games.html&quot;)
+    games = tables[0]
+    games.to_csv(fp)
+else:
+    games = pd.read_csv(fp)
+games.head()
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -213,21 +211,20 @@ It provides a couple parameters for controlling what gets selected from the webp
 I'll always use it first, before moving on to <a href="https://www.crummy.com/software/BeautifulSoup/">BeautifulSoup</a> or <a href="http://lxml.de/">lxml</a> if the page is more complicated.</p>
 <p>As you can see, we have a bit of general munging to do before tidying.
 Each month slips in an extra row of mostly NaNs, the column names aren't too useful, and we have some dtypes to fix up.</p>
-<div class="highlight"><pre><span></span><code><span class="n">column_names</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Date&#39;</span><span class="p">:</span> <span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;Start (ET)&#39;</span><span class="p">:</span> <span class="s1">&#39;start&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;Unamed: 2&#39;</span><span class="p">:</span> <span class="s1">&#39;box&#39;</span><span class="p">,</span> <span class="s1">&#39;Visitor/Neutral&#39;</span><span class="p">:</span> <span class="s1">&#39;away_team&#39;</span><span class="p">,</span> 
-                <span class="s1">&#39;PTS&#39;</span><span class="p">:</span> <span class="s1">&#39;away_points&#39;</span><span class="p">,</span> <span class="s1">&#39;Home/Neutral&#39;</span><span class="p">:</span> <span class="s1">&#39;home_team&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;PTS.1&#39;</span><span class="p">:</span> <span class="s1">&#39;home_points&#39;</span><span class="p">,</span> <span class="s1">&#39;Unamed: 7&#39;</span><span class="p">:</span> <span class="s1">&#39;n_ot&#39;</span><span class="p">}</span>
+<pre><code class="language-python">column_names = {'Date': 'date', 'Start (ET)': 'start',
+                'Unamed: 2': 'box', 'Visitor/Neutral': 'away_team', 
+                'PTS': 'away_points', 'Home/Neutral': 'home_team',
+                'PTS.1': 'home_points', 'Unamed: 7': 'n_ot'}
 
-<span class="n">games</span> <span class="o">=</span> <span class="p">(</span><span class="n">games</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">column_names</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">thresh</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-    <span class="p">[[</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;away_team&#39;</span><span class="p">,</span> <span class="s1">&#39;away_points&#39;</span><span class="p">,</span> <span class="s1">&#39;home_team&#39;</span><span class="p">,</span> <span class="s1">&#39;home_points&#39;</span><span class="p">]]</span>
-    <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">date</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%a</span><span class="s1">, %b </span><span class="si">%d</span><span class="s1">, %Y&#39;</span><span class="p">))</span>
-    <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">rename_axis</span><span class="p">([</span><span class="s2">&quot;game_id&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">])</span>
-    <span class="o">.</span><span class="n">sort_index</span><span class="p">())</span>
-<span class="n">games</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
+games = (games.rename(columns=column_names)
+    .dropna(thresh=4)
+    [['date', 'away_team', 'away_points', 'home_team', 'home_points']]
+    .assign(date=lambda x: pd.to_datetime(x['date'], format='%a, %b %d, %Y'))
+    .set_index('date', append=True)
+    .rename_axis([&quot;game_id&quot;, &quot;date&quot;])
+    .sort_index())
+games.head()
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -320,12 +317,11 @@ Each month slips in an extra row of mostly NaNs, the column names aren't too use
 <p>Whether or not your dataset is tidy depends on your question. Given our question, what is an observation?</p>
 <p>In this case, an observation is a <code>(team, game)</code> pair, which we don't have yet. Rather, we have two observations per row, one for home and one for away. We'll fix that with <code>pd.melt</code>.</p>
 <p><code>pd.melt</code> works by taking observations that are spread across columns (<code>away_team</code>, <code>home_team</code>), and melting them down into one column with multiple rows. However, we don't want to lose the metadata (like <code>game_id</code> and <code>date</code>) that is shared between the observations. By including those columns as <code>id_vars</code>, the values will be repeated as many times as needed to stay with their observations.</p>
-<div class="highlight"><pre><span></span><code><span class="n">tidy</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">games</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(),</span>
-               <span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;game_id&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="n">value_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;away_team&#39;</span><span class="p">,</span> <span class="s1">&#39;home_team&#39;</span><span class="p">],</span>
-               <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;team&#39;</span><span class="p">)</span>
-<span class="n">tidy</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python">tidy = pd.melt(games.reset_index(),
+               id_vars=['game_id', 'date'], value_vars=['away_team', 'home_team'],
+               value_name='team')
+tidy.head()
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -392,31 +388,28 @@ Each month slips in an extra row of mostly NaNs, the column names aren't too use
 
 <p>The DataFrame <code>tidy</code> meets our rules for tidiness: each variable is in a column, and each observation (<code>team</code>, <code>date</code> pair) is on its own row.
 Now the translation from question ("How many days of rest between games") to operation ("date of today's game - date of previous game - 1") is direct:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># For each team... get number of days between games</span>
-<span class="n">tidy</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;team&#39;</span><span class="p">)[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">()</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">days</span> <span class="o">-</span> <span class="mi">1</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">0       NaN</span>
-<span class="err">1       NaN</span>
-<span class="err">2       NaN</span>
-<span class="err">3       NaN</span>
-<span class="err">4       NaN</span>
-<span class="err">       ... </span>
-<span class="err">2455    7.0</span>
-<span class="err">2456    1.0</span>
-<span class="err">2457    1.0</span>
-<span class="err">2458    3.0</span>
-<span class="err">2459    2.0</span>
-<span class="c">Name: date, Length: 2460, dtype: float64</span>
-</code></pre></div>
-
+<pre><code class="language-python"># For each team... get number of days between games
+tidy.groupby('team')['date'].diff().dt.days - 1
+</code></pre>
+<pre><code>0       NaN
+1       NaN
+2       NaN
+3       NaN
+4       NaN
+       ... 
+2455    7.0
+2456    1.0
+2457    1.0
+2458    3.0
+2459    2.0
+Name: date, Length: 2460, dtype: float64
+</code></pre>
 <p>That's the essence of tidy data, the reason why it's worth considering what shape your data should be in.
 It's about setting yourself up for success so that the answers naturally flow from the data (just kidding, it's usually still difficult. But hopefully less so).</p>
 <p>Let's assign that back into our DataFrame</p>
-<div class="highlight"><pre><span></span><code><span class="n">tidy</span><span class="p">[</span><span class="s1">&#39;rest&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tidy</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;date&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;team&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">diff</span><span class="p">()</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">days</span> <span class="o">-</span> <span class="mi">1</span>
-<span class="n">tidy</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python">tidy['rest'] = tidy.sort_values('date').groupby('team').date.diff().dt.days - 1
+tidy.dropna().head()
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -488,15 +481,14 @@ It's about setting yourself up for success so that the answers naturally flow fr
 </div>
 
 <p>To show the inverse of <code>melt</code>, let's take <code>rest</code> values we just calculated and place them back in the original DataFrame with a <code>pivot_table</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="n">by_game</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">tidy</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s1">&#39;rest&#39;</span><span class="p">,</span>
-                          <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;game_id&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">],</span>
-                          <span class="n">columns</span><span class="o">=</span><span class="s1">&#39;variable&#39;</span><span class="p">)</span>
-             <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;away_team&#39;</span><span class="p">:</span> <span class="s1">&#39;away_rest&#39;</span><span class="p">,</span>
-                              <span class="s1">&#39;home_team&#39;</span><span class="p">:</span> <span class="s1">&#39;home_rest&#39;</span><span class="p">}))</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">games</span><span class="p">,</span> <span class="n">by_game</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python">by_game = (pd.pivot_table(tidy, values='rest',
+                          index=['game_id', 'date'],
+                          columns='variable')
+             .rename(columns={'away_team': 'away_rest',
+                              'home_team': 'home_rest'}))
+df = pd.concat([games, by_game], axis=1)
+df.dropna().head()
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -592,20 +584,17 @@ It's about setting yourself up for success so that the answers naturally flow fr
 <p>One somewhat subtle point: an "observation" depends on the question being asked.
 So really, we have two tidy datasets, <code>tidy</code> for answering team-level questions, and <code>df</code> for answering game-level questions.</p>
 <p>One potentially interesting question is "what was each team's average days of rest, at home and on the road?" With a tidy dataset (the DataFrame <code>tidy</code>, since it's team-level), <code>seaborn</code> makes this easy (more on seaborn in a future post):</p>
-<div class="highlight"><pre><span></span><code><span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s1">&#39;ticks&#39;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="s1">&#39;paper&#39;</span><span class="p">)</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">FacetGrid</span><span class="p">(</span><span class="n">tidy</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;team&#39;</span><span class="p">,</span> <span class="n">col_wrap</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;team&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">g</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">,</span> <span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="s1">&#39;rest&#39;</span><span class="p">);</span>
-</code></pre></div>
-
+<pre><code class="language-python">sns.set(style='ticks', context='paper')
+</code></pre>
+<pre><code class="language-python">g = sns.FacetGrid(tidy, col='team', col_wrap=6, hue='team', size=2)
+g.map(sns.barplot, 'variable', 'rest');
+</code></pre>
 <p><img alt="png" src="modern_5_tidy_files/modern_5_tidy_17_0.png"></p>
 <p>An example of a game-level statistic is the distribution of rest differences in games:</p>
-<div class="highlight"><pre><span></span><code><span class="n">df</span><span class="p">[</span><span class="s1">&#39;home_win&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;home_points&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;away_points&#39;</span><span class="p">]</span>
-<span class="n">df</span><span class="p">[</span><span class="s1">&#39;rest_spread&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;home_rest&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;away_rest&#39;</span><span class="p">]</span>
-<span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python">df['home_win'] = df['home_points'] &gt; df['away_points']
+df['rest_spread'] = df['home_rest'] - df['away_rest']
+df.dropna().head()
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -712,46 +701,41 @@ So really, we have two tidy datasets, <code>tidy</code> for answering team-level
 </table>
 </div>
 
-<div class="highlight"><pre><span></span><code><span class="n">delta</span> <span class="o">=</span> <span class="p">(</span><span class="n">by_game</span><span class="o">.</span><span class="n">home_rest</span> <span class="o">-</span> <span class="n">by_game</span><span class="o">.</span><span class="n">away_rest</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-<span class="n">ax</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
-    <span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">delta</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">delta</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
-    <span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=.</span><span class="mi">9</span><span class="p">,</span> <span class="n">rot</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-<span class="p">)</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Difference in Rest (Home - Away)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Games&#39;</span><span class="p">);</span>
-</code></pre></div>
-
+<pre><code class="language-python">delta = (by_game.home_rest - by_game.away_rest).dropna().astype(int)
+ax = (delta.value_counts()
+    .reindex(np.arange(delta.min(), delta.max() + 1), fill_value=0)
+    .sort_index()
+    .plot(kind='bar', color='k', width=.9, rot=0, figsize=(12, 6))
+)
+sns.despine()
+ax.set(xlabel='Difference in Rest (Home - Away)', ylabel='Games');
+</code></pre>
 <p><img alt="png" src="modern_5_tidy_files/modern_5_tidy_20_0.png"></p>
 <p>Or the win percent by rest difference</p>
-<div class="highlight"><pre><span></span><code><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;rest_spread&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;home_win&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;-3 &lt;= rest_spread &lt;= 3&#39;</span><span class="p">),</span>
-            <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#4c72b0&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python">fig, ax = plt.subplots(figsize=(12, 6))
+sns.barplot(x='rest_spread', y='home_win', data=df.query('-3 &lt;= rest_spread &lt;= 3'),
+            color='#4c72b0', ax=ax)
+sns.despine()
+</code></pre>
 <p><img alt="png" src="modern_5_tidy_files/modern_5_tidy_22_0.png"></p>
-<h2>Stack / Unstack</h2>
+<h2 id="stack-unstack">Stack / Unstack</h2>
 <p>Pandas has two useful methods for quickly converting from wide to long format (<code>stack</code>) and long to wide (<code>unstack</code>).</p>
-<div class="highlight"><pre><span></span><code><span class="n">rest</span> <span class="o">=</span> <span class="p">(</span><span class="n">tidy</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;variable&#39;</span><span class="p">])</span>
-            <span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-            <span class="o">.</span><span class="n">dropna</span><span class="p">())</span>
-<span class="n">rest</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">date        variable </span>
-<span class="err">2015-10-28  away_team    0.000000</span>
-<span class="err">            home_team    0.000000</span>
-<span class="err">2015-10-29  away_team    0.333333</span>
-<span class="err">            home_team    0.000000</span>
-<span class="err">2015-10-30  away_team    1.083333</span>
-<span class="c">Name: rest, dtype: float64</span>
-</code></pre></div>
-
+<pre><code class="language-python">rest = (tidy.groupby(['date', 'variable'])
+            .rest.mean()
+            .dropna())
+rest.head()
+</code></pre>
+<pre><code>date        variable 
+2015-10-28  away_team    0.000000
+            home_team    0.000000
+2015-10-29  away_team    0.333333
+            home_team    0.000000
+2015-10-30  away_team    1.083333
+Name: rest, dtype: float64
+</code></pre>
 <p><code>rest</code> is in a "long" form since we have a single column of data, with multiple "columns" of metadata (in the MultiIndex). We use <code>.unstack</code> to move from long to wide.</p>
-<div class="highlight"><pre><span></span><code><span class="n">rest</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python">rest.unstack().head()
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -811,75 +795,70 @@ So really, we have two tidy datasets, <code>tidy</code> for answering team-level
 
 <p><code>unstack</code> moves a level of a MultiIndex (innermost by default) up to the columns.
 <code>stack</code> is the inverse.</p>
-<div class="highlight"><pre><span></span><code><span class="n">rest</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">date        variable </span>
-<span class="err">2015-10-28  away_team    0.000000</span>
-<span class="err">            home_team    0.000000</span>
-<span class="err">2015-10-29  away_team    0.333333</span>
-<span class="err">            home_team    0.000000</span>
-<span class="err">2015-10-30  away_team    1.083333</span>
-<span class="err">                           ...   </span>
-<span class="err">2016-04-11  home_team    0.666667</span>
-<span class="err">2016-04-12  away_team    1.000000</span>
-<span class="err">            home_team    1.400000</span>
-<span class="err">2016-04-13  away_team    0.500000</span>
-<span class="err">            home_team    1.214286</span>
-<span class="c">Length: 320, dtype: float64</span>
-</code></pre></div>
-
+<pre><code class="language-python">rest.unstack().stack()
+</code></pre>
+<pre><code>date        variable 
+2015-10-28  away_team    0.000000
+            home_team    0.000000
+2015-10-29  away_team    0.333333
+            home_team    0.000000
+2015-10-30  away_team    1.083333
+                           ...   
+2016-04-11  home_team    0.666667
+2016-04-12  away_team    1.000000
+            home_team    1.400000
+2016-04-13  away_team    0.500000
+            home_team    1.214286
+Length: 320, dtype: float64
+</code></pre>
 <p>With <code>.unstack</code> you can move between those APIs that expect there data in long-format and those APIs that work with wide-format data. For example, <code>DataFrame.plot()</code>, works with wide-form data, one line per column.</p>
-<div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">()</span> <span class="k">as</span> <span class="n">pal</span><span class="p">:</span>
-    <span class="n">b</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">pal</span><span class="o">.</span><span class="n">as_hex</span><span class="p">()[:</span><span class="mi">2</span><span class="p">]</span>
+<pre><code class="language-python">with sns.color_palette() as pal:
+    b, g = pal.as_hex()[:2]
 
-<span class="n">ax</span><span class="o">=</span><span class="p">(</span><span class="n">rest</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span>
-        <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;away_team &lt; 7&#39;</span><span class="p">)</span>
-        <span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
-        <span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-        <span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Rest (7 day MA)&#39;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s2">&quot;Home&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">rest</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="mf">1.02</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s2">&quot;Away&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">rest</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="mf">0.82</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
-</code></pre></div>
-
+ax=(rest.unstack()
+        .query('away_team &lt; 7')
+        .rolling(7)
+        .mean()
+        .plot(figsize=(12, 6), linewidth=3, legend=False))
+ax.set(ylabel='Rest (7 day MA)')
+ax.annotate(&quot;Home&quot;, (rest.index[-1][0], 1.02), color=g, size=14)
+ax.annotate(&quot;Away&quot;, (rest.index[-1][0], 0.82), color=b, size=14)
+sns.despine()
+</code></pre>
 <p><img alt="png" src="modern_5_tidy_files/modern_5_tidy_30_0.png"></p>
 <p>The most conenient form will depend on exactly what you're doing.
 When interacting with databases you'll often deal with long form data.
 Pandas' <code>DataFrame.plot</code> often expects wide-form data, while <code>seaborn</code> often expect long-form data. Regressions will expect wide-form data. Either way, it's good to be comfortable with <code>stack</code> and <code>unstack</code> (and MultiIndexes) to quickly move between the two.</p>
-<h2>Mini Project: Home Court Advantage?</h2>
+<h2 id="mini-project-home-court-advantage">Mini Project: Home Court Advantage?</h2>
 <p>We've gone to all that work tidying our dataset, let's put it to use.
 What's the effect (in terms of probability to win) of being
 the home team?</p>
-<h3>Step 1: Create an outcome variable</h3>
+<h3 id="step-1-create-an-outcome-variable">Step 1: Create an outcome variable</h3>
 <p>We need to create an indicator for whether the home team won.
 Add it as a column called <code>home_win</code> in <code>games</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="n">df</span><span class="p">[</span><span class="s1">&#39;home_win&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">home_points</span> <span class="o">&gt;</span> <span class="n">df</span><span class="o">.</span><span class="n">away_points</span>
-</code></pre></div>
-
-<h3>Step 2: Find the win percent for each team</h3>
+<pre><code class="language-python">df['home_win'] = df.home_points &gt; df.away_points
+</code></pre>
+<h3 id="step-2-find-the-win-percent-for-each-team">Step 2: Find the win percent for each team</h3>
 <p>In the 10-minute literature review I did on the topic, it seems like people include a team-strength variable in their regressions.
 I suppose that makes sense; if stronger teams happened to play against weaker teams at home more often than away, it'd look like the home-effect is stronger than it actually is.
 We'll do a terrible job of controlling for team strength by calculating each team's win percent and using that as a predictor.
 It'd be better to use some kind of independent measure of team strength, but this will do for now.</p>
 <p>We'll use a similar <code>melt</code> operation as earlier, only now with the <code>home_win</code> variable we just created.</p>
-<div class="highlight"><pre><span></span><code><span class="n">wins</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">pd</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(),</span>
-            <span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;game_id&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;home_win&#39;</span><span class="p">],</span>
-            <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;team&#39;</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;is_home&#39;</span><span class="p">,</span>
-            <span class="n">value_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;home_team&#39;</span><span class="p">,</span> <span class="s1">&#39;away_team&#39;</span><span class="p">])</span>
-   <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">win</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">home_win</span> <span class="o">==</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">is_home</span> <span class="o">==</span> <span class="s1">&#39;home_team&#39;</span><span class="p">))</span>
-   <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;team&#39;</span><span class="p">,</span> <span class="s1">&#39;is_home&#39;</span><span class="p">])</span>
-   <span class="o">.</span><span class="n">win</span>
-   <span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">])</span>
-   <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">sum</span><span class="o">=</span><span class="s1">&#39;n_wins&#39;</span><span class="p">,</span>
-                        <span class="n">count</span><span class="o">=</span><span class="s1">&#39;n_games&#39;</span><span class="p">,</span>
-                        <span class="n">mean</span><span class="o">=</span><span class="s1">&#39;win_pct&#39;</span><span class="p">))</span>
-<span class="p">)</span>
-<span class="n">wins</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python">wins = (
+    pd.melt(df.reset_index(),
+            id_vars=['game_id', 'date', 'home_win'],
+            value_name='team', var_name='is_home',
+            value_vars=['home_team', 'away_team'])
+   .assign(win=lambda x: x.home_win == (x.is_home == 'home_team'))
+   .groupby(['team', 'is_home'])
+   .win
+   .agg(['sum', 'count', 'mean'])
+   .rename(columns=dict(sum='n_wins',
+                        count='n_games',
+                        mean='win_pct'))
+)
+wins.head()
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -950,70 +929,62 @@ It'd be better to use some kind of independent measure of team strength, but thi
 </div>
 
 <p>Pause for visualiztion, because why not</p>
-<div class="highlight"><pre><span></span><code><span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">FacetGrid</span><span class="p">(</span><span class="n">wins</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(),</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;team&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">palette</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;k&#39;</span><span class="p">])</span>
-<span class="n">g</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">pointplot</span><span class="p">,</span> <span class="s1">&#39;is_home&#39;</span><span class="p">,</span> <span class="s1">&#39;win_pct&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
-</code></pre></div>
-
+<pre><code class="language-python">g = sns.FacetGrid(wins.reset_index(), hue='team', size=7, aspect=.5, palette=['k'])
+g.map(sns.pointplot, 'is_home', 'win_pct').set(ylim=(0, 1));
+</code></pre>
 <p><img alt="png" src="modern_5_tidy_files/modern_5_tidy_38_0.png"></p>
 <p>(It'd be great if there was a library built on top of matplotlib that auto-labeled each point decently well. Apparently this is a difficult problem to do in general).</p>
-<div class="highlight"><pre><span></span><code><span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">FacetGrid</span><span class="p">(</span><span class="n">wins</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(),</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;team&#39;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;team&#39;</span><span class="p">,</span> <span class="n">col_wrap</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">g</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">pointplot</span><span class="p">,</span> <span class="s1">&#39;is_home&#39;</span><span class="p">,</span> <span class="s1">&#39;win_pct&#39;</span><span class="p">)</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">&lt;seaborn.axisgrid.FacetGrid at 0x11a0fe588&gt;</span>
-</code></pre></div>
-
+<pre><code class="language-python">g = sns.FacetGrid(wins.reset_index(), col='team', hue='team', col_wrap=5, size=2)
+g.map(sns.pointplot, 'is_home', 'win_pct')
+</code></pre>
+<pre><code>&lt;seaborn.axisgrid.FacetGrid at 0x11a0fe588&gt;
+</code></pre>
 <p><img alt="png" src="modern_5_tidy_files/modern_5_tidy_40_1.png"></p>
 <p>Those two graphs show that most teams have a higher win-percent at home than away. So we can continue to investigate.
 Let's aggregate over home / away to get an overall win percent per team.</p>
-<div class="highlight"><pre><span></span><code><span class="n">win_percent</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="c1"># Use sum(games) / sum(games) instead of mean</span>
-    <span class="c1"># since I don&#39;t know if teams play the same</span>
-    <span class="c1"># number of games at home as away</span>
-    <span class="n">wins</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;team&#39;</span><span class="p">,</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">n_wins</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">x</span><span class="o">.</span><span class="n">n_games</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-<span class="p">)</span>
-<span class="n">win_percent</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">team</span>
-<span class="err">Atlanta Hawks        0.585366</span>
-<span class="err">Boston Celtics       0.585366</span>
-<span class="err">Brooklyn Nets        0.256098</span>
-<span class="err">Charlotte Hornets    0.585366</span>
-<span class="err">Chicago Bulls        0.512195</span>
-<span class="c">dtype: float64</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="n">win_percent</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="n">width</span><span class="o">=.</span><span class="mi">85</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Win Percent&quot;</span><span class="p">)</span>
-</code></pre></div>
-
+<pre><code class="language-python">win_percent = (
+    # Use sum(games) / sum(games) instead of mean
+    # since I don't know if teams play the same
+    # number of games at home as away
+    wins.groupby(level='team', as_index=True)
+        .apply(lambda x: x.n_wins.sum() / x.n_games.sum())
+)
+win_percent.head()
+</code></pre>
+<pre><code>team
+Atlanta Hawks        0.585366
+Boston Celtics       0.585366
+Brooklyn Nets        0.256098
+Charlotte Hornets    0.585366
+Chicago Bulls        0.512195
+dtype: float64
+</code></pre>
+<pre><code class="language-python">win_percent.sort_values().plot.barh(figsize=(6, 12), width=.85, color='k')
+plt.tight_layout()
+sns.despine()
+plt.xlabel(&quot;Win Percent&quot;)
+</code></pre>
 <p><img alt="png" src="modern_5_tidy_files/modern_5_tidy_43_1.png"></p>
 <p>Is there a relationship between overall team strength and their home-court advantage?</p>
-<div class="highlight"><pre><span></span><code><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="p">(</span><span class="n">wins</span><span class="o">.</span><span class="n">win_pct</span>
-    <span class="o">.</span><span class="n">unstack</span><span class="p">()</span>
-    <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s1">&#39;Home Win % - Away %&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">home_team</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">away_team</span><span class="p">,</span>
-               <span class="s1">&#39;Overall %&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">home_team</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">away_team</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">})</span>
-     <span class="o">.</span><span class="n">pipe</span><span class="p">((</span><span class="n">sns</span><span class="o">.</span><span class="n">regplot</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">),</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Overall %&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Home Win % - Away %&#39;</span><span class="p">)</span>
-<span class="p">)</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python">plt.figure(figsize=(8, 5))
+(wins.win_pct
+    .unstack()
+    .assign(**{'Home Win % - Away %': lambda x: x.home_team - x.away_team,
+               'Overall %': lambda x: (x.home_team + x.away_team) / 2})
+     .pipe((sns.regplot, 'data'), x='Overall %', y='Home Win % - Away %')
+)
+sns.despine()
+plt.tight_layout()
+</code></pre>
 <p><img alt="png" src="modern_5_tidy_files/modern_5_tidy_45_0.png"></p>
 <p>Let's get the team strength back into <code>df</code>.
 You could you <code>pd.merge</code>, but I prefer <code>.map</code> when joining a <code>Series</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">away_strength</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;away_team&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">win_percent</span><span class="p">),</span>
-               <span class="n">home_strength</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;home_team&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">win_percent</span><span class="p">),</span>
-               <span class="n">point_diff</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;home_points&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;away_points&#39;</span><span class="p">],</span>
-               <span class="n">rest_diff</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;home_rest&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;away_rest&#39;</span><span class="p">])</span>
-<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python">df = df.assign(away_strength=df['away_team'].map(win_percent),
+               home_strength=df['home_team'].map(win_percent),
+               point_diff=df['home_points'] - df['away_points'],
+               rest_diff=df['home_rest'] - df['away_rest'])
+df.head()
+</code></pre>
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -1148,21 +1119,18 @@ You could you <code>pd.merge</code>, but I prefer <code>.map</code> when joining
 </table>
 </div>
 
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">statsmodels.formula.api</span> <span class="k">as</span> <span class="nn">sm</span>
+<pre><code class="language-python">import statsmodels.formula.api as sm
 
-<span class="n">df</span><span class="p">[</span><span class="s1">&#39;home_win&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">home_win</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>  <span class="c1"># for statsmodels</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="n">mod</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">logit</span><span class="p">(</span><span class="s1">&#39;home_win ~ home_strength + away_strength + home_rest + away_rest&#39;</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
-<span class="n">res</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-<span class="n">res</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">Optimization terminated successfully.</span>
-<span class="err">         Current function value: 0.552792</span>
-<span class="err">         Iterations 6</span>
-</code></pre></div>
-
+df['home_win'] = df.home_win.astype(int)  # for statsmodels
+</code></pre>
+<pre><code class="language-python">mod = sm.logit('home_win ~ home_strength + away_strength + home_rest + away_rest', df)
+res = mod.fit()
+res.summary()
+</code></pre>
+<pre><code>Optimization terminated successfully.
+         Current function value: 0.552792
+         Iterations 6
+</code></pre>
 <table class="simpletable">
 <caption>Logit Regression Results</caption>
 <tr>
@@ -1210,16 +1178,14 @@ You could you <code>pd.merge</code>, but I prefer <code>.map</code> when joining
 
 <p>The strength variables both have large coefficeints (really we should be using some independent measure of team strength here, <code>win_percent</code> is showing up on the left and right side of the equation). The rest variables don't seem to matter as much.</p>
 <p>With <code>.assign</code> we can quickly explore variations in formula.</p>
-<div class="highlight"><pre><span></span><code><span class="p">(</span><span class="n">sm</span><span class="o">.</span><span class="n">Logit</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="s1">&#39;home_win ~ strength_diff + rest_spread&#39;</span><span class="p">,</span>
-                       <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">strength_diff</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">home_strength</span> <span class="o">-</span> <span class="n">df</span><span class="o">.</span><span class="n">away_strength</span><span class="p">))</span>
-    <span class="o">.</span><span class="n">fit</span><span class="p">()</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">Optimization terminated successfully.</span>
-<span class="err">         Current function value: 0.553499</span>
-<span class="err">         Iterations 6</span>
-</code></pre></div>
-
+<pre><code class="language-python">(sm.Logit.from_formula('home_win ~ strength_diff + rest_spread',
+                       df.assign(strength_diff=df.home_strength - df.away_strength))
+    .fit().summary())
+</code></pre>
+<pre><code>Optimization terminated successfully.
+         Current function value: 0.553499
+         Iterations 6
+</code></pre>
 <table class="simpletable">
 <caption>Logit Regression Results</caption>
 <tr>
@@ -1259,16 +1225,14 @@ You could you <code>pd.merge</code>, but I prefer <code>.map</code> when joining
 </tr>
 </table>
 
-<div class="highlight"><pre><span></span><code><span class="n">mod</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Logit</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="s1">&#39;home_win ~ home_rest + away_rest&#39;</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
-<span class="n">res</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-<span class="n">res</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">Optimization terminated successfully.</span>
-<span class="err">         Current function value: 0.676549</span>
-<span class="err">         Iterations 4</span>
-</code></pre></div>
-
+<pre><code class="language-python">mod = sm.Logit.from_formula('home_win ~ home_rest + away_rest', df)
+res = mod.fit()
+res.summary()
+</code></pre>
+<pre><code>Optimization terminated successfully.
+         Current function value: 0.676549
+         Iterations 4
+</code></pre>
 <table class="simpletable">
 <caption>Logit Regression Results</caption>
 <tr>

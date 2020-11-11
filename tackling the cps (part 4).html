@@ -65,16 +65,15 @@ Since each month on disk contains people from 8 different waves (first month, se
 Everything up until this point is done lazily; nothing has actually be read into memory yet.</p>
 <p>Now we'll read in each month, storing each month's DataFrame in a dictionary, <code>df_dict</code>. We take the first month as is.
 Each subsequent month has to be matched against the first month.</p>
-<div class="highlight"><pre><span></span><code>    <span class="n">df_dict</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="n">df1</span><span class="p">}</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dfn</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dfs</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
-        <span class="n">df_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">match_panel</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">dfn</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;panel_log&#39;</span><span class="p">])</span>
-    <span class="c1"># Lose dtype info here if I just do from dict.</span>
-    <span class="c1"># to preserve dtypes:</span>
-    <span class="n">df_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">df_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
-    <span class="n">wp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Panel</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">df_dict</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;minor&#39;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">wp</span>
-</code></pre></div>
-
+<pre><code class="language-python">    df_dict = {1: df1}
+    for i, dfn in enumerate(dfs, 2):
+        df_dict[i] = match_panel(df1, dfn, log=settings['panel_log'])
+    # Lose dtype info here if I just do from dict.
+    # to preserve dtypes:
+    df_dict = {k: v for k, v in df_dict.iteritems() if v is not None}
+    wp = pd.Panel.from_dict(df_dict, orient='minor')
+    return wp
+</code></pre>
 <p>In an ideal world, we just check to see if the indexes match (the unique identifier). However, the unique ID given by the Census Bureau isn't so unique, so we use some heuristics to guess if the person is actually the same as the one interviewed next week. <code>match_panel</code> basically checks to see if a person's race and gender hasn't changed, and that their age has changed by less than a year or so.</p>
 <p>There's a bit more code that handles special cases, errors, and the writing of the output.
 I was especially interested in earnings data, so I wrote that out separately.

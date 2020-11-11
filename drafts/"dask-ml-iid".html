@@ -59,7 +59,7 @@ sufficient. But it'd be nice if the trained estimator would be able to
 <em>transform</em> and <em>predict</em> for dask arrays, getting all the nice distributed
 parallelism and memory management dask brings.</p>
 <p>This intrigued me, and I had a 9 hour plane ride, so...</p>
-<h2><code>dask_ml.iid</code></h2>
+<h2 id="dask_mliid"><code>dask_ml.iid</code></h2>
 <p>I put together the <code>dask_ml.iid</code> sub-package. The estimators contained within
 are appropriate for data that are independently and identically distributed
 (IID). Roughly speaking, your data is IID if there aren't any "patterns" in the
@@ -74,34 +74,32 @@ In principal, it should be a representative sample of your entire dataset.</p>
 will be 1,000,000 x 20, in chunks of 10,000. This would take <em>way</em> too long to
 fit regularly. But, with IID data, we may be OK fitting the model on just the
 the first 10,000 observations.</p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">dask_ml.datasets</span> <span class="kn">import</span> <span class="n">make_classification</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">dask_ml.iid.ensemble</span> <span class="kn">import</span> <span class="n">GradientBoostingClassifier</span>
+<pre><code class="language-python">&gt;&gt;&gt; from dask_ml.datasets import make_classification
+&gt;&gt;&gt; from dask_ml.iid.ensemble import GradientBoostingClassifier
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">1_000_000</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">10_100</span><span class="p">)</span>
+&gt;&gt;&gt; X, y = make_classification(n_samples=1_000_000, chunks=10_100)
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">clf</span> <span class="o">=</span> <span class="n">GradientBoostingClassifier</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-</code></pre></div>
-
+&gt;&gt;&gt; clf = GradientBoostingClassifier()
+&gt;&gt;&gt; clf.fit(X, y)
+</code></pre>
 <p>At this point, we have a scikit-learn estimator that can be used to transform or
 predict for dask arrays (in parallel, out of core or distributed across your
 cluster).</p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">prob_a</span>
-<span class="n">dask</span><span class="o">.</span><span class="n">array</span><span class="o">&lt;</span><span class="n">predict_proba</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1000000</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float64</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">&gt;</span>
+<pre><code class="language-python">&gt;&gt;&gt; prob_a
+dask.array&lt;predict_proba, shape=(1000000, 2), dtype=float64, chunksize=(10000, 2)&gt;
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">prob_a</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
-<span class="n">array</span><span class="p">([[</span><span class="mf">0.98268198</span><span class="p">,</span> <span class="mf">0.01731802</span><span class="p">],</span>
-       <span class="p">[</span><span class="mf">0.41509521</span><span class="p">,</span> <span class="mf">0.58490479</span><span class="p">],</span>
-       <span class="p">[</span><span class="mf">0.97702961</span><span class="p">,</span> <span class="mf">0.02297039</span><span class="p">],</span>
-       <span class="p">[</span><span class="mf">0.91652623</span><span class="p">,</span> <span class="mf">0.08347377</span><span class="p">],</span>
-       <span class="p">[</span><span class="mf">0.96530773</span><span class="p">,</span> <span class="mf">0.03469227</span><span class="p">],</span>
-       <span class="p">[</span><span class="mf">0.94015097</span><span class="p">,</span> <span class="mf">0.05984903</span><span class="p">],</span>
-       <span class="p">[</span><span class="mf">0.98167384</span><span class="p">,</span> <span class="mf">0.01832616</span><span class="p">],</span>
-       <span class="p">[</span><span class="mf">0.97621963</span><span class="p">,</span> <span class="mf">0.02378037</span><span class="p">],</span>
-       <span class="p">[</span><span class="mf">0.95951444</span><span class="p">,</span> <span class="mf">0.04048556</span><span class="p">],</span>
-       <span class="p">[</span><span class="mf">0.98654415</span><span class="p">,</span> <span class="mf">0.01345585</span><span class="p">]])</span>
-</code></pre></div>
-
+&gt;&gt;&gt; prob_a[:10].compute()
+array([[0.98268198, 0.01731802],
+       [0.41509521, 0.58490479],
+       [0.97702961, 0.02297039],
+       [0.91652623, 0.08347377],
+       [0.96530773, 0.03469227],
+       [0.94015097, 0.05984903],
+       [0.98167384, 0.01832616],
+       [0.97621963, 0.02378037],
+       [0.95951444, 0.04048556],
+       [0.98654415, 0.01345585]])
+</code></pre>
 <p>An alternative to <code>dask_ml.iid</code> is to sample your data and use a regular
 scikit-learn estimator. But the <code>dask_ml.iid</code> approach is <em>slightly</em> preferable,
 since post-fit tasks like prediction can be done on dask arrays in parallel (and

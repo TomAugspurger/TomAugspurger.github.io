@@ -56,7 +56,7 @@ page</a> to see an example of what stitch does,
 and the <a href="https://github.com/pystitch/stitch">Github repo</a> for how to
 install. I'm using this post to explain why I wrote stitch, and some
 issues it tries to solve.</p>
-<h2>Why <a href="http://yihui.name/knitr/">knitr</a> / <a href="https://github.com/janschulz/knitpy">knitpy</a> / stitch / <a href="http://rmarkdown.rstudio.com">RMarkdown</a>?</h2>
+<h2 id="why-knitr-knitpy-stitch-rmarkdown">Why <a href="http://yihui.name/knitr/">knitr</a> / <a href="https://github.com/janschulz/knitpy">knitpy</a> / stitch / <a href="http://rmarkdown.rstudio.com">RMarkdown</a>?</h2>
 <p>Each of these tools or formats have the same high-level goal: produce
 reproducible, dynamic (to changes in the data) reports. They take some
 source document (typically markdown) that's a mixture of text and code
@@ -80,10 +80,9 @@ report from the code itself (which is sometimes, but not always, what
 you want).</p>
 <p>Stitch aims to make this a simpler process. You (just) write your code
 and results all in one file, and call</p>
-<div class="highlight"><pre><span></span><code><span class="err">stitch input.md -o output.pdf</span>
-</code></pre></div>
-
-<h2>Why not Jupyter Notebooks?</h2>
+<pre><code>stitch input.md -o output.pdf
+</code></pre>
+<h2 id="why-not-jupyter-notebooks">Why not Jupyter Notebooks?</h2>
 <p>A valid question, but I think misguided. I love the notebook, and I use
 it every day for exploratory research. That said, there's a continuum
 between all-text reports, and all-code reports. For reports that have a
@@ -102,7 +101,7 @@ stitch-based workflow is a bit smoother.</p>
 <p>If a tool similar to <a href="https://github.com/podoc/podoc/">podoc</a> is
 developed, then we can have transparent conversion between text-files
 with executable blocks of code and notebooks. Living the dream.</p>
-<h2>Why python?</h2>
+<h2 id="why-python">Why python?</h2>
 <p>While RMarkdown / knitr are great (and way more usable than stitch at
 this point), they're essentially only for R. The support for other
 languages (last I checked) is limited to passing a code chunk into the
@@ -120,7 +119,7 @@ possible</em>. It's certain that RMarkdown / knitr are better than stitch
 right now for rendering <code>.Rmd</code> files. It's quite likely that they will
 <em>always</em> be better at working with R than stitch; specialized tools
 exist for a reason.</p>
-<h2>Misc.</h2>
+<h2 id="misc">Misc.</h2>
 <p>Stitch was heavily inspired by Jan Schulz's
 <a href="https://github.com/janschulz/knitpy">knitpy</a>, so you might want to
 check that out and see if it fits your needs better. Thanks to Jan for

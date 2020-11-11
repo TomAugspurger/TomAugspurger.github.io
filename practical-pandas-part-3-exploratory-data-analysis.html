@@ -60,20 +60,18 @@
 <p>Today we'll use pandas, seaborn, and
 matplotlib to do some exploratory data analysis.
 For fun, we'll make some maps at the end using <a href="https://folium.readthedocs.org/en/latest/">folium</a>.</p>
-<div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+<pre><code class="language-python">%matplotlib inline
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">datetime</span>
+import os
+import datetime
 
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;cycle_store.h5&#39;</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;with_weather&#39;</span><span class="p">)</span>
-<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+</code></pre>
+<pre><code class="language-python">df = pd.read_hdf(os.path.join('data', 'cycle_store.h5'), key='with_weather')
+df.head()
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -282,34 +280,27 @@ For fun, we'll make some maps at the end using <a href="https://folium.readthedo
 </div>
 
 <p>Upon further inspection, it looks like some of our rows are duplicated.</p>
-<div class="highlight"><pre><span></span><code><span class="n">df</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">2</span>
-</code></pre></div>
-
+<pre><code class="language-python">df.duplicated().sum()
+</code></pre>
+<pre><code>2
+</code></pre>
 <p>The problem is actually a bit more severe than that. The app I used to collect the data sometimes records multiple observations per second, but only reports the results at the second frequency.</p>
-<div class="highlight"><pre><span></span><code><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">114</span>
-</code></pre></div>
-
+<pre><code class="language-python">df.time.duplicated().sum()
+</code></pre>
+<pre><code>114
+</code></pre>
 <p>What to do here? We could drop change the frequency to micro- or nano-second resolution, and add, say, a half-second onto the duplicated observations.</p>
 <p>Since this is just for fun though, I'm going to do the easy thing and throw out the duplicates (in real life you'll want to make sure this doesn't affect your analysis).
 Then we can set the <code>time</code> column to be our index, which will make our later analysis a bit simpler.</p>
-<div class="highlight"><pre><span></span><code><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
-<span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">is_unique</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">True</span>
-</code></pre></div>
-
+<pre><code class="language-python">df = df.drop_duplicates(subset=['time']).set_index('time')
+df.index.is_unique
+</code></pre>
+<pre><code>True
+</code></pre>
 <p>Because of a <a href="https://github.com/pydata/pandas/issues/8189">bug</a> in pandas, we lost our timzone information when we filled in our missing values. Until that's fixed we'll have to manually add back the timezone info and convert. The actual values stored were UTC (which is good practice whenever you have timezone-aware timestamps), it just doesn't <em>know</em> that it's UTC.</p>
-<div class="highlight"><pre><span></span><code><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s1">&#39;US/Central&#39;</span><span class="p">)</span>
-<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python">df = df.tz_localize('UTC').tz_convert('US/Central')
+df.head()
+</code></pre>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
 <table border="1" class="dataframe">
   <thead>
@@ -543,123 +534,110 @@ Then we can set the <code>time</code> column to be our index, which will make ou
 </table>
 </div>
 
-<h3>Timelines</h3>
+<h3 id="timelines">Timelines</h3>
 <p>We'll store the <strong>time</strong> part of the <code>DatetimeIndex</code> in a column called <code>time</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="n">df</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">time</span>
-</code></pre></div>
-
+<pre><code class="language-python">df['time'] = df.index.time
+</code></pre>
 <p>With these, let's plot how far along I was in my ride (<code>distance_miles</code>) at the time of day.</p>
-<div class="highlight"><pre><span></span><code><span class="n">ax</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;distance_miles&#39;</span><span class="p">)</span>
-</code></pre></div>
-
+<pre><code class="language-python">ax = df.plot(x='time', y='distance_miles')
+</code></pre>
 <p><img alt="png" src="pp03_files/pp03_15_0.png"></p>
 <p>There's a couple problems. First of all, the data are split into morning and afternoon.
 Let's create a new, boolean, column indicating whether the ride took place in the morning or afternoon.</p>
-<div class="highlight"><pre><span></span><code><span class="n">df</span><span class="p">[</span><span class="s1">&#39;is_morning&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">time</span> <span class="o">&lt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">time</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="n">ax</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">is_morning</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;distance_miles&#39;</span><span class="p">)</span>
-</code></pre></div>
-
+<pre><code class="language-python">df['is_morning'] = df.time &lt; datetime.time(12)
+</code></pre>
+<pre><code class="language-python">ax = df[df.is_morning].plot(x='time', y='distance_miles')
+</code></pre>
 <p><img alt="png" src="pp03_files/pp03_18_0.png"></p>
 <p>Better, but this still isn't quite what we want. When we call <code>.plot(x=..., y=...)</code> the data are sorted before being plotted. This means that an observation from one ride gets mixed up with another. So we'll need to group by ride, and <em>then</em> plot.</p>
-<div class="highlight"><pre><span></span><code><span class="n">axes</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">is_morning</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">ride_id</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span>
-                                                  <span class="n">y</span><span class="o">=</span><span class="s1">&#39;distance_miles&#39;</span><span class="p">,</span>
-                                                  <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span>
-                                                  <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-</code></pre></div>
-
+<pre><code class="language-python">axes = df[df.is_morning].groupby(df.ride_id).plot(x='time',
+                                                  y='distance_miles',
+                                                  color='k',
+                                                  figsize=(12, 5))
+</code></pre>
 <p><img alt="png" src="pp03_files/pp03_20_0.png"></p>
 <p>Much better. Groupby is one of the most powerful operations in pandas, and it pays to understand it well. Here's the same thing for the evening.</p>
-<div class="highlight"><pre><span></span><code><span class="n">axes</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="o">~</span><span class="n">df</span><span class="o">.</span><span class="n">is_morning</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">ride_id</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span>
-                                                   <span class="n">y</span><span class="o">=</span><span class="s1">&#39;distance_miles&#39;</span><span class="p">,</span>
-                                                   <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span>
-                                                   <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-</code></pre></div>
-
+<pre><code class="language-python">axes = df[~df.is_morning].groupby(df.ride_id).plot(x='time',
+                                                   y='distance_miles',
+                                                   color='k',
+                                                   figsize=(12, 5))
+</code></pre>
 <p><img alt="png" src="pp03_files/pp03_22_0.png"></p>
 <p>Fun. The horizontal distance is the length of time it took me to make the ride. The starting point on the horizontal axis conveys the time that I set out.
 I like this chart because it also conveys the start time of each ride.
 The plot shows that the morning ride typically took longer, but we can verify that.</p>
-<div class="highlight"><pre><span></span><code><span class="n">ride_time</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;ride_id&#39;</span><span class="p">,</span> <span class="s1">&#39;is_morning&#39;</span><span class="p">])[</span><span class="s1">&#39;ride_time_secs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="s1">&#39;max&#39;</span><span class="p">)</span>
-<span class="n">mean_time</span> <span class="o">=</span> <span class="n">ride_time</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
-    <span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="s1">&#39;morning&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span> <span class="s1">&#39;evening&#39;</span><span class="p">})</span>
-<span class="n">mean_time</span> <span class="o">/</span> <span class="mi">60</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">is_morning</span>
-<span class="err">evening       30.761667</span>
-<span class="err">morning       29.362716</span>
-<span class="c">Name: ride_time_secs, dtype: float64</span>
-</code></pre></div>
-
+<pre><code class="language-python">ride_time = df.groupby(['ride_id', 'is_morning'])['ride_time_secs'].agg('max')
+mean_time = ride_time.groupby(level=1).mean().rename(
+    index={True: 'morning', False: 'evening'})
+mean_time / 60
+</code></pre>
+<pre><code>is_morning
+evening       30.761667
+morning       29.362716
+Name: ride_time_secs, dtype: float64
+</code></pre>
 <p>So the morning ride is typically shorter! But I think I know what's going on. We were misleading with our plot earlier since the range of the horizontal axis weren't identical. Always check the axis!</p>
 <p>At risk of <a href="https://groups.google.com/forum/#!topic/ggplot2/tImExPZg61o">raising the ire</a> of Hadley Whickham, we'll plot these on the same plot, with a secondary x-axis. (I think its OK in this case since the second is just a transformation – a 10 hour or so shift – of the first).</p>
 <p>We'll plot evening first, use matplotlib's <code>twinx</code> method, and plot the morning on the second axes.</p>
-<div class="highlight"><pre><span></span><code><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<pre><code class="language-python">fig, ax = plt.subplots()
 
-<span class="n">morning_color</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">xkcd_rgb</span><span class="p">[</span><span class="s1">&#39;amber&#39;</span><span class="p">]</span>
-<span class="n">evening_color</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">xkcd_rgb</span><span class="p">[</span><span class="s1">&#39;dusty purple&#39;</span><span class="p">]</span>
+morning_color = sns.xkcd_rgb['amber']
+evening_color = sns.xkcd_rgb['dusty purple']
 
-<span class="n">_</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="o">~</span><span class="n">df</span><span class="o">.</span><span class="n">is_morning</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">ride_id</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;distance_miles&#39;</span><span class="p">,</span>
-    <span class="n">color</span><span class="o">=</span><span class="n">evening_color</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
-    <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">9</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">twiny</span><span class="p">()</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">is_morning</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">ride_id</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;distance_miles&#39;</span><span class="p">,</span>
-    <span class="n">color</span><span class="o">=</span><span class="n">morning_color</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
-    <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">9</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+_ = df[~df.is_morning].groupby(df.ride_id).plot(x='time', y='distance_miles',
+    color=evening_color, figsize=(12, 5),
+    ax=ax, alpha=.9, grid=False)
+ax2 = ax.twiny()
+_ = df[df.is_morning].groupby(df.ride_id).plot(x='time', y='distance_miles',
+    color=morning_color, figsize=(12, 5),
+    ax=ax2, alpha=.9, grid=False)
 
-<span class="c1"># Create fake lines for our custom legend.</span>
-<span class="n">morning_legend</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Line2D</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">morning_color</span><span class="p">)</span>
-<span class="n">evening_legend</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Line2D</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">evening_color</span><span class="p">)</span>
+# Create fake lines for our custom legend.
+morning_legend = plt.Line2D([0], [0], color=morning_color)
+evening_legend = plt.Line2D([0], [0], color=evening_color)
 
-<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="n">morning_legend</span><span class="p">,</span> <span class="n">evening_legend</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;Morning&#39;</span><span class="p">,</span> <span class="s1">&#39;Evening&#39;</span><span class="p">])</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">&lt;matplotlib.legend.Legend at 0x115640198&gt;</span>
-</code></pre></div>
-
+ax.legend([morning_legend, evening_legend], ['Morning', 'Evening'])
+</code></pre>
+<pre><code>&lt;matplotlib.legend.Legend at 0x115640198&gt;
+</code></pre>
 <p><img alt="png" src="pp03_files/pp03_26_1.png"></p>
 <p>There's a bit of boilerplate at the end. pandas tries to add a legend element for each ride ID. It doesn't know that we only care whether it's morning or evening. So instead we just fake it, creating two lines thate are invisible, and labeling them appropriately.</p>
 <p>Anyway, we've accomplished our original goal. The steeper slope on the evening rides show that they typically took me less time. I guess I wasn't too excited to get to school in the morning. The joys of being a grad student.</p>
 <p>I'm sure I'm not the only one noticing that long evening ride sticking out from the rest. Let's note it's ride ID and follow up. We need the <code>ride_id</code> so groupby that. It's the longest ride so take the <code>max</code> of the distance. And we want the <code>ride_id</code> of the maximum distance, so take the <code>argmax</code> of that. These last three sentances can be beautifully chained together into a single line that reads like poetry.</p>
-<div class="highlight"><pre><span></span><code><span class="n">long_ride_id</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;ride_id&#39;</span><span class="p">)[</span><span class="s1">&#39;distance_miles&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
-<span class="n">long_ride_id</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="err">22</span>
-</code></pre></div>
-
-<h3>Cartography</h3>
+<pre><code class="language-python">long_ride_id = df.groupby('ride_id')['distance_miles'].max().argmax()
+long_ride_id
+</code></pre>
+<pre><code>22
+</code></pre>
+<h3 id="cartography">Cartography</h3>
 <p>We'll use <a href="https://github.com/wrobstory/folium">Folium</a> to do a bit of map plotting.
 If you're using python3 (like I am) you'll need to use <a href="https://github.com/wrobstory/folium/pull/21">this pull request</a> from <a href="https://github.com/tbicr">tbicr</a>,
 or just clone the master of <a href="https://github.com/tomaugspurger/folium">my fork</a>, where I've merged the changes.</p>
 <p>Since this is a practical pandas post, and not an intro to <code>folium</code>, I won't delve into the details here. The basics are that we initialize a <code>Map</code> with some coordinates and tiles, and then add <code>line</code>s to that map. The <code>line</code>s will come from the latitude and longitude columns of our DataFrame.</p>
 <p>Here's a small helper function from <a href="https://github.com/birdage">birdage</a> to <a href="http://nbviewer.ipython.org/github/birdage/folium/blob/arrow_marker/examples/test_folium_wms.ipynb">inline</a> the map in the notebook. This allows it to be viewable (and interactive) on nbviewer. For the blog post I'm linking them to `</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">inline_map</span><span class="p">(</span><span class="nb">map</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Embeds the HTML source of the map directly into the IPython notebook.</span>
+<pre><code class="language-python">def inline_map(map):
+    &quot;&quot;&quot;
+    Embeds the HTML source of the map directly into the IPython notebook.
 
-<span class="sd">    This method will not work if the map depends on any files (json data). Also this uses</span>
-<span class="sd">    the HTML5 srcdoc attribute, which may not be supported in all browsers.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">HTML</span>
-    <span class="nb">map</span><span class="o">.</span><span class="n">_build_map</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="s1">&#39;&lt;iframe srcdoc=&quot;</span><span class="si">{srcdoc}</span><span class="s1">&quot; style=&quot;width: 100%; height: 510px; border: none&quot;&gt;&lt;/iframe&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">srcdoc</span><span class="o">=</span><span class="nb">map</span><span class="o">.</span><span class="n">HTML</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&amp;quot;&#39;</span><span class="p">)))</span>
-</code></pre></div>
+    This method will not work if the map depends on any files (json data). Also this uses
+    the HTML5 srcdoc attribute, which may not be supported in all browsers.
+    &quot;&quot;&quot;
+    from IPython.display import HTML
+    map._build_map()
+    return HTML('&lt;iframe srcdoc=&quot;{srcdoc}&quot; style=&quot;width: 100%; height: 510px; border: none&quot;&gt;&lt;/iframe&gt;'.format(srcdoc=map.HTML.replace('&quot;', '&amp;quot;')))
 
+</code></pre>
 <p>I've plotted two rides, a hopefully representative ride (#42) and the long ride from above.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">folium</span>
-<span class="n">folium</span><span class="o">.</span><span class="n">initialize_notebook</span><span class="p">()</span>
+<pre><code class="language-python">import folium
+folium.initialize_notebook()
 
-<span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-<span class="n">mp</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">),</span> <span class="n">tiles</span><span class="o">=</span><span class="s1">&#39;OpenStreetMap&#39;</span><span class="p">,</span> <span class="n">zoom_start</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
-<span class="n">mp</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">locations</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">ride_id</span> <span class="o">==</span> <span class="mi">42</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-<span class="n">mp</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">locations</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">ride_id</span> <span class="o">==</span> <span class="n">long_ride_id</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-        <span class="n">line_color</span><span class="o">=</span><span class="s1">&#39;#800026&#39;</span><span class="p">)</span>
-<span class="n">inline_map</span><span class="p">(</span><span class="n">mp</span><span class="p">)</span>
-</code></pre></div>
-
+lat, lon = df[['latitude', 'longitude']].mean()
+mp = folium.Map(location=(lat, lon), tiles='OpenStreetMap', zoom_start=13)
+mp.line(locations=df.loc[df.ride_id == 42, ['latitude', 'longitude']].values)
+mp.line(locations=df.loc[df.ride_id == long_ride_id, ['latitude', 'longitude']].values,
+        line_color='#800026')
+inline_map(mp)
+</code></pre>
 <p><link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" /></p>
 <style>
     .leaflet-popup-content {
@@ -811,15 +789,14 @@ color: '#800026',
 <p>So you pan around a bit, it looks like the GPS receiver on my phone was just going crazy.
 But without visualizing the data (as a map), there'd be no way to know that.</p>
 <p>For fun, we can plot all the rides.</p>
-<div class="highlight"><pre><span></span><code><span class="n">mp_all</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">),</span> <span class="n">tiles</span><span class="o">=</span><span class="s1">&#39;OpenStreetMap&#39;</span><span class="p">,</span> <span class="n">zoom_start</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<pre><code class="language-python">mp_all = folium.Map(location=(lat, lon), tiles='OpenStreetMap', zoom_start=13)
 
-<span class="k">for</span> <span class="n">ride_id</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">ride_id</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
-    <span class="n">mp_all</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">locations</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">ride_id</span> <span class="o">==</span> <span class="n">ride_id</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-            <span class="n">line_weight</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">line_color</span><span class="o">=</span><span class="s1">&#39;#111&#39;</span><span class="p">,</span> <span class="n">line_opacity</span><span class="o">=.</span><span class="mi">3</span><span class="p">)</span>
+for ride_id in df.ride_id.unique():
+    mp_all.line(locations=df.loc[df.ride_id == ride_id, ['latitude', 'longitude']].values,
+            line_weight=1, line_color='#111', line_opacity=.3)
 
-<span class="n">inline_map</span><span class="p">(</span><span class="n">mp_all</span><span class="p">)</span>
-</code></pre></div>
-
+inline_map(mp_all)
+</code></pre>
 <iframe srcdoc="<!DOCTYPE html>
 <head>
    <meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=UTF-8&quot; />

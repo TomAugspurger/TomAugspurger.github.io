@@ -42,6 +42,36 @@
 
 <article>
   <div class="article__title">
+    <h1><a href="https://tomaugspurger.github.io/modern-1-intro.html">Modern Pandas (Part 1)</a></h1>
+  </div>
+  <div class="article__meta">
+    <p class="article__meta__post-date">Posted on: Mon 21 March 2016</p>
+ Tags:
+      <a href="https://tomaugspurger.github.io/tag/pandas.html">#pandas</a>    </p>
+  </div>
+  <div class="article__text">
+    <hr>
+<p>This is part 1 in my series on writing modern idiomatic pandas.</p>
+<ul>
+<li><a href="modern-1-intro">Modern Pandas</a></li>
+<li><a href="method-chaining">Method Chaining</a></li>
+<li><a href="modern-3-indexes">Indexes</a></li>
+<li><a href="modern-4-performance">Fast Pandas</a></li>
+<li><a href="modern-5-tidy">Tidy Data</a></li>
+<li><a href="modern-6-visualization">Visualization</a></li>
+<li><a href="modern-7-timeseries">Time Series</a></li>
+<li><a href="modern-8-scaling">Scaling</a></li>
+</ul>
+<hr>
+<h1 id="effective-pandas">Effective Pandas</h1>
+<h2 id="introduction">Introduction</h2>
+<p>This series is about how to make effective use of <a href="http://pandas.pydata.org">pandas</a>, a data analysis library for the Python programming language.
+It's targeted …</p>
+  </div>
+</article>
+<hr />
+<article>
+  <div class="article__title">
     <h1><a href="https://tomaugspurger.github.io/dplry-pandas.html">dplyr and pandas</a></h1>
   </div>
   <div class="article__meta">
@@ -144,11 +174,12 @@ I had to manually start and stop the tracking at …</p>
   <div class="article__text">
     <p>In <a href="http://tomaugspurger.github.io/blog/2014/02/04/tackling%20the%20cps%20(part%202)/">part 2</a> of this series, we set the stage to parse the data files themselves.</p>
 <p>As a reminder, we have a dictionary that looks like</p>
-<div class="highlight"><pre><span></span><code>         <span class="nb">id</span>  <span class="n">length</span>  <span class="n">start</span>  <span class="n">end</span>
-<span class="mi">0</span>    <span class="n">HRHHID</span>      <span class="mi">15</span>      <span class="mi">1</span>   <span class="mi">15</span>
-<span class="mi">1</span>   <span class="n">HRMONTH</span>       <span class="mi">2</span>     <span class="mi">16</span>   <span class="mi">17</span>
-<span class="mi">2</span>   <span class="n">HRYEAR4</span>       <span class="mi">4</span>     <span class="mi">18</span>   <span class="mi">21</span>
-<span class="mi">3</span>  <span class="n">HURESPLI</span>       <span class="mi">2</span>     <span class="mi">22</span>   <span class="mi">23 …</span></code></pre></div>
+<pre><code class="language-python">
+         id  length  start  end
+0    HRHHID      15      1   15
+1   HRMONTH       2     16   17
+2   HRYEAR4       4     18   21
+3  HURESPLI       2     22   23 …</code></pre>
   </div>
 </article>
 <hr />
@@ -201,20 +232,6 @@ That's why I wrote <a href="https://gist.github.com/TomAugspurger/8976751">this 
 <li>Data Dictionaries: a text file describing …</li></ul>
   </div>
 </article>
-<hr />
-<article>
-  <div class="article__title">
-    <h1><a href="https://tomaugspurger.github.io/tackling the cps.html">Using Python to tackle the CPS</a></h1>
-  </div>
-  <div class="article__meta">
-    <p class="article__meta__post-date">Posted on: Mon 27 January 2014</p>
- Tags:
-      <a href="https://tomaugspurger.github.io/tag/pandas.html">#pandas</a>    </p>
-  </div>
-  <div class="article__text">
-    <p>The <a href="http://www.census.gov/cps/">Current Population Survey</a> is an important source of data for economists. It's modern form took shape in the 70's and unfortunately the data format and distribution shows its age. Some centers like <a href="https://cps.ipums.org/cps/">IPUMS</a> have attempted to put a nicer face on accessing the data, but they haven't done everything …</p>
-  </div>
-</article>
 
 <div class="pagination">
     <ul>
@@ -238,8 +255,13 @@ That's why I wrote <a href="https://gist.github.com/TomAugspurger/8976751">this 
             <a class="pagination__page--current" href="https://tomaugspurger.github.io/index3.html">3</a>
           </li>
 
+
+          <li>
+            <a  href="https://tomaugspurger.github.io/index4.html">4</a>
+          </li>
+
         <li class="pagination__next">
-            <div class="pagination__next--none">&raquo;</div>
+            <a href="https://tomaugspurger.github.io/index4.html">&raquo;</a>
         </li>
     </ul>
 </div>

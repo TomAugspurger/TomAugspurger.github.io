@@ -64,7 +64,7 @@
 <li><a href="modern-8-scaling">Scaling</a></li>
 </ul>
 <hr>
-<h1>Method Chaining</h1>
+<h1 id="method-chaining">Method Chaining</h1>
 <p>Method chaining, where you call methods on an object one after another, is in vogue at the moment.
 It's always been a style of programming that's been possible with pandas,
 and over the past several releases, we've added methods that enable even more chaining.</p>
@@ -79,154 +79,147 @@ and over the past several releases, we've added methods that enable even more ch
 <p>My scripts will typically start off with large-ish chain at the start getting things into a manageable state.
 It's good to have the bulk of your munging done with right away so you can start to do Science™:</p>
 <p>Here's a quick example:</p>
-<div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+<pre><code class="language-python">%matplotlib inline
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s1">&#39;ticks&#39;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="s1">&#39;talk&#39;</span><span class="p">)</span>
+import os
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+sns.set(style='ticks', context='talk')
 
-<span class="kn">import</span> <span class="nn">prep</span>
-</code></pre></div>
+import prep
+</code></pre>
+<pre><code class="language-python">def read(fp):
+    df = (pd.read_csv(fp)
+            .rename(columns=str.lower)
+            .drop('unnamed: 36', axis=1)
+            .pipe(extract_city_name)
+            .pipe(time_to_datetime, ['dep_time', 'arr_time', 'crs_arr_time', 'crs_dep_time'])
+            .assign(fl_date=lambda x: pd.to_datetime(x['fl_date']),
+                    dest=lambda x: pd.Categorical(x['dest']),
+                    origin=lambda x: pd.Categorical(x['origin']),
+                    tail_num=lambda x: pd.Categorical(x['tail_num']),
+                    unique_carrier=lambda x: pd.Categorical(x['unique_carrier']),
+                    cancellation_code=lambda x: pd.Categorical(x['cancellation_code'])))
+    return df
 
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;unnamed: 36&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">extract_city_name</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">time_to_datetime</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;dep_time&#39;</span><span class="p">,</span> <span class="s1">&#39;arr_time&#39;</span><span class="p">,</span> <span class="s1">&#39;crs_arr_time&#39;</span><span class="p">,</span> <span class="s1">&#39;crs_dep_time&#39;</span><span class="p">])</span>
-            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">fl_date</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">]),</span>
-                    <span class="n">dest</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;dest&#39;</span><span class="p">]),</span>
-                    <span class="n">origin</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;origin&#39;</span><span class="p">]),</span>
-                    <span class="n">tail_num</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;tail_num&#39;</span><span class="p">]),</span>
-                    <span class="n">unique_carrier</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;unique_carrier&#39;</span><span class="p">]),</span>
-                    <span class="n">cancellation_code</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;cancellation_code&#39;</span><span class="p">])))</span>
-    <span class="k">return</span> <span class="n">df</span>
+def extract_city_name(df):
+    '''
+    Chicago, IL -&gt; Chicago for origin_city_name and dest_city_name
+    '''
+    cols = ['origin_city_name', 'dest_city_name']
+    city = df[cols].apply(lambda x: x.str.extract(&quot;(.*), \w{2}&quot;, expand=False))
+    df = df.copy()
+    df[['origin_city_name', 'dest_city_name']] = city
+    return df
 
-<span class="k">def</span> <span class="nf">extract_city_name</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    Chicago, IL -&gt; Chicago for origin_city_name and dest_city_name</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;origin_city_name&#39;</span><span class="p">,</span> <span class="s1">&#39;dest_city_name&#39;</span><span class="p">]</span>
-    <span class="n">city</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;(.*), \w</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;origin_city_name&#39;</span><span class="p">,</span> <span class="s1">&#39;dest_city_name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">city</span>
-    <span class="k">return</span> <span class="n">df</span>
+def time_to_datetime(df, columns):
+    '''
+    Combine all time items into datetimes.
 
-<span class="k">def</span> <span class="nf">time_to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    Combine all time items into datetimes.</span>
+    2014-01-01,0914 -&gt; 2014-01-01 09:14:00
+    '''
+    df = df.copy()
+    def converter(col):
+        timepart = (col.astype(str)
+                       .str.replace('\.0$', '')  # NaNs force float dtype
+                       .str.pad(4, fillchar='0'))
+        return pd.to_datetime(df['fl_date'] + ' ' +
+                               timepart.str.slice(0, 2) + ':' +
+                               timepart.str.slice(2, 4),
+                               errors='coerce')
+    df[columns] = df[columns].apply(converter)
+    return df
 
-<span class="sd">    2014-01-01,0914 -&gt; 2014-01-01 09:14:00</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">converter</span><span class="p">(</span><span class="n">col</span><span class="p">):</span>
-        <span class="n">timepart</span> <span class="o">=</span> <span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
-                       <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;\.0$&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>  <span class="c1"># NaNs force float dtype</span>
-                       <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">fillchar</span><span class="o">=</span><span class="s1">&#39;0&#39;</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span>
-                               <span class="n">timepart</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span>
-                               <span class="n">timepart</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
-                               <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
-    <span class="n">df</span><span class="p">[</span><span class="n">columns</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">columns</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">converter</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">df</span>
+output = 'data/flights.h5'
 
-<span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;data/flights.h5&#39;</span>
-
-<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s2">&quot;data/627361791_T_ONTIME.csv&quot;</span><span class="p">)</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">to_hdf</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;table&#39;</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;table&#39;</span><span class="p">)</span>
-<span class="n">df</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="s1">&#39;pandas.core.frame.DataFrame&#39;</span><span class="o">&gt;</span><span class="w"></span>
-<span class="nl">Int64Index</span><span class="p">:</span><span class="w"> </span><span class="mi">450017</span><span class="w"> </span><span class="n">entries</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mi">450016</span><span class="w"></span>
-<span class="k">Data</span><span class="w"> </span><span class="n">columns</span><span class="w"> </span><span class="p">(</span><span class="n">total</span><span class="w"> </span><span class="mi">33</span><span class="w"> </span><span class="n">columns</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
-<span class="n">fl_date</span><span class="w">                  </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">datetime64</span><span class="o">[</span><span class="n">ns</span><span class="o">]</span><span class="w"></span>
-<span class="n">unique_carrier</span><span class="w">           </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">category</span><span class="w"></span>
-<span class="n">airline_id</span><span class="w">               </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">tail_num</span><span class="w">                 </span><span class="mi">449378</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">category</span><span class="w"></span>
-<span class="n">fl_num</span><span class="w">                   </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">origin_airport_id</span><span class="w">        </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">origin_airport_seq_id</span><span class="w">    </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">origin_city_market_id</span><span class="w">    </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">origin</span><span class="w">                   </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">category</span><span class="w"></span>
-<span class="n">origin_city_name</span><span class="w">         </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="k">object</span><span class="w"></span>
-<span class="n">dest_airport_id</span><span class="w">          </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">dest_airport_seq_id</span><span class="w">      </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">dest_city_market_id</span><span class="w">      </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">int64</span><span class="w"></span>
-<span class="n">dest</span><span class="w">                     </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">category</span><span class="w"></span>
-<span class="n">dest_city_name</span><span class="w">           </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="k">object</span><span class="w"></span>
-<span class="n">crs_dep_time</span><span class="w">             </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">datetime64</span><span class="o">[</span><span class="n">ns</span><span class="o">]</span><span class="w"></span>
-<span class="n">dep_time</span><span class="w">                 </span><span class="mi">441445</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">datetime64</span><span class="o">[</span><span class="n">ns</span><span class="o">]</span><span class="w"></span>
-<span class="n">dep_delay</span><span class="w">                </span><span class="mi">441476</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">taxi_out</span><span class="w">                 </span><span class="mi">441244</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">wheels_off</span><span class="w">               </span><span class="mi">441244</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">wheels_on</span><span class="w">                </span><span class="mi">440746</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">taxi_in</span><span class="w">                  </span><span class="mi">440746</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">crs_arr_time</span><span class="w">             </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">datetime64</span><span class="o">[</span><span class="n">ns</span><span class="o">]</span><span class="w"></span>
-<span class="n">arr_time</span><span class="w">                 </span><span class="mi">440555</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">datetime64</span><span class="o">[</span><span class="n">ns</span><span class="o">]</span><span class="w"></span>
-<span class="n">arr_delay</span><span class="w">                </span><span class="mi">439645</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">cancelled</span><span class="w">                </span><span class="mi">450017</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">cancellation_code</span><span class="w">        </span><span class="mi">8886</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">category</span><span class="w"></span>
-<span class="n">carrier_delay</span><span class="w">            </span><span class="mi">97699</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">weather_delay</span><span class="w">            </span><span class="mi">97699</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">nas_delay</span><span class="w">                </span><span class="mi">97699</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">security_delay</span><span class="w">           </span><span class="mi">97699</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="n">late_aircraft_delay</span><span class="w">      </span><span class="mi">97699</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="nl">unnamed</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="w">              </span><span class="mi">0</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="k">null</span><span class="w"> </span><span class="n">float64</span><span class="w"></span>
-<span class="nl">dtypes</span><span class="p">:</span><span class="w"> </span><span class="n">category</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span><span class="w"> </span><span class="n">datetime64</span><span class="o">[</span><span class="n">ns</span><span class="o">]</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span><span class="w"> </span><span class="n">float64</span><span class="p">(</span><span class="mi">13</span><span class="p">),</span><span class="w"> </span><span class="n">int64</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="w"> </span><span class="k">object</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
-<span class="n">memory</span><span class="w"> </span><span class="k">usage</span><span class="err">:</span><span class="w"> </span><span class="mf">103.2</span><span class="o">+</span><span class="w"> </span><span class="n">MB</span><span class="w"></span>
-</code></pre></div>
-
+if not os.path.exists(output):
+    df = read(&quot;data/627361791_T_ONTIME.csv&quot;)
+    df.to_hdf(output, 'flights', format='table')
+else:
+    df = pd.read_hdf(output, 'flights', format='table')
+df.info()
+</code></pre>
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+Int64Index: 450017 entries, 0 to 450016
+Data columns (total 33 columns):
+fl_date                  450017 non-null datetime64[ns]
+unique_carrier           450017 non-null category
+airline_id               450017 non-null int64
+tail_num                 449378 non-null category
+fl_num                   450017 non-null int64
+origin_airport_id        450017 non-null int64
+origin_airport_seq_id    450017 non-null int64
+origin_city_market_id    450017 non-null int64
+origin                   450017 non-null category
+origin_city_name         450017 non-null object
+dest_airport_id          450017 non-null int64
+dest_airport_seq_id      450017 non-null int64
+dest_city_market_id      450017 non-null int64
+dest                     450017 non-null category
+dest_city_name           450017 non-null object
+crs_dep_time             450017 non-null datetime64[ns]
+dep_time                 441445 non-null datetime64[ns]
+dep_delay                441476 non-null float64
+taxi_out                 441244 non-null float64
+wheels_off               441244 non-null float64
+wheels_on                440746 non-null float64
+taxi_in                  440746 non-null float64
+crs_arr_time             450017 non-null datetime64[ns]
+arr_time                 440555 non-null datetime64[ns]
+arr_delay                439645 non-null float64
+cancelled                450017 non-null float64
+cancellation_code        8886 non-null category
+carrier_delay            97699 non-null float64
+weather_delay            97699 non-null float64
+nas_delay                97699 non-null float64
+security_delay           97699 non-null float64
+late_aircraft_delay      97699 non-null float64
+unnamed: 32              0 non-null float64
+dtypes: category(5), datetime64[ns](5), float64(13), int64(8), object(2)
+memory usage: 103.2+ MB
+</code></pre>
 <p>I find method chains readable, though some people don't.
 Both the code and the flow of execution are from top to bottom, and the function parameters are always near the function itself, unlike with heavily nested function calls.</p>
 <p>My favorite example demonstrating this comes from <a href="http://trestletech.com/wp-content/uploads/2015/07/dplyr.pdf">Jeff Allen</a> (pdf). Compare these two ways of telling the same story:</p>
-<div class="highlight"><pre><span></span><code><span class="nf">tumble_after</span><span class="p">(</span>
-    <span class="nf">broke</span><span class="p">(</span>
-        <span class="nf">fell_down</span><span class="p">(</span>
-            <span class="nf">fetch</span><span class="p">(</span><span class="nf">went_up</span><span class="p">(</span><span class="n">jack_jill</span><span class="p">,</span> <span class="s">&quot;hill&quot;</span><span class="p">),</span> <span class="s">&quot;water&quot;</span><span class="p">),</span>
-            <span class="n">jack</span><span class="p">),</span>
-        <span class="s">&quot;crown&quot;</span><span class="p">),</span>
-    <span class="s">&quot;jill&quot;</span>
-<span class="p">)</span>
-</code></pre></div>
-
+<pre><code class="language-R">tumble_after(
+    broke(
+        fell_down(
+            fetch(went_up(jack_jill, &quot;hill&quot;), &quot;water&quot;),
+            jack),
+        &quot;crown&quot;),
+    &quot;jill&quot;
+)
+</code></pre>
 <p>and</p>
-<div class="highlight"><pre><span></span><code><span class="n">jack_jill</span> <span class="o">%&gt;%</span>
-    <span class="nf">went_up</span><span class="p">(</span><span class="s">&quot;hill&quot;</span><span class="p">)</span> <span class="o">%&gt;%</span>
-    <span class="nf">fetch</span><span class="p">(</span><span class="s">&quot;water&quot;</span><span class="p">)</span> <span class="o">%&gt;%</span>
-    <span class="nf">fell_down</span><span class="p">(</span><span class="s">&quot;jack&quot;</span><span class="p">)</span> <span class="o">%&gt;%</span>
-    <span class="nf">broke</span><span class="p">(</span><span class="s">&quot;crown&quot;</span><span class="p">)</span> <span class="o">%&gt;%</span>
-    <span class="nf">tumble_after</span><span class="p">(</span><span class="s">&quot;jill&quot;</span><span class="p">)</span>
-</code></pre></div>
-
+<pre><code class="language-R">jack_jill %&gt;%
+    went_up(&quot;hill&quot;) %&gt;%
+    fetch(&quot;water&quot;) %&gt;%
+    fell_down(&quot;jack&quot;) %&gt;%
+    broke(&quot;crown&quot;) %&gt;%
+    tumble_after(&quot;jill&quot;)
+</code></pre>
 <p>Even if you weren't aware that in R <code>%&gt;%</code> (pronounced <em>pipe</em>) calls the function on the right with the thing on the left as an argument, you can still make out what's going on. Compare that with the first style, where you need to unravel the code to figure out the order of execution and which arguments are being passed where.</p>
 <p>Admittedly, you probably wouldn't write the first one.
 It'd be something like</p>
-<div class="highlight"><pre><span></span><code><span class="n">on_hill</span> <span class="o">=</span> <span class="n">went_up</span><span class="p">(</span><span class="n">jack_jill</span><span class="p">,</span> <span class="s1">&#39;hill&#39;</span><span class="p">)</span>
-<span class="n">with_water</span> <span class="o">=</span> <span class="n">fetch</span><span class="p">(</span><span class="n">on_hill</span><span class="p">,</span> <span class="s1">&#39;water&#39;</span><span class="p">)</span>
-<span class="n">fallen</span> <span class="o">=</span> <span class="n">fell_down</span><span class="p">(</span><span class="n">with_water</span><span class="p">,</span> <span class="s1">&#39;jack&#39;</span><span class="p">)</span>
-<span class="n">broken</span> <span class="o">=</span> <span class="n">broke</span><span class="p">(</span><span class="n">fallen</span><span class="p">,</span> <span class="s1">&#39;jack&#39;</span><span class="p">)</span>
-<span class="n">after</span> <span class="o">=</span> <span class="n">tmple_after</span><span class="p">(</span><span class="n">broken</span><span class="p">,</span> <span class="s1">&#39;jill&#39;</span><span class="p">)</span>
-</code></pre></div>
-
+<pre><code class="language-python">on_hill = went_up(jack_jill, 'hill')
+with_water = fetch(on_hill, 'water')
+fallen = fell_down(with_water, 'jack')
+broken = broke(fallen, 'jack')
+after = tmple_after(broken, 'jill')
+</code></pre>
 <p>I don't like this version because I have to spend time coming up with appropriate names for variables.
 That's bothersome when we don't <em>really</em> care about the <code>on_hill</code> variable. We're just passing it into the next step.</p>
 <p>A fourth way of writing the same story may be available. Suppose you owned a <code>JackAndJill</code> object, and could define the methods on it. Then you'd have something like R's <code>%&gt;%</code> example.</p>
-<div class="highlight"><pre><span></span><code><span class="n">jack_jill</span> <span class="o">=</span> <span class="n">JackAndJill</span><span class="p">()</span>
-<span class="p">(</span><span class="n">jack_jill</span><span class="o">.</span><span class="n">went_up</span><span class="p">(</span><span class="s1">&#39;hill&#39;</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s1">&#39;water&#39;</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">fell_down</span><span class="p">(</span><span class="s1">&#39;jack&#39;</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">broke</span><span class="p">(</span><span class="s1">&#39;crown&#39;</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">tumble_after</span><span class="p">(</span><span class="s1">&#39;jill&#39;</span><span class="p">)</span>
-<span class="p">)</span>
-</code></pre></div>
-
+<pre><code class="language-python">jack_jill = JackAndJill()
+(jack_jill.went_up('hill')
+    .fetch('water')
+    .fell_down('jack')
+    .broke('crown')
+    .tumble_after('jill')
+)
+</code></pre>
 <p>But the problem is you don't own the <code>ndarray</code> or <code>DataFrame</code> or <a href="http://xarray.pydata.org/en/stable/data-structures.html#dataarray"><code>DataArray</code></a>, and the exact method you want may not exist.
 Monekypatching on your own methods is fragile.
 It's not easy to correctly subclass pandas' DataFrame to extend it with your own methods.
@@ -234,59 +227,57 @@ Composition, where you create a class that holds onto a DataFrame internally, ma
 <p>Perhaps you could submit a pull request to pandas implementing your method.
 But then you'd need to convince the maintainers that it's broadly useful enough to merit its inclusion (and worth their time to maintain it). And <code>DataFrame</code> has something like 250+ methods, so we're reluctant to add more.</p>
 <p>Enter <a href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.pipe.html"><code>DataFrame.pipe</code></a>. All the benefits of having your specific function as a method on the DataFrame, without us having to maintain it, and without it overloading the already large pandas API. A win for everyone.</p>
-<div class="highlight"><pre><span></span><code><span class="n">jack_jill</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-<span class="p">(</span><span class="n">jack_jill</span><span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">went_up</span><span class="p">,</span> <span class="s1">&#39;hill&#39;</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">fetch</span><span class="p">,</span> <span class="s1">&#39;water&#39;</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">fell_down</span><span class="p">,</span> <span class="s1">&#39;jack&#39;</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">broke</span><span class="p">,</span> <span class="s1">&#39;crown&#39;</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">tumble_after</span><span class="p">,</span> <span class="s1">&#39;jill&#39;</span><span class="p">)</span>
-<span class="p">)</span>
-</code></pre></div>
-
+<pre><code class="language-python">jack_jill = pd.DataFrame()
+(jack_jill.pipe(went_up, 'hill')
+    .pipe(fetch, 'water')
+    .pipe(fell_down, 'jack')
+    .pipe(broke, 'crown')
+    .pipe(tumble_after, 'jill')
+)
+</code></pre>
 <p>This really is just right-to-left function execution. The first argument to <code>pipe</code>, a callable, is called with the DataFrame on the left as its first argument, and any additional arguments you specify.</p>
 <p>I hope the analogy to data analysis code is clear.
 Code is read more often than it is written.
 When you or your coworkers or research partners have to go back in two months to update your script, having the story of raw data to results be told as clearly as possible will save you time.</p>
-<h2>Costs</h2>
+<h2 id="costs">Costs</h2>
 <p>One drawback to excessively long chains is that debugging can be harder.
 If something looks wrong at the end, you don't have intermediate values to inspect. There's a close parallel here to python's generators. Generators are great for keeping memory consumption down, but they can be hard to debug since values are consumed.</p>
 <p>For my typical exploratory workflow, this isn't really a big problem. I'm working with a single dataset that isn't being updated, and the path from raw data to usuable data isn't so large that I can't drop an <code>import pdb; pdb.set_trace()</code> in the middle of my code to poke around.</p>
 <p>For large workflows, you'll probably want to move away from pandas to something more structured, like <a href="http://pythonhosted.org/airflow/">Airflow</a> or <a href="http://luigi.readthedocs.org/en/stable/index.html">Luigi</a>.</p>
 <p>When writing medium sized <a href="https://en.wikipedia.org/wiki/Extract,_transform,_load">ETL</a> jobs in python that will be run repeatedly, I'll use decorators to inspect and log properties about the DataFrames at each step of the process.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
-<span class="kn">import</span> <span class="nn">logging</span>
+<pre><code class="language-python">from functools import wraps
+import logging
 
-<span class="k">def</span> <span class="nf">log_shape</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">,</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">result</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
+def log_shape(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        logging.info(&quot;%s,%s&quot; % (func.__name__, result.shape))
+        return result
+    return wrapper
 
-<span class="k">def</span> <span class="nf">log_dtypes</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">,</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">dtypes</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">result</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
+def log_dtypes(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        logging.info(&quot;%s,%s&quot; % (func.__name__, result.dtypes))
+        return result
+    return wrapper
 
 
-<span class="nd">@log_shape</span>
-<span class="nd">@log_dtypes</span>
-<span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+@log_shape
+@log_dtypes
+def load(fp):
+    df = pd.read_csv(fp, index_col=0, parse_dates=True)
 
-<span class="nd">@log_shape</span>
-<span class="nd">@log_dtypes</span>
-<span class="k">def</span> <span class="nf">update_events</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">new_events</span><span class="p">):</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">new_events</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_events</span>
-    <span class="k">return</span> <span class="n">df</span>
-</code></pre></div>
-
+@log_shape
+@log_dtypes
+def update_events(df, new_events):
+    df.loc[new_events.index, 'foo'] = new_events
+    return df
+</code></pre>
 <p>This plays nicely with <a href="http://engarde.readthedocs.org"><code>engarde</code></a>, a little library I wrote to validate data as it flows through the pipeline (it essentialy turns those logging statements into excpetions if something looks wrong).</p>
-<h2>Inplace?</h2>
+<h2 id="inplace">Inplace?</h2>
 <p>Most pandas methods have an <code>inplace</code> keyword that's <code>False</code> by default.
 In general, you shouldn't do inplace operations.</p>
 <p>First, if you like method chains then you simply can't use inplace since the return value is <code>None</code>, terminating the chain.</p>
@@ -296,79 +287,74 @@ Quoting Jeff Reback from that answer</p>
 <p>Their is <strong>no guarantee</strong> that an inplace operation is actually faster. Often they are actually the same operation that works on a copy, but the top-level reference is reassigned.</p>
 </blockquote>
 <p>That is, the pandas code might look something like this</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">dataframe_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># regardless of inplace</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="o">...</span>
-    <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_update_inplace</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">result</span>
-</code></pre></div>
+<pre><code class="language-python">def dataframe_method(self, inplace=False):
+    data = self.copy()  # regardless of inplace
+    result = ...
+    if inplace:
+        self._update_inplace(data)
+    else:
+        return result
 
+</code></pre>
 <p>There's a lot of defensive copying in pandas.
 Part of this comes down to pandas being built on top of NumPy, and not having full control over how memory is handled and shared.
 We saw it above when we defined our own functions <code>extract_city_name</code> and <code>time_to_datetime</code>.
 Without the <code>copy</code>, adding the columns would modify the input DataFrame, which just isn't polite.</p>
 <p>Finally, inplace operations don't make sense in projects like <a href="http://www.ibis-project.org">ibis</a> or <a href="http://dask.pydata.org/en/latest/">dask</a>, where you're manipulating expressions or building up a DAG of tasks to be executed, rather than manipulating the data directly.</p>
-<h2>Application</h2>
+<h2 id="application">Application</h2>
 <p>I feel like we haven't done much coding, mostly just me shouting from the top of a soapbox (sorry about that).
 Let's do some exploratory analysis.</p>
 <p>What does the daily flight pattern look like?</p>
-<div class="highlight"><pre><span></span><code><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;dep_time&#39;</span><span class="p">,</span> <span class="s1">&#39;unique_carrier&#39;</span><span class="p">])</span>
-   <span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;unique_carrier&#39;</span><span class="p">]</span>
-       <span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;unique_carrier&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">[:</span><span class="mi">5</span><span class="p">])]</span>
-   <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;dep_time&#39;</span><span class="p">)</span>
-   <span class="c1"># TimeGrouper to resample &amp; groupby at once</span>
-   <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;unique_carrier&#39;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">TimeGrouper</span><span class="p">(</span><span class="s2">&quot;H&quot;</span><span class="p">)])</span>
-   <span class="o">.</span><span class="n">fl_num</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
-   <span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-   <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-   <span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span>
-   <span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-   <span class="o">.</span><span class="n">rename_axis</span><span class="p">(</span><span class="s2">&quot;Flights per Day&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-   <span class="o">.</span><span class="n">plot</span><span class="p">()</span>
-<span class="p">)</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python">(df.dropna(subset=['dep_time', 'unique_carrier'])
+   .loc[df['unique_carrier']
+       .isin(df['unique_carrier'].value_counts().index[:5])]
+   .set_index('dep_time')
+   # TimeGrouper to resample &amp; groupby at once
+   .groupby(['unique_carrier', pd.TimeGrouper(&quot;H&quot;)])
+   .fl_num.count()
+   .unstack(0)
+   .fillna(0)
+   .rolling(24)
+   .sum()
+   .rename_axis(&quot;Flights per Day&quot;, axis=1)
+   .plot()
+)
+sns.despine()
+</code></pre>
 <p><img alt="png" src="modern_2_method_chaining_files/modern_2_method_chaining_8_0.png"></p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">statsmodels.api</span> <span class="k">as</span> <span class="nn">sm</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">taugspurger</span><span class="o">/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">modern</span><span class="o">-</span><span class="n">pandas</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">statsmodels</span><span class="o">/</span><span class="n">compat</span><span class="o">/</span><span class="n">pandas</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">56</span><span class="p">:</span> <span class="ne">FutureWarning</span><span class="p">:</span> <span class="n">The</span> <span class="n">pandas</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">datetools</span> <span class="n">module</span> <span class="ow">is</span> <span class="n">deprecated</span> <span class="ow">and</span> <span class="n">will</span> <span class="n">be</span> <span class="n">removed</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">future</span> <span class="n">version</span><span class="o">.</span> <span class="n">Please</span> <span class="n">use</span> <span class="n">the</span> <span class="n">pandas</span><span class="o">.</span><span class="n">tseries</span> <span class="n">module</span> <span class="n">instead</span><span class="o">.</span>
-  <span class="kn">from</span> <span class="nn">pandas.core</span> <span class="kn">import</span> <span class="n">datetools</span>
-</code></pre></div>
-
+<pre><code class="language-python">import statsmodels.api as sm
+</code></pre>
+<pre><code>/Users/taugspurger/miniconda3/envs/modern-pandas/lib/python3.6/site-packages/statsmodels/compat/pandas.py:56: FutureWarning: The pandas.core.datetools module is deprecated and will be removed in a future version. Please use the pandas.tseries module instead.
+  from pandas.core import datetools
+</code></pre>
 <p>Does a plane with multiple flights on the same day get backed up, causing later flights to be delayed more?</p>
-<div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">config</span> <span class="n">InlineBackend</span><span class="o">.</span><span class="n">figure_format</span> <span class="o">=</span> <span class="s1">&#39;png&#39;</span>
-<span class="n">flights</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">,</span> <span class="s1">&#39;dep_time&#39;</span><span class="p">,</span> <span class="s1">&#39;dep_delay&#39;</span><span class="p">]]</span>
-           <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-           <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;dep_time&#39;</span><span class="p">)</span>
-           <span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">dep_delay</span> <span class="o">&lt;</span> <span class="mi">500</span><span class="p">]</span>
-           <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">turn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span>
-                <span class="n">x</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">])</span>
-                 <span class="o">.</span><span class="n">dep_time</span>
-                 <span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s1">&#39;rank&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)))</span>
+<pre><code class="language-python">%config InlineBackend.figure_format = 'png'
+flights = (df[['fl_date', 'tail_num', 'dep_time', 'dep_delay']]
+           .dropna()
+           .sort_values('dep_time')
+           .loc[lambda x: x.dep_delay &lt; 500]
+           .assign(turn = lambda x:
+                x.groupby(['fl_date', 'tail_num'])
+                 .dep_time
+                 .transform('rank').astype(int)))
 
-<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;turn&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;dep_delay&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">flights</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
-</code></pre></div>
-
+fig, ax = plt.subplots(figsize=(15, 5))
+sns.boxplot(x='turn', y='dep_delay', data=flights, ax=ax)
+ax.set_ylim(-50, 50)
+sns.despine()
+</code></pre>
 <p><img alt="png" src="modern_2_method_chaining_files/modern_2_method_chaining_11_0.png"></p>
 <p>Doesn't really look like it. Maybe other planes are swapped in when one gets delayed,
 but we don't have data on <em>scheduled</em> flights per plane.</p>
 <p>Do flights later in the day have longer delays?</p>
-<div class="highlight"><pre><span></span><code><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;fl_date&#39;</span><span class="p">,</span> <span class="s1">&#39;tail_num&#39;</span><span class="p">,</span> <span class="s1">&#39;dep_time&#39;</span><span class="p">,</span> <span class="s1">&#39;dep_delay&#39;</span><span class="p">]]</span>
-    <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">hour</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">dep_time</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">hour</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;5 &lt; dep_delay &lt; 600&#39;</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">pipe</span><span class="p">((</span><span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">),</span> <span class="s1">&#39;hour&#39;</span><span class="p">,</span> <span class="s1">&#39;dep_delay&#39;</span><span class="p">))</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
-</code></pre></div>
-
+<pre><code class="language-python">plt.figure(figsize=(15, 5))
+(df[['fl_date', 'tail_num', 'dep_time', 'dep_delay']]
+    .dropna()
+    .assign(hour=lambda x: x.dep_time.dt.hour)
+    .query('5 &lt; dep_delay &lt; 600')
+    .pipe((sns.boxplot, 'data'), 'hour', 'dep_delay'))
+sns.despine()
+</code></pre>
 <p><img alt="png" src="modern_2_method_chaining_files/modern_2_method_chaining_13_0.png"></p>
 <p>There could be something here. I didn't show it here since I filtered them out,
 but the vast majority of flights do leave on time.</p>

@@ -73,26 +73,24 @@ in pandas' documentation are already runnable (and this is verified on each
 commit). We use the <a href="https://ipython.readthedocs.io/en/stable/sphinxext.html">IPython Sphinx
 Extension</a> to execute
 examples and include their output. We write documentation like</p>
-<div class="highlight"><pre><span></span><code><span class="o">..</span> <span class="n">ipython</span><span class="p">::</span> <span class="n">python</span>
+<pre><code>.. ipython:: python
 
-   <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
-   <span class="n">s</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
-   <span class="n">s</span>
-</code></pre></div>
-
+   import pandas as pd
+   s = pd.Series([1, 2])
+   s
+</code></pre>
 <p>Which is then <em>executed</em> and rendered in the HTML docs as</p>
-<div class="highlight"><pre><span></span><code><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<pre><code class="language-python">In [1]: import pandas as pd
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">s</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+In [2]: s = pd.Series([1, 2, 3])
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">s</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
-<span class="mi">0</span>    <span class="mi">1</span>
-<span class="mi">1</span>    <span class="mi">2</span>
-<span class="mi">2</span>    <span class="mi">3</span>
-<span class="n">dtype</span><span class="p">:</span> <span class="n">int64</span>
-</code></pre></div>
-
+In [3]: s
+Out[3]:
+0    1
+1    2
+2    3
+dtype: int64
+</code></pre>
 <p>So we have the most important thing: a rich source of documentation that's
 already runnable.</p>
 <p>There were a couple barriers to just pointing binder at
@@ -114,13 +112,12 @@ for turning ReST files to Jupyter notebooks. Just what we needed.</p>
 ReST files to Jupyter notebooks. All the pieces were falling into place!</p>
 <p>Unfortunately, my first attempt failed. <code>sphinxcontrib-jupyter</code> looks for directives
 like</p>
-<div class="highlight"><pre><span></span><code><span class="p">..</span> <span class="ow">code</span><span class="p">::</span> python
-</code></pre></div>
-
+<pre><code class="language-rst">.. code:: python
+</code></pre>
 <p>while pandas uses</p>
-<div class="highlight"><pre><span></span><code><span class="p">..</span> <span class="ow">ipython</span><span class="p">::</span> python
-</code></pre></div>
+<pre><code class="language-rst">.. ipython:: python
 
+</code></pre>
 <p>I started slogging down a path to teach <code>sphinxcontrib-jupyter</code> how to recognize
 the IPython directive pandas uses when my kid woke up from his nap. Feeling
 dejected I gave up.</p>
