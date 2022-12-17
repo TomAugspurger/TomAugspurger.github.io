@@ -1,0 +1,7 @@
+baseURL = 'https://tomaugspurger.github.io'
+languageCode = 'en-us'
+title = "Tom's Blog"
+theme = 'PaperMod'
+
+[markup.goldmark.renderer]
+unsafe= true
