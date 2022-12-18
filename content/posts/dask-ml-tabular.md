@@ -49,7 +49,7 @@ df.head()
 ```
 
 
-<div class="output highlight">
+<div class="output">
 <style scoped>
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -177,7 +177,7 @@ pipe.fit(X, y)
 pipe.score(X, y)
 ```
 
-<div class="output highlight">
+<div class="output">
     <pre>
 1.0
     </pre>
@@ -213,7 +213,7 @@ enc.fit_transform([['a'], ['a'], ['b'], ['c']])
 
 
 
-<div class="output highlight">
+<div class="output">
 <pre>
 array([[1., 0., 0.],
        [1., 0., 0.],
@@ -392,7 +392,7 @@ format_bytes(nbytes)
 
 
 
-<div class="output highlight">
+<div class="output">
 <pre>
 '19.20 GB'
 </pre>
@@ -476,7 +476,7 @@ And again, these ColumnTransformers are just estimators so we stick them in a re
 %%time pipe.fit(X, y.to_dask_array(lengths=lengths), incremental__classes=[0, 1])
 ```
 
-<div class="output highlight">
+<div class="output">
 <pre>
 CPU times: user 7min 7s, sys: 41.6 s, total: 7min 48s
 Wall time: 16min 42s

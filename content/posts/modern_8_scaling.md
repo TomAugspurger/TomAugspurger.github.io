@@ -42,7 +42,7 @@ most_common = df.occupation.value_counts().nlargest(100)
 most_common
 ```
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <pre>
     RETIRED                    279775
     ATTORNEY                   166768
@@ -92,7 +92,7 @@ for year in files:
 total_counts = total_counts.nlargest(100).sort_values(ascending=False)
 ```
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <pre>
 RETIRED                    4769520
 NOT EMPLOYED               2656988
@@ -129,7 +129,7 @@ most_common = df.occupation.value_counts().nlargest(100)
 most_common.compute().sort_values(ascending=False)
 ```
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <pre>
 RETIRED                    4769520
 NOT EMPLOYED               2656988
@@ -260,7 +260,7 @@ most_common
 ```
 
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <pre>
 
     Dask Series Structure:
@@ -295,7 +295,7 @@ most_common.compute()
 
 
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <pre>
     RETIRED                    4769520
     NOT EMPLOYED               2656988
@@ -483,7 +483,7 @@ total_by_employee
 
 
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <pre>
     Dask Series Structure:
     npartitions=1
@@ -506,7 +506,7 @@ avg_transaction, by_employee, by_occupation = compute(
 )
 ```
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <pre>
     CPU times: user 57.5 s, sys: 14.4 s, total: 1min 11s
     Wall time: 54.9 s
@@ -521,7 +521,7 @@ avg_transaction
 
 
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <pre>
     566.0899206077507
 </pre>
@@ -535,7 +535,7 @@ by_employee
 
 
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <pre>
     employer
     RETIRED                1019973117
@@ -561,7 +561,7 @@ by_occupation
 
 
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <pre>
     occupation
     CHAIRMAN CEO & FOUNDER                   1,023,333.33
@@ -592,7 +592,7 @@ top_occupations
 
 
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <pre>
     Index(['RETIRED', 'NOT EMPLOYED', 'ATTORNEY', 'PHYSICIAN', 'HOMEMAKER',
            'PRESIDENT', 'PROFESSOR', 'CONSULTANT', 'EXECUTIVE', 'ENGINEER'],
@@ -651,7 +651,7 @@ daily
 
 
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <pre>
     1916-01-23    1000
     1916-01-24       0
@@ -707,7 +707,7 @@ cm
 
 
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <div>
 <style scoped>
     .dataframe tbody tr th:only-of-type {
@@ -825,7 +825,7 @@ df2
 
 
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <div><strong>Dask DataFrame Structure:</strong></div>
 <div>
 <style scoped>
@@ -947,7 +947,7 @@ df2
 
 
 
-<!-- <div class="output highlight"> -->
+<!-- <div class="output"> -->
 <div><strong>Dask DataFrame Structure:</strong></div>
 <div>
 <style scoped>
