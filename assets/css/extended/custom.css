@@ -1,0 +1,9 @@
+.highlight {
+    border-left: 5px solid #307fc1;
+    background: rgb(255, 255, 255) !important;
+}
+
+.output {
+    border-left: 5px solid #bf5b3d;
+    background: rgb(255, 255, 255) !important;
+}
