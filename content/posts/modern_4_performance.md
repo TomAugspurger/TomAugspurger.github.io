@@ -226,7 +226,7 @@ plt.tight_layout()
 ```
 
 
-![png](modern_4_performance_files/modern_4_performance_6_0.png)
+![png](/images/modern_4_performance_6_0.png)
 
 
 ## Datatypes

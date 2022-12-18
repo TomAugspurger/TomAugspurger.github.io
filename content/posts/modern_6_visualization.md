@@ -300,7 +300,7 @@ ax.scatter(x='carat', y='depth', data=df, c='k', alpha=.15);
 ```
 
 
-![png](modern_6_visualization_files/modern_6_visualization_13_0.png)
+![png](/images/modern_6_visualization_13_0.png)
 
 
 This isn't limited to just `DataFrame`s.
@@ -318,7 +318,7 @@ plt.tight_layout()
 ```
 
 
-![png](modern_6_visualization_files/modern_6_visualization_17_0.png)
+![png](/images/modern_6_visualization_17_0.png)
 
 
 We get axis labels from the column names.
@@ -342,7 +342,7 @@ plt.tight_layout()
 
 
 
-![png](modern_6_visualization_files/modern_6_visualization_19_1.png)
+![png](/images/modern_6_visualization_19_1.png)
 
 
 ## Seaborn
@@ -373,7 +373,7 @@ plt.tight_layout()
 ```
 
 
-![png](modern_6_visualization_files/modern_6_visualization_22_0.png)
+![png](/images/modern_6_visualization_22_0.png)
 
 
 
@@ -384,7 +384,7 @@ plt.tight_layout()
 ```
 
 
-![png](modern_6_visualization_files/modern_6_visualization_23_0.png)
+![png](/images/modern_6_visualization_23_0.png)
 
 
 Bivariate relationships can easily be explored, either one at a time:
@@ -397,7 +397,7 @@ plt.tight_layout()
 ```
 
 
-![png](modern_6_visualization_files/modern_6_visualization_25_0.png)
+![png](/images/modern_6_visualization_25_0.png)
 
 
 Or many at once
@@ -408,7 +408,7 @@ g = sns.pairplot(df, hue='cut')
 ```
 
 
-![png](modern_6_visualization_files/modern_6_visualization_27_0.png)
+![png](/images/modern_6_visualization_27_0.png)
 
 
 `pairplot` is a convenience wrapper around `PairGrid`, and offers our first look at an important seaborn abstraction, the `Grid`. *Seaborn `Grid`s provide a link between a matplotlib `Figure` with multiple `axes` and features in your dataset.*
@@ -435,7 +435,7 @@ cmap = sns.cubehelix_palette(as_cmap=True, dark=0, light=1, reverse=True)
 );
 ```
 
-![png](modern_6_visualization_files/modern_6_visualization_30_1.png)
+![png](/images/modern_6_visualization_30_1.png)
 
 
 This last example shows the tight integration with matplotlib. `g.axes` is an array of `matplotlib.Axes` and `g.fig` is a `matplotlib.Figure`.
@@ -460,7 +460,7 @@ g.map(sns.stripplot, orient="h", size=10, palette='Blues_d');
 
 
 
-![png](modern_6_visualization_files/modern_6_visualization_32_1.png)
+![png](/images/modern_6_visualization_32_1.png)
 
 
 
@@ -470,7 +470,7 @@ g.map(sns.regplot, 'carat', 'price');
 ```
 
 
-![png](modern_6_visualization_files/modern_6_visualization_33_1.png)
+![png](/images/modern_6_visualization_33_1.png)
 
 
 Initially I had many more examples showing off seaborn, but I'll spare you.
@@ -681,7 +681,7 @@ sns.factorplot(x='param_max_depth', y='mean_test_score',
 ```
 
 
-![png](modern_6_visualization_files/modern_6_visualization_39_0.png)
+![png](/images/modern_6_visualization_39_0.png)
 
 
 Thanks for reading!

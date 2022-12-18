@@ -5,3 +5,34 @@ theme = 'PaperMod'
 
 [markup.goldmark.renderer]
 unsafe= true
+
+
+[menu]
+[[menu.main]]
+name = "Archive"
+url = "archives"
+weight = 10
+
+[[menu.main]]
+name = "Tags"
+url = "tags"
+weight = 10
+
+[[menu.main]]
+name = "RSS"
+url = "/index.xml"
+identifier = "rss"
+weight = 10
+
+[[menu.main]]
+name = "About"
+url = "/about/"
+weight = 10
+
+[[params.socialIcons]]
+name = "github"
+url = "https://github.com/TomAugspurger"
+
+[[params.socialIcons]]
+name = "Rss"
+url = "index.xml"

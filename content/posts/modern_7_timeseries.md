@@ -733,7 +733,7 @@ sns.despine()
 ```
 
 
-![png](modern_7_timeseries_files/modern_7_timeseries_23_0.png)
+![png](/images/modern_7_timeseries_23_0.png)
 
 
 Each of `.rolling`, `.expanding`, and `.ewm` return a deferred object, similar to a GroupBy.
@@ -763,7 +763,7 @@ sns.despine()
 ```
 
 
-![png](modern_7_timeseries_files/modern_7_timeseries_26_0.png)
+![png](/images/modern_7_timeseries_26_0.png)
 
 
 ## Grab Bag
@@ -1049,7 +1049,7 @@ sns.despine()
 ```
 
 
-![png](modern_7_timeseries_files/modern_7_timeseries_41_0.png)
+![png](/images/modern_7_timeseries_41_0.png)
 
 
 
@@ -1261,7 +1261,7 @@ sns.heatmap(X.corr());
 ```
 
 
-![png](modern_7_timeseries_files/modern_7_timeseries_48_0.png)
+![png](/images/modern_7_timeseries_48_0.png)
 
 
 Second, we'd intuitively expect the $\beta_i$s to gradually decline to zero.
@@ -1276,7 +1276,7 @@ sns.despine()
 ```
 
 
-![png](modern_7_timeseries_files/modern_7_timeseries_50_0.png)
+![png](/images/modern_7_timeseries_50_0.png)
 
 
 Finally, our degrees of freedom drop since we lose two for each variable (one for estimating the coefficient, one for the lost observation as a result of the `shift`).
@@ -1329,7 +1329,7 @@ tsplot(res_trend.resid, lags=36);
 ```
 
 
-![png](modern_7_timeseries_files/modern_7_timeseries_58_0.png)
+![png](/images/modern_7_timeseries_58_0.png)
 
 
 The top subplot shows the time series of our residuals $e_t$, which should be white noise (but it isn't).
@@ -1362,7 +1362,7 @@ sns.despine()
 ```
 
 
-![png](modern_7_timeseries_files/modern_7_timeseries_61_0.png)
+![png](/images/modern_7_timeseries_61_0.png)
 
 
 Our original series actually doesn't look *that* bad.
@@ -1449,7 +1449,7 @@ tsplot(res_stationary.resid, lags=24);
 ```
 
 
-![png](modern_7_timeseries_files/modern_7_timeseries_69_0.png)
+![png](/images/modern_7_timeseries_69_0.png)
 
 
 So we've taken care of multicolinearity, autocorelation, and stationarity, but we still aren't done.
@@ -1464,7 +1464,7 @@ smt.seasonal_decompose(y).plot();
 ```
 
 
-![png](modern_7_timeseries_files/modern_7_timeseries_73_0.png)
+![png](/images/modern_7_timeseries_73_0.png)
 
 
 There are a few ways to handle seasonality.
@@ -1534,7 +1534,7 @@ tsplot(res.resid[2:], lags=24);
 ```
 
 
-![png](modern_7_timeseries_files/modern_7_timeseries_81_0.png)
+![png](/images/modern_7_timeseries_81_0.png)
 
 
 
@@ -1728,7 +1728,7 @@ tsplot(res_seasonal.resid[12:], lags=24);
 ```
 
 
-![png](modern_7_timeseries_files/modern_7_timeseries_86_0.png)
+![png](/images/modern_7_timeseries_86_0.png)
 
 
 Things look much better now.
@@ -1767,7 +1767,7 @@ sns.despine()
 ```
 
 
-![png](modern_7_timeseries_files/modern_7_timeseries_91_0.png)
+![png](/images/modern_7_timeseries_91_0.png)
 
 
 There are a few places where the observed series slips outside the 95% confidence interval.
@@ -1803,7 +1803,7 @@ sns.despine()
 ```
 
 
-![png](modern_7_timeseries_files/modern_7_timeseries_94_0.png)
+![png](/images/modern_7_timeseries_94_0.png)
 
 
 ## Resources

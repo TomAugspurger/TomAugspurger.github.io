@@ -334,7 +334,7 @@ sns.despine()
 ```
 
 
-![png](modern_2_method_chaining_files/modern_2_method_chaining_8_0.png)
+![png](/images/modern_2_method_chaining_8_0.png)
 
 
 
@@ -367,7 +367,7 @@ sns.despine()
 ```
 
 
-![png](modern_2_method_chaining_files/modern_2_method_chaining_11_0.png)
+![png](/images/modern_2_method_chaining_11_0.png)
 
 
 Doesn't really look like it. Maybe other planes are swapped in when one gets delayed,
@@ -387,7 +387,7 @@ sns.despine()
 ```
 
 
-![png](modern_2_method_chaining_files/modern_2_method_chaining_13_0.png)
+![png](/images/modern_2_method_chaining_13_0.png)
 
 
 There could be something here. I didn't show it here since I filtered them out,

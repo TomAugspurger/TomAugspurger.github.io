@@ -621,7 +621,7 @@ g.map(sns.barplot, 'variable', 'rest');
 ```
 
 
-![png](modern_5_tidy_files/modern_5_tidy_17_0.png)
+![png](/images/modern_5_tidy_17_0.png)
 
 
 An example of a game-level statistic is the distribution of rest differences in games:
@@ -757,7 +757,7 @@ ax.set(xlabel='Difference in Rest (Home - Away)', ylabel='Games');
 ```
 
 
-![png](modern_5_tidy_files/modern_5_tidy_20_0.png)
+![png](/images/modern_5_tidy_20_0.png)
 
 
 Or the win percent by rest difference
@@ -771,7 +771,7 @@ sns.despine()
 ```
 
 
-![png](modern_5_tidy_files/modern_5_tidy_22_0.png)
+![png](/images/modern_5_tidy_22_0.png)
 
 
 ## Stack / Unstack
@@ -914,7 +914,7 @@ sns.despine()
 ```
 
 
-![png](modern_5_tidy_files/modern_5_tidy_30_0.png)
+![png](/images/modern_5_tidy_30_0.png)
 
 
 The most conenient form will depend on exactly what you're doing.
@@ -1047,7 +1047,7 @@ g.map(sns.pointplot, 'is_home', 'win_pct').set(ylim=(0, 1));
 ```
 
 
-![png](modern_5_tidy_files/modern_5_tidy_38_0.png)
+![png](/images/modern_5_tidy_38_0.png)
 
 
 (It'd be great if there was a library built on top of matplotlib that auto-labeled each point decently well. Apparently this is a difficult problem to do in general).
@@ -1066,7 +1066,7 @@ g.map(sns.pointplot, 'is_home', 'win_pct')
 
 
 
-![png](modern_5_tidy_files/modern_5_tidy_40_1.png)
+![png](/images/modern_5_tidy_40_1.png)
 
 
 Those two graphs show that most teams have a higher win-percent at home than away. So we can continue to investigate.
@@ -1107,7 +1107,7 @@ plt.xlabel("Win Percent")
 
 
 
-![png](modern_5_tidy_files/modern_5_tidy_43_1.png)
+![png](/images/modern_5_tidy_43_1.png)
 
 
 Is there a relationship between overall team strength and their home-court advantage?
@@ -1126,7 +1126,7 @@ plt.tight_layout()
 ```
 
 
-![png](modern_5_tidy_files/modern_5_tidy_45_0.png)
+![png](/images/modern_5_tidy_45_0.png)
 
 
 Let's get the team strength back into `df`.

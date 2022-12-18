@@ -1,0 +1,35 @@
+---
+title: About
+---
+
+Hi, I'm Tom. I'm a programmer living in Des Moines, IA.
+I work for Microsoft.
+
+## Talks
+
+- Pandas: `.head() to .tail()` | [video](https://www.youtube.com/watch?v=7vuO9QXDN50) | [materials](https://github.com/tomaugspurger/pydata-chi-h2t)
+- Mind the Gap! Bridging the scikit-learn - pandas dtype divide | [video](https://www.youtube.com/watch?v=KLPtEBokqQ0) | [materials](https://github.com/tomaugspurger/mtg)
+- Pandas: `.head() to .tail()` | [video](https://www.youtube.com/watch?v=otCriSKVV_8) | [materials](https://github.com/tomaugspurger/pydataSeattle)
+
+## Podcasts
+
+- [Microsoft Planetary Computer](https://talkpython.fm/episodes/show/334/microsoft-planetary-computer) on Talk Python
+- [Pandas Extension Arrays](https://www.pythonpodcast.com/pandas-extension-arrays-with-tom-augspurger-episode-164/) on `Podcast.__init__`.
+
+## Writing
+
+- [Effective Pandas](https://leanpub.com/effective-pandas): A series on writing effective, idiomatic pandas.
+- A few posts on [Medium](https://medium.com/@tom.augspurger88) with various co-authors.
+    - [Managing Pangeo Environments for Distributed Computing](https://medium.com/pangeo/managing-environments-5604d848367a)
+    - [Pangeo with Dask Gateway](https://medium.com/pangeo/pangeo-with-dask-gateway-4b638825f105)
+    - [Rechunker: The missing link for chunked array analytics](https://medium.com/pangeo/rechunker-the-missing-link-for-chunked-array-analytics-5b2359e9dc11)
+- This Blog
+
+## Contact
+
+Either on Mastodon [@TomAugspurger@mastodon.social](https://mastodon.social/@TomAugspurger) or by email
+at <tom.w.augspurger@gmail.com>.
+
+## This Blog
+
+This blog uses [Hugo](https://gohugo.io/) as a static-site generator and the [PaperMod](https://github.com/adityatelange/hugo-PaperMod/) theme.
