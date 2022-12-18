@@ -1,7 +1,6 @@
 ---
 title: "Rebooting"
 date: 2022-12-18T16:51:46-06:00
-draft: true
 ---
 
 Like [some others](http://www.gregreda.com/2022/11/18/reviving-this-space/), I'm getting back into blogging.
