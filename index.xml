@@ -14489,6 +14489,10 @@ pandas&rsquo; <code>HDF5</code> integration (via pytables) for personal projects
 <head>
 <meta http-equiv="refresh" content="0;URL=/index.xml">  
 </head>
+</html>]]></content:encoded></item><item><title/><link>https://tomaugspurger.github.io/feeds/all.rss.xml/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://tomaugspurger.github.io/feeds/all.rss.xml/</guid><description/><content:encoded><![CDATA[<html>
+<head>
+<meta http-equiv="refresh" content="0;URL=/index.xml">  
+</head>
 </html>]]></content:encoded></item><item><title/><link>https://tomaugspurger.github.io/posts/compat/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://tomaugspurger.github.io/posts/compat/</guid><description>Title: Compatibility Code Date: 2019-12-12 Slug: compatibility status: draft
 Compatibility Code Most libraries with dependencies will want to support multiple versions of that dependency. But supporting old version is a pain: it requires compatibility code, code that is around solely to get the same output from versions of a library. This post gives some advice on writing compatibility code.
 Don&amp;rsquo;t write your own version parser Centralize all version parsing Use consistent version comparisons Use Python&amp;rsquo;s argument unpacking Clean up unused compatibility code 1.</description><content:encoded><![CDATA[<p>Title: Compatibility Code
