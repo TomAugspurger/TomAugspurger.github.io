@@ -39,3 +39,15 @@ url = "index.xml"
 
 [params]
 ShowFullTextinRSS = true
+
+[outputFormats]
+[outputFormats.RSS2]
+baseName = "feeds/all.atom"
+mediaType = "application/rss+xml"
+suffix = "xml"
+
+[outputFormats.RSS3]
+baseName = "feeds/all.rss"
+mediaType = "application/rss+xml"
+suffix = "xml"
+
