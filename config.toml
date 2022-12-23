@@ -39,8 +39,3 @@ url = "index.xml"
 
 [params]
 ShowFullTextinRSS = true
-
-[outputFormats.RSS]
-baseName = "feeds/all.rss"
-mediaType = "application/rss+xml"
-suffix = "xml"
