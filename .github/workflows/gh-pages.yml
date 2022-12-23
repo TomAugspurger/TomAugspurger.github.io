@@ -24,6 +24,12 @@ jobs:
       - name: Build
         run: hugo --minify
 
+      - name: Setup old RSS feeds
+        run: |
+          mkdir -p public/feeds
+          cp public/index.xml public/feeds/all.atom.xml  
+          cp public/index.xml public/feeds/all.rss.xml  
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         if: github.ref == 'refs/heads/main'
