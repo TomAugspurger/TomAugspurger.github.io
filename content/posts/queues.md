@@ -15,7 +15,7 @@ In `dask/distributed`, Dask actually has two places where it determines which or
 
 ![](https://user-images.githubusercontent.com/1312546/58502338-f2599c00-814b-11e9-989a-5bfd2c3785a8.png)
 
-The "root" tasks are on the left (marked 0, 3, 11, 14). Dask's typical depth-first algorithm works well here: we execute the first to root tasks (0, 3) to finish up the first "chain" of computation (the box `(0, 0)` on the right) before moving onto the other two root nodes, 11 and 14.
+The "root" tasks are on the left (marked 0, 3, 11, 14). Dask's typical depth-first algorithm works well here: we execute the first two root tasks (0 and 3) to finish up the first "chain" of computation (the box `(0, 0)` on the right) before moving onto the other two root nodes, 11 and 14.
 
 The second time Dask (specifically, the distributed scheduler) considers what order to run things is at runtime. It gets this "static" ordering from `dask.order` which says what order you *should* run things in, but the distributed runtime has *way* more information available to it that it can use to influence its scheduling decisions. In this case, the distributed scheduler looked around and saw that it had some idle cores. It thought "hey, I have a bunch of these root tasks ready to run", and scheduled those. Those tend to increase memory usage, leading to our memory problems.
 
