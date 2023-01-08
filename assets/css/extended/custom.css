@@ -7,3 +7,12 @@
     border-left: 5px solid #bf5b3d;
     background: rgb(255, 255, 255) !important;
 }
+
+/* Fixing buggy font sizes on mobile devices. https://stackoverflow.com/a/22417120/1001848 */
+body {
+  text-size-adjust: 100%; 
+  -ms-text-size-adjust: 100%; 
+  -moz-text-size-adjust: 100%; 
+  -webkit-text-size-adjust: 100%;
+}
+
