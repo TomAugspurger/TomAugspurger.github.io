@@ -10,14 +10,14 @@ tags:
 
 This is part 7 in my series on writing modern idiomatic pandas.
 
-- [Modern Pandas](modern-1-intro)
-- [Method Chaining](method-chaining)
-- [Indexes](modern-3-indexes)
-- [Fast Pandas](modern-4-performance)
-- [Tidy Data](modern-5-tidy)
-- [Visualization](modern-6-visualization)
-- [Time Series](modern-7-timeseries)
-- [Scaling](modern-8-scaling)
+- [Modern Pandas](/posts/modern-1-intro)
+- [Method Chaining](/posts/method-chaining)
+- [Indexes](/posts/modern-3-indexes)
+- [Fast Pandas](/posts/modern-4-performance)
+- [Tidy Data](/posts/modern-5-tidy)
+- [Visualization](/posts/modern-6-visualization)
+- [Time Series](/posts/modern-7-timeseries)
+- [Scaling](/posts/modern-8-scaling)
 
 ---
 
