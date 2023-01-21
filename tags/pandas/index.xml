@@ -324,14 +324,14 @@ There&rsquo;s a lot going on in the numeric Python ecosystem right now. Stay tun
 Modern Pandas Method Chaining Indexes Fast Pandas Tidy Data Visualization Time Series Scaling As I sit down to write this, the third-most popular pandas question on StackOverflow covers how to use pandas for large datasets. This is in tension with the fact that a pandas DataFrame is an in memory container. You can&amp;rsquo;t have a DataFrame larger than your machine&amp;rsquo;s RAM.</description><content:encoded><![CDATA[<hr>
 <p>This is part 1 in my series on writing modern idiomatic pandas.</p>
 <ul>
-<li><a href="modern-1-intro">Modern Pandas</a></li>
-<li><a href="method-chaining">Method Chaining</a></li>
-<li><a href="modern-3-indexes">Indexes</a></li>
-<li><a href="modern-4-performance">Fast Pandas</a></li>
-<li><a href="modern-5-tidy">Tidy Data</a></li>
-<li><a href="modern-6-visualization">Visualization</a></li>
-<li><a href="modern-7-timeseries">Time Series</a></li>
-<li><a href="modern-8-scaling">Scaling</a></li>
+<li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
+<li><a href="/posts/method-chaining">Method Chaining</a></li>
+<li><a href="/posts/modern-3-indexes">Indexes</a></li>
+<li><a href="/posts/modern-4-performance">Fast Pandas</a></li>
+<li><a href="/posts/modern-5-tidy">Tidy Data</a></li>
+<li><a href="/posts/modern-6-visualization">Visualization</a></li>
+<li><a href="/posts/modern-7-timeseries">Time Series</a></li>
+<li><a href="/posts/modern-8-scaling">Scaling</a></li>
 </ul>
 <hr>
 <p>As I sit down to write this, the third-most popular pandas question on StackOverflow covers <a href="https://stackoverflow.com/q/14262433/1889400">how to use pandas for large datasets</a>. This is in tension with the fact that a pandas DataFrame is an in memory container. <em>You can&rsquo;t have a <code>DataFrame</code> larger than your machine&rsquo;s RAM</em>. In practice, your available RAM should be several times the size of your dataset, as you or pandas will have to make intermediate copies as part of the analysis.</p>
@@ -1315,14 +1315,14 @@ The first half of this post will look at pandas&amp;rsquo; capabilities for mani
 %matplotlib inline import os import numpy as np import pandas as pd import pandas_datareader.</description><content:encoded><![CDATA[<hr>
 <p>This is part 7 in my series on writing modern idiomatic pandas.</p>
 <ul>
-<li><a href="modern-1-intro">Modern Pandas</a></li>
-<li><a href="method-chaining">Method Chaining</a></li>
-<li><a href="modern-3-indexes">Indexes</a></li>
-<li><a href="modern-4-performance">Fast Pandas</a></li>
-<li><a href="modern-5-tidy">Tidy Data</a></li>
-<li><a href="modern-6-visualization">Visualization</a></li>
-<li><a href="modern-7-timeseries">Time Series</a></li>
-<li><a href="modern-8-scaling">Scaling</a></li>
+<li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
+<li><a href="/posts/method-chaining">Method Chaining</a></li>
+<li><a href="/posts/modern-3-indexes">Indexes</a></li>
+<li><a href="/posts/modern-4-performance">Fast Pandas</a></li>
+<li><a href="/posts/modern-5-tidy">Tidy Data</a></li>
+<li><a href="/posts/modern-6-visualization">Visualization</a></li>
+<li><a href="/posts/modern-7-timeseries">Time Series</a></li>
+<li><a href="/posts/modern-8-scaling">Scaling</a></li>
 </ul>
 <hr>
 <h1 id="timeseries">Timeseries</h1>
@@ -2736,14 +2736,14 @@ We also didn&rsquo;t get to talk at all about Skipper Seabold&rsquo;s work on VA
 Modern Pandas Method Chaining Indexes Fast Pandas Tidy Data Visualization Time Series Scaling Visualization and Exploratory Analysis A few weeks ago, the R community went through some hand-wringing about plotting packages. For outsiders (like me) the details aren&amp;rsquo;t that important, but some brief background might be useful so we can transfer the takeaways to Python. The competing systems are &amp;ldquo;base R&amp;rdquo;, which is the plotting system built into the language, and ggplot2, Hadley Wickham&amp;rsquo;s implementation of the grammar of graphics.</description><content:encoded><![CDATA[<hr>
 <p>This is part 6 in my series on writing modern idiomatic pandas.</p>
 <ul>
-<li><a href="modern-1-intro">Modern Pandas</a></li>
-<li><a href="method-chaining">Method Chaining</a></li>
-<li><a href="modern-3-indexes">Indexes</a></li>
-<li><a href="modern-4-performance">Fast Pandas</a></li>
-<li><a href="modern-5-tidy">Tidy Data</a></li>
-<li><a href="modern-6-visualization">Visualization</a></li>
-<li><a href="modern-7-timeseries">Time Series</a></li>
-<li><a href="modern-8-scaling">Scaling</a></li>
+<li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
+<li><a href="/posts/method-chaining">Method Chaining</a></li>
+<li><a href="/posts/modern-3-indexes">Indexes</a></li>
+<li><a href="/posts/modern-4-performance">Fast Pandas</a></li>
+<li><a href="/posts/modern-5-tidy">Tidy Data</a></li>
+<li><a href="/posts/modern-6-visualization">Visualization</a></li>
+<li><a href="/posts/modern-7-timeseries">Time Series</a></li>
+<li><a href="/posts/modern-8-scaling">Scaling</a></li>
 </ul>
 <hr>
 <h1 id="visualization-and-exploratory-analysis">Visualization and Exploratory Analysis</h1>
@@ -3253,14 +3253,14 @@ So, you&amp;rsquo;ve sat down to analyze a new dataset. What do you do first?
 In episode 11 of Not So Standard Deviations, Hilary and Roger discussed their typical approaches. I&amp;rsquo;m with Hilary on this one, you should make sure your data is tidy.</description><content:encoded><![CDATA[<hr>
 <p>This is part 5 in my series on writing modern idiomatic pandas.</p>
 <ul>
-<li><a href="modern-1-intro">Modern Pandas</a></li>
-<li><a href="method-chaining">Method Chaining</a></li>
-<li><a href="modern-3-indexes">Indexes</a></li>
-<li><a href="modern-4-performance">Fast Pandas</a></li>
-<li><a href="modern-5-tidy">Tidy Data</a></li>
-<li><a href="modern-6-visualization">Visualization</a></li>
-<li><a href="modern-7-timeseries">Time Series</a></li>
-<li><a href="modern-8-scaling">Scaling</a></li>
+<li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
+<li><a href="/posts/method-chaining">Method Chaining</a></li>
+<li><a href="/posts/modern-3-indexes">Indexes</a></li>
+<li><a href="/posts/modern-4-performance">Fast Pandas</a></li>
+<li><a href="/posts/modern-5-tidy">Tidy Data</a></li>
+<li><a href="/posts/modern-6-visualization">Visualization</a></li>
+<li><a href="/posts/modern-7-timeseries">Time Series</a></li>
+<li><a href="/posts/modern-8-scaling">Scaling</a></li>
 </ul>
 <hr>
 <h1 id="reshaping--tidy-data">Reshaping &amp; Tidy Data</h1>
@@ -4446,14 +4446,14 @@ Next time we&rsquo;ll look at data visualization.</p>
 Modern Pandas Method Chaining Indexes Fast Pandas Tidy Data Visualization Time Series Scaling Indexes can be a difficult concept to grasp at first. I suspect this is partly becuase they&amp;rsquo;re somewhat peculiar to pandas. These aren&amp;rsquo;t like the indexes put on relational database tables for performance optimizations. Rather, they&amp;rsquo;re more like the row_labels of an R DataFrame, but much more capable.</description><content:encoded><![CDATA[<hr>
 <p>This is part 3 in my series on writing modern idiomatic pandas.</p>
 <ul>
-<li><a href="modern-1-intro">Modern Pandas</a></li>
-<li><a href="method-chaining">Method Chaining</a></li>
-<li><a href="modern-3-indexes">Indexes</a></li>
-<li><a href="modern-4-performance">Fast Pandas</a></li>
-<li><a href="modern-5-tidy">Tidy Data</a></li>
-<li><a href="modern-6-visualization">Visualization</a></li>
-<li><a href="modern-7-timeseries">Time Series</a></li>
-<li><a href="modern-8-scaling">Scaling</a></li>
+<li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
+<li><a href="/posts/method-chaining">Method Chaining</a></li>
+<li><a href="/posts/modern-3-indexes">Indexes</a></li>
+<li><a href="/posts/modern-4-performance">Fast Pandas</a></li>
+<li><a href="/posts/modern-5-tidy">Tidy Data</a></li>
+<li><a href="/posts/modern-6-visualization">Visualization</a></li>
+<li><a href="/posts/modern-7-timeseries">Time Series</a></li>
+<li><a href="/posts/modern-8-scaling">Scaling</a></li>
 </ul>
 <hr>
 <p><code>Indexes</code> can be a difficult concept to grasp at first.
@@ -7210,14 +7210,14 @@ Name: dep_time, dtype: datetime64[ns]
 Modern Pandas Method Chaining Indexes Fast Pandas Tidy Data Visualization Time Series Scaling Wes McKinney, the creator of pandas, is kind of obsessed with performance. From micro-optimizations for element access, to embedding a fast hash table inside pandas, we all benefit from his and others&amp;rsquo; hard work. This post will focus mainly on making efficient use of pandas and NumPy.</description><content:encoded><![CDATA[<hr>
 <p>This is part 4 in my series on writing modern idiomatic pandas.</p>
 <ul>
-<li><a href="modern-1-intro">Modern Pandas</a></li>
-<li><a href="method-chaining">Method Chaining</a></li>
-<li><a href="modern-3-indexes">Indexes</a></li>
-<li><a href="modern-4-performance">Fast Pandas</a></li>
-<li><a href="modern-5-tidy">Tidy Data</a></li>
-<li><a href="modern-6-visualization">Visualization</a></li>
-<li><a href="modern-7-timeseries">Time Series</a></li>
-<li><a href="modern-8-scaling">Scaling</a></li>
+<li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
+<li><a href="/posts/method-chaining">Method Chaining</a></li>
+<li><a href="/posts/modern-3-indexes">Indexes</a></li>
+<li><a href="/posts/modern-4-performance">Fast Pandas</a></li>
+<li><a href="/posts/modern-5-tidy">Tidy Data</a></li>
+<li><a href="/posts/modern-6-visualization">Visualization</a></li>
+<li><a href="/posts/modern-7-timeseries">Time Series</a></li>
+<li><a href="/posts/modern-8-scaling">Scaling</a></li>
 </ul>
 <hr>
 <p><a href="https://twitter.com/wesmckinn">Wes McKinney</a>, the creator of pandas, is kind of obsessed with performance. From micro-optimizations for element access, to <a href="https://github.com/pydata/pandas/tree/master/pandas/src/klib">embedding</a> a fast hash table inside pandas, we all benefit from his and others&rsquo; hard work.
@@ -8095,14 +8095,14 @@ If you want to learn more about what pandas does to make things fast, checkout J
 Modern Pandas Method Chaining Indexes Fast Pandas Tidy Data Visualization Time Series Scaling Method Chaining Method chaining, where you call methods on an object one after another, is in vogue at the moment. It&amp;rsquo;s always been a style of programming that&amp;rsquo;s been possible with pandas, and over the past several releases, we&amp;rsquo;ve added methods that enable even more chaining.</description><content:encoded><![CDATA[<hr>
 <p>This is part 2 in my series on writing modern idiomatic pandas.</p>
 <ul>
-<li><a href="modern-1-intro">Modern Pandas</a></li>
-<li><a href="method-chaining">Method Chaining</a></li>
-<li><a href="modern-3-indexes">Indexes</a></li>
-<li><a href="modern-4-performance">Fast Pandas</a></li>
-<li><a href="modern-5-tidy">Tidy Data</a></li>
-<li><a href="modern-6-visualization">Visualization</a></li>
-<li><a href="modern-7-timeseries">Time Series</a></li>
-<li><a href="modern-8-scaling">Scaling</a></li>
+<li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
+<li><a href="/posts/method-chaining">Method Chaining</a></li>
+<li><a href="/posts/modern-3-indexes">Indexes</a></li>
+<li><a href="/posts/modern-4-performance">Fast Pandas</a></li>
+<li><a href="/posts/modern-5-tidy">Tidy Data</a></li>
+<li><a href="/posts/modern-6-visualization">Visualization</a></li>
+<li><a href="/posts/modern-7-timeseries">Time Series</a></li>
+<li><a href="/posts/modern-8-scaling">Scaling</a></li>
 </ul>
 <hr>
 <h1 id="method-chaining">Method Chaining</h1>
@@ -8400,14 +8400,14 @@ Modern Pandas Method Chaining Indexes Fast Pandas Tidy Data Visualization Time S
 Prior Art There are many great resources for learning pandas; this is not one of them.</description><content:encoded><![CDATA[<hr>
 <p>This is part 1 in my series on writing modern idiomatic pandas.</p>
 <ul>
-<li><a href="modern-1-intro">Modern Pandas</a></li>
-<li><a href="method-chaining">Method Chaining</a></li>
-<li><a href="modern-3-indexes">Indexes</a></li>
-<li><a href="modern-4-performance">Fast Pandas</a></li>
-<li><a href="modern-5-tidy">Tidy Data</a></li>
-<li><a href="modern-6-visualization">Visualization</a></li>
-<li><a href="modern-7-timeseries">Time Series</a></li>
-<li><a href="modern-8-scaling">Scaling</a></li>
+<li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
+<li><a href="/posts/method-chaining">Method Chaining</a></li>
+<li><a href="/posts/modern-3-indexes">Indexes</a></li>
+<li><a href="/posts/modern-4-performance">Fast Pandas</a></li>
+<li><a href="/posts/modern-5-tidy">Tidy Data</a></li>
+<li><a href="/posts/modern-6-visualization">Visualization</a></li>
+<li><a href="/posts/modern-7-timeseries">Time Series</a></li>
+<li><a href="/posts/modern-8-scaling">Scaling</a></li>
 </ul>
 <hr>
 <h1 id="effective-pandas">Effective Pandas</h1>
