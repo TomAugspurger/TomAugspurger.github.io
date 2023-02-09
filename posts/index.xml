@@ -1,4 +1,40 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.github.io/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 14 Jan 2023 16:16:11 -0600</lastBuildDate><atom:link href="https://tomaugspurger.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Cloud Optimized Vibes</title><link>https://tomaugspurger.github.io/posts/cloud-optimized-quandary/</link><pubDate>Sat, 14 Jan 2023 16:16:11 -0600</pubDate><guid>https://tomaugspurger.github.io/posts/cloud-optimized-quandary/</guid><description>Over on the Planetary Computer team, we get to have a lot of fun discussions about doing geospatial data analysis on the cloud. This post summarizes some work we did, and the (I think) interesting conversations that came out of it.
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.github.io/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Thu, 09 Feb 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://tomaugspurger.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Planetary Computer Release: January 2023</title><link>https://tomaugspurger.github.io/posts/pc-january-2023/</link><pubDate>Thu, 09 Feb 2023 00:00:00 +0000</pubDate><guid>https://tomaugspurger.github.io/posts/pc-january-2023/</guid><description>The Planetary Computer made its January 2023 release a couple weeks back.
+The flagship new feature is a really cool new ability to visualize the Microsoft AI-detected Buildings Footprints dataset. Here&amp;rsquo;s a little demo made by my teammate, Rob:
+Your browser doesn't support HTML video. Here is a link to the video instead. Currently, enabling this feature required converting the data from its native geoparquet to a lot of protobuf files with Tippecanoe.</description><content:encoded><![CDATA[<p>The Planetary Computer made its <a href="https://planetarycomputer.microsoft.com/docs/overview/changelog/">January 2023 release</a> a couple weeks back.</p>
+<p>The flagship new feature is a <em>really</em> cool new ability to visualize the <a href="https://planetarycomputer.microsoft.com/dataset/ms-buildings">Microsoft AI-detected Buildings Footprints</a> dataset. Here&rsquo;s a little demo made by my teammate, Rob:</p>
+<video controls style="height: 400px;">
+  <source src="https://ai4edatasetspublicassets.azureedge.net/assets/pc_video/vector-tile-ms-buildings-feature.mp4" type="video/mp4" />
+  <p>
+    Your browser doesn't support HTML video. Here is a
+    <a href="https://ai4edatasetspublicassets.azureedge.net/assets/pc_video/vector-tile-ms-buildings-feature.mp4">link to the video</a> instead.
+  </p>
+</video>
+<p>Currently, enabling this feature required converting the data from its native <a href="http://github.com/opengeospatial/geoparquet">geoparquet</a> to a <em>lot</em> of protobuf files with <a href="https://github.com/felt/tippecanoe">Tippecanoe</a>. I&rsquo;m very excited about projects to visualize the geoparquet data directly (see <a href="https://kylebarron.dev/blog/geoarrow-and-geoparquet-in-deck-gl">Kyle Barron&rsquo;s demo</a>) but for now we needed to do the conversion.</p>
+<p>Hats off to Matt McFarland, who did the work on the data conversion and the frontend to support the rendering.</p>
+<h2 id="new-datasets">New Datasets</h2>
+<p>As usual, we have a handful of new datasets hosted on the Planetary Computer. Follow the link on each of these to find out more.</p>
+<p><a href="https://planetarycomputer.microsoft.com/dataset/group/esa-cci-lc"><strong>Climate Change Initiative Land Cover</strong></a></p>
+<img src="https://ai4edatasetspublicassets.azureedge.net/assets/pc_video/docs-esa-cci-lc-1992-2020-brazil.gif" width="500px"/>
+<p><a href="https://planetarycomputer.microsoft.com/dataset/group/noaa-climate-normals"><strong>NOAA Climate Normals</strong></a><sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></p>
+<img src="https://ai4edatasetspublicassets.azureedge.net/assets/pc_thumbnails/noaa-climate-normals-gridded-thumb.png" width="500px">
+<p><a href="https://planetarycomputer.microsoft.com/dataset/usda-cdl"><strong>USDA Cropland Data Layer</strong></a></p>
+<img src="https://planetarycomputer.microsoft.com/_images/changelog-usda-cdl.png" width="500px">
+<p><a href="https://planetarycomputer.microsoft.com/dataset/group/usgs-lcmap"><strong>USGS Land Change Monitoring, Assessment, and Projection</strong></a></p>
+<img src="https://ai4edatasetspublicassets.blob.core.windows.net/assets/pc_video/docs-usgs-lcmap-cali-1985-2021.gif" width="500px">
+<p><a href="https://planetarycomputer.microsoft.com/dataset/fws-nwi"><strong>National Wetlands Inventory</strong></a></p>
+<img src="https://planetarycomputer.microsoft.com/_images/changelog-fws-nwi.png" width="500px">
+<h2 id="other-stuff">Other stuff</h2>
+<p>We&rsquo;ve also been doing a lot of work around the edges that doesn&rsquo;t show up in visual things like new features or datasets. That work should show uup
+in the next release and I&rsquo;ll be blogging more about it then.</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>NOAA Climate Normals is our first cataloged dataset that lives in a different Azure region. It&rsquo;s in East US while all our other datasets are in West Europe. I&rsquo;m hopefully this will rekindle interest in some multi-cloud (or at least multi-region) stuff we explored in <a href="https://github.com/pangeo-data/multicloud-demo">pangeo-multicloud-demo</a>. See <a href="https://discourse.pangeo.io/t/go-multi-regional-with-dask-aws/3037">https://discourse.pangeo.io/t/go-multi-regional-with-dask-aws/3037</a> for a more recent example. Azure actually has a whole <a href="https://azure.microsoft.com/en-us/products/azure-arc/#overview">Azure Arc</a> product that helps with multi-cloud stuff.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+]]></content:encoded></item><item><title>Cloud Optimized Vibes</title><link>https://tomaugspurger.github.io/posts/cloud-optimized-quandary/</link><pubDate>Sat, 14 Jan 2023 16:16:11 -0600</pubDate><guid>https://tomaugspurger.github.io/posts/cloud-optimized-quandary/</guid><description>Over on the Planetary Computer team, we get to have a lot of fun discussions about doing geospatial data analysis on the cloud. This post summarizes some work we did, and the (I think) interesting conversations that came out of it.
 Background: GOES-GLM The instigator in this case was onboarding a new dataset to the Planetary Computer, GOES-GLM. GOES is a set of geostationary weather satellites operated by NOAA, and GLM is the Geostationary Lightning Mapper, an instrument on the satellites that&amp;rsquo;s used to monitor lightning.</description><content:encoded><![CDATA[<p>Over on the <a href="http://planetarycomputer.microsoft.com/">Planetary Computer</a> team, we get to have a lot of fun discussions about doing geospatial data analysis on the cloud. This post summarizes some work we did, and the (I think) interesting conversations that came out of it.</p>
 <h2 id="background-goes-glm">Background: GOES-GLM</h2>
 <p>The instigator in this case was onboarding a new dataset to the Planetary Computer, <a href="https://planetarycomputer.microsoft.com/dataset/goes-glm">GOES-GLM</a>. GOES is a set of geostationary weather satellites operated by NOAA, and GLM is the Geostationary Lightning Mapper, an instrument on the satellites that&rsquo;s used to monitor lightning. It produces some really neat (and valuable) data.</p>
