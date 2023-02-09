@@ -1,12 +1,11 @@
 ---
 title: "Planetary Computer Release: January 2023"
-date: 2023-01-29T07:11:43-06:00
-draft: true
+date: 2023-02-09
 ---
 
-The Planetary Computer made its [January 2023 release](https://planetarycomputer.microsoft.com/docs/overview/changelog/) last week.
+The Planetary Computer made its [January 2023 release](https://planetarycomputer.microsoft.com/docs/overview/changelog/) a couple weeks back.
 
-The flagship new feature is a *really* cool new ability to visualize the visualize the [Microsoft AI-detected Buildings Footprints](https://planetarycomputer.microsoft.com/dataset/ms-buildings) dataset. Here's a little demo made by my teammate, Rob:
+The flagship new feature is a *really* cool new ability to visualize the [Microsoft AI-detected Buildings Footprints](https://planetarycomputer.microsoft.com/dataset/ms-buildings) dataset. Here's a little demo made by my teammate, Rob:
 
 <video controls style="height: 400px;">
   <source src="https://ai4edatasetspublicassets.azureedge.net/assets/pc_video/vector-tile-ms-buildings-feature.mp4" type="video/mp4" />
@@ -46,6 +45,7 @@ As usual, we have a handful of new datasets hosted on the Planetary Computer. Fo
 
 ## Other stuff
 
-We've also been doing a lot of work around the edges that doesn't show up in visual things like new features or datasets. Stay tuned!
+We've also been doing a lot of work around the edges that doesn't show up in visual things like new features or datasets. That work should show uup
+in the next release and I'll be blogging more about it then.
 
 [^1]: NOAA Climate Normals is our first cataloged dataset that lives in a different Azure region. It's in East US while all our other datasets are in West Europe. I'm hopefully this will rekindle interest in some multi-cloud (or at least multi-region) stuff we explored in [pangeo-multicloud-demo](https://github.com/pangeo-data/multicloud-demo). See https://discourse.pangeo.io/t/go-multi-regional-with-dask-aws/3037 for a more recent example. Azure actually has a whole [Azure Arc](https://azure.microsoft.com/en-us/products/azure-arc/#overview) product that helps with multi-cloud stuff.
