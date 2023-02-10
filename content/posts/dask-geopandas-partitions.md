@@ -1,7 +1,6 @@
 ---
-title: "Dask Geopandas Partitions"
+title: "Dask Geopandas Spatial Partitioning Performance"
 date: 2023-02-09T08:10:59-06:00
-draft: true
 ---
 
 A college reached out yesterday about a performance issue they were hitting when
@@ -30,35 +29,45 @@ When I benchmarked things, it took about:
 Looking at the spatial partitions of the data showed that it was clearly not
 spatially partitioned:
 
-![non-partitioned](/images/dask-geopandas-spatial-partitons-bad.png)
+![non-partitioned](/images/dask-geopandas-spatial-partitions-bad.png)
+
+It's clearer zoomed in, but the box is a bit fuzzy because it's actually
+a bunch of boxes with very slightly different extents.
 
 Turns out we dropped a few of the newer ms-buildings STAC items, which were
 spatially partitioned, during our last release. Oops.
+(Don't worry, we're working on a better system for this.)
 
-Once I got those items reingested, things did look better.
+Once I got those items re-ingested, things did look better.
 
-![partitioned](/images/dask-geopandas-spatial-partitons-good.png)
+![partitioned](/images/dask-geopandas-spatial-partitions-good.png)
 
-It wasn't all good news, though. The spatially partitioned data had many more
-partitions (individual files in Blob Storage). At the moment, `dask-geopandas`
-needs to open each individual file to read its spatial bounds. So the
-`dask_geopandas.read_parquet("...")` call scales linearly with the number of
-files. It was taking ~60 seconds to read just the *metadata*. Our timings were now
+It wasn't all good news, though. Our timings went to
 
 1. 56 seconds to read the metadata with `dask_geopandas.read_parquet` (ouch)
 2. 0.5 seconds to read the data and clip it to the area of interest (yay!)
 
-That speedup from 60 seconds to 0.5 seconds is exactly why we spatially
-partition the data. But the slowdown in reading the metadata is a bit painful,
-especially for interactive data analysis.
+The speedup from 60 seconds to 0.5 seconds is exactly why we want to spatially
+partition the data. When you're querying for a small area of interest,
+the spatially partitioned data means you can ignore most of the data and speed
+things up a lot. But what's going on with the slowdown for the first stage
+(reading metadata)?
+
+The spatially partitioned dataset also had many more partitions in the Parquet
+dataset, i.e. many more individual files in Blob Storage (a few hundred instead of 5-6).
+At the moment, `dask-geopandas` needs to open each individual file to read its spatial bounds. That was fine 
+when we only had a few files, but when you have a few hundred the small amount of time it takes to read
+each file adds up. In this case, it added up to about 56 seconds of waiting just to read the metadata.
 
 ## Speeding up the metadata reading
 
-A simple `dask_geopandas.read_parquet` will execute code on your local client
-machine in serial. It'll do some things to read metadata from the remote file
-system (column names, dtypes, spatial partitions, etc.) and use that to build
-the Dask (Geo)DataFrame. The solution here was to parallelize the metadata
-reading. This snippet re-uses `dask_geopandas.read_parquet`, but applies it in
+To speed up the metadata reading, we use the tried-and-true method of parallelizing it
+with Dask (yes, we're using Dask to speed up Dask). Instead of doing a `dask_geopandas.read_parquet`
+on the client (which in turn executes some `pyarrow.parquet` stuff to read the fragments and get
+the metadata from each file) in serial, we'll run a bunch of `dask_geopandas.read_parquet`
+calls on the cluster in parallel (I'm just using a `LocalCluster` in this example).
+
+The snippet below re-uses `dask_geopandas.read_parquet`, but applies it in
 parallel using `client.map`. We'll make a bunch of Dask DataFrames on the
 cluster (one per file) and then we use `client.gather` to bring back the Dask
 DataFrames (just the *metadata*, not the data!) to the client and concat them
@@ -66,7 +75,9 @@ together into one big Dask DataFrame.
 
 There's a [small bug][bug] in dask-geopandas around serializing the spatial
 partitions on a Dask GeoDataFrame. Once [my fix][fix] is merged then this will
-be a bit cleaner.
+be a bit cleaner: everything to do with `spatial_partitions` can be deleted
+and you're just left with reading the metadata on the cluster, bringing it
+back to the client, and concatenating at the end.
 
 ```python
 import distributed
@@ -110,7 +121,6 @@ Overall, we brought the metadata read time down the 30 seconds (which would be
 faster with more workers). Still not great, but an improvement. At some point
 we'll need to embrace a broader solution to this metadata access issue using
 something like [Apache Iceberg][iceberg].
-
 
 See [this example notebook][notebook] for the full thing.
 
