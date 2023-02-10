@@ -67,17 +67,12 @@ back to the client, and concatenating at the end.</p>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> fsspec
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">read_parquet</span>(asset):
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">read_parquet</span>(paths, storage_options):
 </span></span><span style="display:flex;"><span>    client <span style="color:#f92672">=</span> distributed<span style="color:#f92672">.</span>get_client()
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    fs, token, [root] <span style="color:#f92672">=</span> fsspec<span style="color:#f92672">.</span>get_fs_token_paths(asset<span style="color:#f92672">.</span>href, storage_options<span style="color:#f92672">=</span>asset<span style="color:#f92672">.</span>extra_fields[<span style="color:#e6db74">&#34;table:storage_options&#34;</span>])
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Get the raw paths (fast enough to do this locally. Could be done on the cluster too)</span>
-</span></span><span style="display:flex;"><span>    paths <span style="color:#f92672">=</span> fs<span style="color:#f92672">.</span>ls(root)
-</span></span><span style="display:flex;"><span>    paths <span style="color:#f92672">=</span> [<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;az://</span><span style="color:#e6db74">{</span>p<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> paths]
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Read each partition&#39;s metadata on the cluster</span>
 </span></span><span style="display:flex;"><span>    df_futures <span style="color:#f92672">=</span> client<span style="color:#f92672">.</span>map(
-</span></span><span style="display:flex;"><span>        dask_geopandas<span style="color:#f92672">.</span>read_parquet, paths, storage_options<span style="color:#f92672">=</span>asset<span style="color:#f92672">.</span>extra_fields[<span style="color:#e6db74">&#34;table:storage_options&#34;</span>]
+</span></span><span style="display:flex;"><span>        dask_geopandas<span style="color:#f92672">.</span>read_parquet, paths, storage_options<span style="color:#f92672">=</span>storage_options
 </span></span><span style="display:flex;"><span>    )
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># workaround https://github.com/geopandas/dask-geopandas/issues/237</span>
@@ -96,6 +91,10 @@ back to the client, and concatenating at the end.</p>
 </span></span><span style="display:flex;"><span>    full_country<span style="color:#f92672">.</span>spatial_partitions <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>concat(spatial_partitions, ignore_index<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> full_country
+</span></span></code></pre></div><p>We get the paths with something like</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> fs, token, [root] <span style="color:#f92672">=</span> fsspec<span style="color:#f92672">.</span>get_fs_token_paths(asset<span style="color:#f92672">.</span>href, storage_options<span style="color:#f92672">=</span>asset<span style="color:#f92672">.</span>extra_fields[<span style="color:#e6db74">&#34;table:storage_options&#34;</span>])
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Get the raw paths (fast enough to do this locally. Could be done on the cluster too)</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> paths <span style="color:#f92672">=</span> [<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;az://</span><span style="color:#e6db74">{</span>p<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> fs<span style="color:#f92672">.</span>ls(root)]
 </span></span></code></pre></div><p>Note that there&rsquo;s an <a href="https://github.com/dask/dask/issues/5380">open issue</a> on Dask to do this kind of thing by default.</p>
 <p>Overall, we brought the metadata read time down the 30 seconds (which would be
 faster with more workers). Still not great, but an improvement. At some point
