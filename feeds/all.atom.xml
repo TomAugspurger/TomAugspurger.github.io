@@ -96,7 +96,8 @@ back to the client, and concatenating at the end.</p>
 </span></span><span style="display:flex;"><span>    full_country<span style="color:#f92672">.</span>spatial_partitions <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>concat(spatial_partitions, ignore_index<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> full_country
-</span></span></code></pre></div><p>Overall, we brought the metadata read time down the 30 seconds (which would be
+</span></span></code></pre></div><p>Note that there&rsquo;s an <a href="https://github.com/dask/dask/issues/5380">open issue</a> on Dask to do this kind of thing by default.</p>
+<p>Overall, we brought the metadata read time down the 30 seconds (which would be
 faster with more workers). Still not great, but an improvement. At some point
 we&rsquo;ll need to embrace a broader solution to this metadata access issue using
 something like <a href="https://iceberg.apache.org/">Apache Iceberg</a>.</p>
