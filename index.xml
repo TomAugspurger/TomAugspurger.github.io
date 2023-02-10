@@ -1,4 +1,107 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Tom's Blog</title><link>https://tomaugspurger.github.io/</link><description>Recent content on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Thu, 09 Feb 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://tomaugspurger.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Planetary Computer Release: January 2023</title><link>https://tomaugspurger.github.io/posts/pc-january-2023/</link><pubDate>Thu, 09 Feb 2023 00:00:00 +0000</pubDate><guid>https://tomaugspurger.github.io/posts/pc-january-2023/</guid><description>The Planetary Computer made its January 2023 release a couple weeks back.
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Tom's Blog</title><link>https://tomaugspurger.github.io/</link><description>Recent content on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Thu, 09 Feb 2023 08:10:59 -0600</lastBuildDate><atom:link href="https://tomaugspurger.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Dask Geopandas Spatial Partitioning Performance</title><link>https://tomaugspurger.github.io/posts/dask-geopandas-partitions/</link><pubDate>Thu, 09 Feb 2023 08:10:59 -0600</pubDate><guid>https://tomaugspurger.github.io/posts/dask-geopandas-partitions/</guid><description>A college reached out yesterday about a performance issue they were hitting when working with the Microsoft Building Footprints dataset we host on the Planetary Computer. They wanted to get the building footprints for a small section of Turkey, but noticed that the performance was relatively slow and it seemed like a lot of data was being read.
+This post details how we debugged what was going on, and the steps we took to fix it.</description><content:encoded><![CDATA[<p>A college reached out yesterday about a performance issue they were hitting when
+working with the <a href="https://planetarycomputer.microsoft.com/dataset/ms-buildings">Microsoft Building Footprints</a> dataset we host
+on the Planetary Computer. They wanted to get the building footprints for a
+small section of Turkey, but noticed that the performance was relatively slow
+and it seemed like a lot of data was being read.</p>
+<p>This post details how we debugged what was going on, and the steps we took to
+fix it.</p>
+<h2 id="the-problem">The problem</h2>
+<p>First, my college sent a <a href="https://matthewrocklin.com/minimal-bug-reports">minimal, complete, and verifiable example</a> of
+the problem. This let me very easily reproduce it. From his report, the first
+thing I suspected was an issue with the spatial partitioning. The files were
+<em>supposed</em> to be partitioned by <a href="https://learn.microsoft.com/en-us/bingmaps/articles/bing-maps-tile-system">quadkey</a>, so that all the building
+footprints in a single area are in the same partition. Then spatial queries will
+be very fast: you only need to load a small subset of the data.</p>
+<p>When I benchmarked things, it took about:</p>
+<ol>
+<li>16 seconds to read the metadata with <code>dask_geopandas.read_parquet</code></li>
+<li>60 seconds to read the data and clip it to the area of interest</li>
+</ol>
+<p>Looking at the spatial partitions of the data showed that it was clearly not
+spatially partitioned:</p>
+<p><img loading="lazy" src="/images/dask-geopandas-spatial-partitions-bad.png" alt="non-partitioned"  />
+</p>
+<p>It&rsquo;s clearer zoomed in, but the box is a bit fuzzy because it&rsquo;s actually
+a bunch of boxes with very slightly different extents.</p>
+<p>Turns out we dropped a few of the newer ms-buildings STAC items, which were
+spatially partitioned, during our last release. Oops.
+(Don&rsquo;t worry, we&rsquo;re working on a better system for this.)</p>
+<p>Once I got those items re-ingested, things did look better.</p>
+<p><img loading="lazy" src="/images/dask-geopandas-spatial-partitions-good.png" alt="partitioned"  />
+</p>
+<p>It wasn&rsquo;t all good news, though. Our timings went to</p>
+<ol>
+<li>56 seconds to read the metadata with <code>dask_geopandas.read_parquet</code> (ouch)</li>
+<li>0.5 seconds to read the data and clip it to the area of interest (yay!)</li>
+</ol>
+<p>The speedup from 60 seconds to 0.5 seconds is exactly why we want to spatially
+partition the data. When you&rsquo;re querying for a small area of interest,
+the spatially partitioned data means you can ignore most of the data and speed
+things up a lot. But what&rsquo;s going on with the slowdown for the first stage
+(reading metadata)?</p>
+<p>The spatially partitioned dataset also had many more partitions in the Parquet
+dataset, i.e. many more individual files in Blob Storage (a few hundred instead of 5-6).
+At the moment, <code>dask-geopandas</code> needs to open each individual file to read its spatial bounds. That was fine
+when we only had a few files, but when you have a few hundred the small amount of time it takes to read
+each file adds up. In this case, it added up to about 56 seconds of waiting just to read the metadata.</p>
+<h2 id="speeding-up-the-metadata-reading">Speeding up the metadata reading</h2>
+<p>To speed up the metadata reading, we use the tried-and-true method of parallelizing it
+with Dask (yes, we&rsquo;re using Dask to speed up Dask). Instead of doing a <code>dask_geopandas.read_parquet</code>
+on the client (which in turn executes some <code>pyarrow.parquet</code> stuff to read the fragments and get
+the metadata from each file) in serial, we&rsquo;ll run a bunch of <code>dask_geopandas.read_parquet</code>
+calls on the cluster in parallel (I&rsquo;m just using a <code>LocalCluster</code> in this example).</p>
+<p>The snippet below re-uses <code>dask_geopandas.read_parquet</code>, but applies it in
+parallel using <code>client.map</code>. We&rsquo;ll make a bunch of Dask DataFrames on the
+cluster (one per file) and then we use <code>client.gather</code> to bring back the Dask
+DataFrames (just the <em>metadata</em>, not the data!) to the client and concat them
+together into one big Dask DataFrame.</p>
+<p>There&rsquo;s a <a href="https://github.com/geopandas/dask-geopandas/issues/237">small bug</a> in dask-geopandas around serializing the spatial
+partitions on a Dask GeoDataFrame. Once <a href="https://github.com/geopandas/dask-geopandas/pull/238">my fix</a> is merged then this will
+be a bit cleaner: everything to do with <code>spatial_partitions</code> can be deleted
+and you&rsquo;re just left with reading the metadata on the cluster, bringing it
+back to the client, and concatenating at the end.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> distributed
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> dask_geopandas
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> dask.dataframe <span style="color:#66d9ef">as</span> dd
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> fsspec
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">read_parquet</span>(asset):
+</span></span><span style="display:flex;"><span>    client <span style="color:#f92672">=</span> distributed<span style="color:#f92672">.</span>get_client()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    fs, token, [root] <span style="color:#f92672">=</span> fsspec<span style="color:#f92672">.</span>get_fs_token_paths(asset<span style="color:#f92672">.</span>href, storage_options<span style="color:#f92672">=</span>asset<span style="color:#f92672">.</span>extra_fields[<span style="color:#e6db74">&#34;table:storage_options&#34;</span>])
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Get the raw paths (fast enough to do this locally. Could be done on the cluster too)</span>
+</span></span><span style="display:flex;"><span>    paths <span style="color:#f92672">=</span> fs<span style="color:#f92672">.</span>ls(root)
+</span></span><span style="display:flex;"><span>    paths <span style="color:#f92672">=</span> [<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;az://</span><span style="color:#e6db74">{</span>p<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> paths]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Read each partition&#39;s metadata on the cluster</span>
+</span></span><span style="display:flex;"><span>    df_futures <span style="color:#f92672">=</span> client<span style="color:#f92672">.</span>map(
+</span></span><span style="display:flex;"><span>        dask_geopandas<span style="color:#f92672">.</span>read_parquet, paths, storage_options<span style="color:#f92672">=</span>asset<span style="color:#f92672">.</span>extra_fields[<span style="color:#e6db74">&#34;table:storage_options&#34;</span>]
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># workaround https://github.com/geopandas/dask-geopandas/issues/237</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_spatial_partitions</span>(x):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x<span style="color:#f92672">.</span>spatial_partitions
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    spatial_partitions_futures <span style="color:#f92672">=</span> client<span style="color:#f92672">.</span>map(get_spatial_partitions, df_futures)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Pull back locally. This takes the most time, waiting for computation</span>
+</span></span><span style="display:flex;"><span>    dfs, spatial_partitions <span style="color:#f92672">=</span> client<span style="color:#f92672">.</span>gather([df_futures, spatial_partitions_futures])
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> df, sp <span style="color:#f92672">in</span> zip(dfs, spatial_partitions):
+</span></span><span style="display:flex;"><span>        df<span style="color:#f92672">.</span>spatial_partitions <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    full_country <span style="color:#f92672">=</span> dd<span style="color:#f92672">.</span>concat(dfs)
+</span></span><span style="display:flex;"><span>    full_country<span style="color:#f92672">.</span>spatial_partitions <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>concat(spatial_partitions, ignore_index<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> full_country
+</span></span></code></pre></div><p>Overall, we brought the metadata read time down the 30 seconds (which would be
+faster with more workers). Still not great, but an improvement. At some point
+we&rsquo;ll need to embrace a broader solution to this metadata access issue using
+something like <a href="https://iceberg.apache.org/">Apache Iceberg</a>.</p>
+<p>See <a href="https://notebooksharing.space/view/88055f29ae1c26b22f61a1ef5f673cf971f434f2e513933d8de2001d7f49162a#displayOptions=">this example notebook</a> for the full thing.</p>
+]]></content:encoded></item><item><title>Planetary Computer Release: January 2023</title><link>https://tomaugspurger.github.io/posts/pc-january-2023/</link><pubDate>Thu, 09 Feb 2023 00:00:00 +0000</pubDate><guid>https://tomaugspurger.github.io/posts/pc-january-2023/</guid><description>The Planetary Computer made its January 2023 release a couple weeks back.
 The flagship new feature is a really cool new ability to visualize the Microsoft AI-detected Buildings Footprints dataset. Here&amp;rsquo;s a little demo made by my teammate, Rob:
 Your browser doesn't support HTML video. Here is a link to the video instead. Currently, enabling this feature required converting the data from its native geoparquet to a lot of protobuf files with Tippecanoe.</description><content:encoded><![CDATA[<p>The Planetary Computer made its <a href="https://planetarycomputer.microsoft.com/docs/overview/changelog/">January 2023 release</a> a couple weeks back.</p>
 <p>The flagship new feature is a <em>really</em> cool new ability to visualize the <a href="https://planetarycomputer.microsoft.com/dataset/ms-buildings">Microsoft AI-detected Buildings Footprints</a> dataset. Here&rsquo;s a little demo made by my teammate, Rob:</p>
