@@ -86,17 +86,12 @@ import dask.dataframe as dd
 import fsspec
 
 
-def read_parquet(asset):
+def read_parquet(paths, storage_options):
     client = distributed.get_client()
-
-    fs, token, [root] = fsspec.get_fs_token_paths(asset.href, storage_options=asset.extra_fields["table:storage_options"])
-    # Get the raw paths (fast enough to do this locally. Could be done on the cluster too)
-    paths = fs.ls(root)
-    paths = [f"az://{p}" for p in paths]
 
     # Read each partition's metadata on the cluster
     df_futures = client.map(
-        dask_geopandas.read_parquet, paths, storage_options=asset.extra_fields["table:storage_options"]
+        dask_geopandas.read_parquet, paths, storage_options=storage_options
     )
 
     # workaround https://github.com/geopandas/dask-geopandas/issues/237
@@ -116,6 +111,15 @@ def read_parquet(asset):
 
     return full_country
 ```
+
+We get the paths with something like
+
+```python
+>>> fs, token, [root] = fsspec.get_fs_token_paths(asset.href, storage_options=asset.extra_fields["table:storage_options"])
+# Get the raw paths (fast enough to do this locally. Could be done on the cluster too)
+>>> paths = [f"az://{p}" for p in fs.ls(root)]
+```
+
 
 Note that there's an [open issue][issue] on Dask to do this kind of thing by default.
 
