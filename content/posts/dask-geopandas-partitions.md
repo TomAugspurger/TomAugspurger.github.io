@@ -1,5 +1,5 @@
 ---
-title: "Dask Geopandas Spatial Partitioning Performance"
+title: "Dask-GeoPandas Spatial Partitioning Performance"
 date: 2023-02-09T08:10:59-06:00
 ---
 
