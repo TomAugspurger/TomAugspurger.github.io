@@ -117,6 +117,8 @@ def read_parquet(asset):
     return full_country
 ```
 
+Note that there's an [open issue][issue] on Dask to do this kind of thing by default.
+
 Overall, we brought the metadata read time down the 30 seconds (which would be
 faster with more workers). Still not great, but an improvement. At some point
 we'll need to embrace a broader solution to this metadata access issue using
@@ -131,3 +133,4 @@ See [this example notebook][notebook] for the full thing.
 [bug]: https://github.com/geopandas/dask-geopandas/issues/237
 [fix]: https://github.com/geopandas/dask-geopandas/pull/238
 [iceberg]: https://iceberg.apache.org/
+[issue]: https://github.com/dask/dask/issues/5380
