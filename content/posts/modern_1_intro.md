@@ -4,6 +4,8 @@ Date: 2016-03-21
 Slug: modern-1-intro
 tags:
   - pandas
+aliases:
+  - /modern-1-intro.html
 ---
 
 ---

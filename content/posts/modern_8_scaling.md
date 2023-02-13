@@ -4,6 +4,8 @@ date: 2018-04-23
 slug: modern-8-scaling
 tags:
   - pandas
+aliases:
+  - /modern-8-scaling.html
 ---
 
 ---

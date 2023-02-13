@@ -4,6 +4,8 @@ date: 2016-04-11
 slug: modern-3-indexes
 tags:
   - pandas
+aliases:
+  - /modern-3-indexes.html
 ---
 
 ---

@@ -4,6 +4,8 @@ date: 2016-04-08
 slug: modern-4-performance
 tags:
   - pandas
+aliases:
+  - /modern-4-performance.html
 ---
 
 ---

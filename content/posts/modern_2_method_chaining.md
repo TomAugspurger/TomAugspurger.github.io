@@ -4,6 +4,8 @@ date: 2016-04-04
 slug: method-chaining
 tags:
   - pandas
+aliases:
+  - /method-chaining.html
 ---
 
 ---

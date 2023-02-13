@@ -4,6 +4,8 @@ date: 2016-04-22
 slug: modern-5-tidy
 tags:
   - pandas
+aliases:
+  - /modern-5-tidy.html
 ---
 
 ---

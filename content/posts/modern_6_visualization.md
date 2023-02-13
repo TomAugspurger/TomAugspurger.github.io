@@ -4,6 +4,8 @@ date: 2016-04-28
 slug: modern-6-visualization
 tags:
   - pandas
+aliases:
+  - /modern-6-visualization.html
 ---
 
 ---

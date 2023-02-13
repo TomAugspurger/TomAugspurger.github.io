@@ -4,6 +4,8 @@ date: 2016-05-13
 slug: modern-7-timeseries
 tags:
   - pandas
+aliases:
+  /modern-7-timeseries.html
 ---
 
 ---
