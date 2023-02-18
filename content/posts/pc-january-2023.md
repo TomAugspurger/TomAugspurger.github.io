@@ -7,6 +7,7 @@ The Planetary Computer made its [January 2023 release](https://planetarycomputer
 
 The flagship new feature is a *really* cool new ability to visualize the [Microsoft AI-detected Buildings Footprints](https://planetarycomputer.microsoft.com/dataset/ms-buildings) dataset. Here's a little demo made by my teammate, Rob:
 
+
 <video controls style="height: 400px;">
   <source src="https://ai4edatasetspublicassets.azureedge.net/assets/pc_video/vector-tile-ms-buildings-feature.mp4" type="video/mp4" />
   <p>
