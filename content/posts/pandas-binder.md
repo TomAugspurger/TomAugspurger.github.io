@@ -1,7 +1,10 @@
+---
 Title: pandas + binder
 Date: 2019-07-21
 tags:
   - pandas
+---
+
 This post describes the start of a journey to get pandas' documentation running
 on Binder. The end result is this nice button:
 
