@@ -687,6 +687,102 @@ and the various sub-projects but there&rsquo;s always things to improve.</p>
 (and its users) are power-users of many libraries. It acts as a nice
 coordination point for many projects. We had maintainers from projects like
 NumPy, pandas, scikit-learn, Apache Arrow, cuDF, and others.</p>
+]]></content:encoded></item><item><title>pandas + binder</title><link>https://tomaugspurger.github.io/posts/pandas-binder/</link><pubDate>Sun, 21 Jul 2019 00:00:00 +0000</pubDate><guid>https://tomaugspurger.github.io/posts/pandas-binder/</guid><description>This post describes the start of a journey to get pandas&amp;rsquo; documentation running on Binder. The end result is this nice button:
+For a while now I&amp;rsquo;ve been jealous of Dask&amp;rsquo;s examples repository. That&amp;rsquo;s a repository containing a collection of Jupyter notebooks demonstrating Dask in action. It stitches together some tools to present a set of documentation that is both viewable as a static site at examples.dask.org, and as a executable notebooks on mybinder.</description><content:encoded><![CDATA[<p>This post describes the start of a journey to get pandas&rsquo; documentation running
+on Binder. The end result is this nice button:</p>
+<p><a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb"><img loading="lazy" src="https://mybinder.org/badge_logo.svg" alt="Binder"  />
+</a></p>
+<hr>
+<p>For a while now I&rsquo;ve been jealous of <a href="https://github.com/dask/dask-examples">Dask&rsquo;s examples
+repository</a>. That&rsquo;s a repository containing a
+collection of Jupyter notebooks demonstrating Dask in action. It stitches
+together some tools to present a set of documentation that is both viewable
+as a static site at <a href="https://examples.dask.org">examples.dask.org</a>, and as a executable notebooks
+on <a href="https://mybinder.org/v2/gh/dask/dask-examples/master?urlpath=lab">mybinder</a>.</p>
+<p>A bit of background on binder: it&rsquo;s a tool for creating a shareable computing
+environment. This is perfect for introductory documentation. A prospective user
+may want to just try out a library to get a feel for it before they commit to
+installing. Binder<em>Hub</em> is a tool for deploying binder services. You point a
+binderhub deployment (like <a href="https://mybinder.org">mybinder</a>) at a git repository
+with a collection of notebooks and an environment specification, and out comes
+your executable documentation.</p>
+<p>Thanks to a lot of hard work by contributors and maintainers, the code examples
+in pandas&rsquo; documentation are already runnable (and this is verified on each
+commit). We use the <a href="https://ipython.readthedocs.io/en/stable/sphinxext.html">IPython Sphinx
+Extension</a> to execute
+examples and include their output. We write documentation like</p>
+<pre tabindex="0"><code>.. ipython:: python
+
+   import pandas as pd
+   s = pd.Series([1, 2])
+   s
+</code></pre><p>Which is then <em>executed</em> and rendered in the HTML docs as</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">import</span> pandas <span style="color:#66d9ef">as</span> pd
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>In [<span style="color:#ae81ff">2</span>]: s <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>Series([<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>In [<span style="color:#ae81ff">3</span>]: s
+</span></span><span style="display:flex;"><span>Out[<span style="color:#ae81ff">3</span>]:
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0</span>    <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">1</span>    <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">2</span>    <span style="color:#ae81ff">3</span>
+</span></span><span style="display:flex;"><span>dtype: int64
+</span></span></code></pre></div><p>So we have the most important thing: a rich source of documentation that&rsquo;s
+already runnable.</p>
+<p>There were a couple barriers to just pointing binder at
+<code>https://github.com/pandas-dev/pandas</code>, however. First, binder builds on top of
+a tool called <a href="https://repo2docker.readthedocs.io/en/latest/">repo2docker</a>. This
+is what takes your Git repository and turns it into a Docker image that users
+will be dropped into. When someone visits the URL, binder will first check to
+see if it&rsquo;s built a docker image. If it&rsquo;s already cached, then that will just be
+loaded. If not, binder will have to clone the repository and build it from
+scratch, a time-consuming process. Pandas receives 5-10 commits per day, meaning
+many users would visit the site and be stuck waiting for a 5-10 minute docker
+build.<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></p>
+<p>Second, pandas uses Sphinx and ReST for its documentation. Binder needs a collection
+of Notebooks. Fortunately, the fine folks at <a href="https://quantecon.org">QuantEcon</a>
+(a fellow NumFOCUS project) wrote
+<a href="https://sphinxcontrib-jupyter.readthedocs.io"><code>sphinxcontrib-jupyter</code></a>, a tool
+for turning ReST files to Jupyter notebooks. Just what we needed.</p>
+<p>So we had some great documentation that already runs, and a tool for converting
+ReST files to Jupyter notebooks. All the pieces were falling into place!</p>
+<p>Unfortunately, my first attempt failed. <code>sphinxcontrib-jupyter</code> looks for directives
+like</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rst" data-lang="rst"><span style="display:flex;"><span>.. <span style="color:#f92672">code</span>:: python<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>while pandas uses</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rst" data-lang="rst"><span style="display:flex;"><span>.. <span style="color:#f92672">ipython</span>:: python<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>I started slogging down a path to teach <code>sphinxcontrib-jupyter</code> how to recognize
+the IPython directive pandas uses when my kid woke up from his nap. Feeling
+dejected I gave up.</p>
+<p>But later in the day, I had the (obvious in hindsight) realization that we have
+plenty of tools for substituting lines of text. A few (non-obvious) <a href="https://github.com/TomAugspurger/pandas-binder/blob/20fc3e8f52a05d4b291211a41ed3015f37758f81/Makefile#L4">lines of
+bash
+later</a>
+and we were ready to go. All the <code>.. ipython:: python</code> directives were now <code>.. code:: python</code>. Moral of the story: take breaks.</p>
+<p>My work currently lives in <a href="https://github.com/TomAugspurger/pandas-binder">this repository</a>, and
+the notebooks are runnable <a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb">on mybinder</a>. But the short version is</p>
+<ol>
+<li>We include github.com/pandas-dev/pandas as a submodule (which repo2docker
+supports just fine)</li>
+<li>We patch pandas Sphinx config to include sphinxcontrib-jupyter and its
+configuration</li>
+<li>We patch pandas source docs to change the ipython directives to be <code>.. code:: python</code> directives.</li>
+</ol>
+<p>I&rsquo;m reasonably happy with how things are shaping up. I plan to migrate my repository
+to the pandas organization and propose a few changes to the pandas documentation
+(like a small header pointing from the rendered HTML docs to the binder). If you&rsquo;d like to follow along,
+subscribe to <a href="https://github.com/pandas-dev/pandas/issues/27514">this pandas issue</a>.</p>
+<p>I&rsquo;m also hopeful that other projects can apply a similar approach to their documentation too.</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>I realize now that binder can target a specific branch or commit. I&rsquo;m not
+sure if additional commits to that repository will trigger a rebuild, but
+I suspect not. We still needed to solve problem 2 though.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
 ]]></content:encoded></item><item><title>A Confluence of Extension</title><link>https://tomaugspurger.github.io/posts/confluence-extension/</link><pubDate>Tue, 18 Jun 2019 00:00:00 +0000</pubDate><guid>https://tomaugspurger.github.io/posts/confluence-extension/</guid><description>This post describes a few protocols taking shape in the scientific Python community. On their own, each is powerful. Together, I think they enable for an explosion of creativity in the community.
 Each of the protocols / interfaces we&amp;rsquo;ll consider deal with extending.
 NEP-13: NumPy __array_ufunc__ NEP-18: NumPy __array_function__ Pandas Extension types Custom Dask Collections First, a bit of brief background on each.
@@ -14937,108 +15033,6 @@ I think it&rsquo;s warranted for actively maintained projects. Using inline vers
 checks, perhaps with inconsistent comparisons, will make it harder to know when
 code is now unused. When integrated over the lifetime of the project, I find the
 strategies laid out here more readable.</p>
-]]></content:encoded></item><item><title/><link>https://tomaugspurger.github.io/posts/pandas-binder/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://tomaugspurger.github.io/posts/pandas-binder/</guid><description>Title: pandas + binder Date: 2019-07-21 tags:
-pandas This post describes the start of a journey to get pandas&amp;rsquo; documentation running on Binder. The end result is this nice button: For a while now I&amp;rsquo;ve been jealous of Dask&amp;rsquo;s examples repository. That&amp;rsquo;s a repository containing a collection of Jupyter notebooks demonstrating Dask in action. It stitches together some tools to present a set of documentation that is both viewable as a static site at examples.</description><content:encoded><![CDATA[<p>Title: pandas + binder
-Date: 2019-07-21
-tags:</p>
-<ul>
-<li>pandas
-This post describes the start of a journey to get pandas&rsquo; documentation running
-on Binder. The end result is this nice button:</li>
-</ul>
-<p><a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb"><img loading="lazy" src="https://mybinder.org/badge_logo.svg" alt="Binder"  />
-</a></p>
-<hr>
-<p>For a while now I&rsquo;ve been jealous of <a href="https://github.com/dask/dask-examples">Dask&rsquo;s examples
-repository</a>. That&rsquo;s a repository containing a
-collection of Jupyter notebooks demonstrating Dask in action. It stitches
-together some tools to present a set of documentation that is both viewable
-as a static site at <a href="https://examples.dask.org">examples.dask.org</a>, and as a executable notebooks
-on <a href="https://mybinder.org/v2/gh/dask/dask-examples/master?urlpath=lab">mybinder</a>.</p>
-<p>A bit of background on binder: it&rsquo;s a tool for creating a shareable computing
-environment. This is perfect for introductory documentation. A prospective user
-may want to just try out a library to get a feel for it before they commit to
-installing. Binder<em>Hub</em> is a tool for deploying binder services. You point a
-binderhub deployment (like <a href="https://mybinder.org">mybinder</a>) at a git repository
-with a collection of notebooks and an environment specification, and out comes
-your executable documentation.</p>
-<p>Thanks to a lot of hard work by contributors and maintainers, the code examples
-in pandas&rsquo; documentation are already runnable (and this is verified on each
-commit). We use the <a href="https://ipython.readthedocs.io/en/stable/sphinxext.html">IPython Sphinx
-Extension</a> to execute
-examples and include their output. We write documentation like</p>
-<pre tabindex="0"><code>.. ipython:: python
-
-   import pandas as pd
-   s = pd.Series([1, 2])
-   s
-</code></pre><p>Which is then <em>executed</em> and rendered in the HTML docs as</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">import</span> pandas <span style="color:#66d9ef">as</span> pd
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>In [<span style="color:#ae81ff">2</span>]: s <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>Series([<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>])
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>In [<span style="color:#ae81ff">3</span>]: s
-</span></span><span style="display:flex;"><span>Out[<span style="color:#ae81ff">3</span>]:
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0</span>    <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">1</span>    <span style="color:#ae81ff">2</span>
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">2</span>    <span style="color:#ae81ff">3</span>
-</span></span><span style="display:flex;"><span>dtype: int64
-</span></span></code></pre></div><p>So we have the most important thing: a rich source of documentation that&rsquo;s
-already runnable.</p>
-<p>There were a couple barriers to just pointing binder at
-<code>https://github.com/pandas-dev/pandas</code>, however. First, binder builds on top of
-a tool called <a href="https://repo2docker.readthedocs.io/en/latest/">repo2docker</a>. This
-is what takes your Git repository and turns it into a Docker image that users
-will be dropped into. When someone visits the URL, binder will first check to
-see if it&rsquo;s built a docker image. If it&rsquo;s already cached, then that will just be
-loaded. If not, binder will have to clone the repository and build it from
-scratch, a time-consuming process. Pandas receives 5-10 commits per day, meaning
-many users would visit the site and be stuck waiting for a 5-10 minute docker
-build.<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></p>
-<p>Second, pandas uses Sphinx and ReST for its documentation. Binder needs a collection
-of Notebooks. Fortunately, the fine folks at <a href="https://quantecon.org">QuantEcon</a>
-(a fellow NumFOCUS project) wrote
-<a href="https://sphinxcontrib-jupyter.readthedocs.io"><code>sphinxcontrib-jupyter</code></a>, a tool
-for turning ReST files to Jupyter notebooks. Just what we needed.</p>
-<p>So we had some great documentation that already runs, and a tool for converting
-ReST files to Jupyter notebooks. All the pieces were falling into place!</p>
-<p>Unfortunately, my first attempt failed. <code>sphinxcontrib-jupyter</code> looks for directives
-like</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rst" data-lang="rst"><span style="display:flex;"><span>.. <span style="color:#f92672">code</span>:: python<span style="color:#960050;background-color:#1e0010">
-</span></span></span></code></pre></div><p>while pandas uses</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rst" data-lang="rst"><span style="display:flex;"><span>.. <span style="color:#f92672">ipython</span>:: python<span style="color:#960050;background-color:#1e0010">
-</span></span></span></code></pre></div><p>I started slogging down a path to teach <code>sphinxcontrib-jupyter</code> how to recognize
-the IPython directive pandas uses when my kid woke up from his nap. Feeling
-dejected I gave up.</p>
-<p>But later in the day, I had the (obvious in hindsight) realization that we have
-plenty of tools for substituting lines of text. A few (non-obvious) <a href="https://github.com/TomAugspurger/pandas-binder/blob/20fc3e8f52a05d4b291211a41ed3015f37758f81/Makefile#L4">lines of
-bash
-later</a>
-and we were ready to go. All the <code>.. ipython:: python</code> directives were now <code>.. code:: python</code>. Moral of the story: take breaks.</p>
-<p>My work currently lives in <a href="https://github.com/TomAugspurger/pandas-binder">this repository</a>, and
-the notebooks are runnable <a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb">on mybinder</a>. But the short version is</p>
-<ol>
-<li>We include github.com/pandas-dev/pandas as a submodule (which repo2docker
-supports just fine)</li>
-<li>We patch pandas Sphinx config to include sphinxcontrib-jupyter and its
-configuration</li>
-<li>We patch pandas source docs to change the ipython directives to be <code>.. code:: python</code> directives.</li>
-</ol>
-<p>I&rsquo;m reasonably happy with how things are shaping up. I plan to migrate my repository
-to the pandas organization and propose a few changes to the pandas documentation
-(like a small header pointing from the rendered HTML docs to the binder). If you&rsquo;d like to follow along,
-subscribe to <a href="https://github.com/pandas-dev/pandas/issues/27514">this pandas issue</a>.</p>
-<p>I&rsquo;m also hopeful that other projects can apply a similar approach to their documentation too.</p>
-<div class="footnotes" role="doc-endnotes">
-<hr>
-<ol>
-<li id="fn:1">
-<p>I realize now that binder can target a specific branch or commit. I&rsquo;m not
-sure if additional commits to that repository will trigger a rebuild, but
-I suspect not. We still needed to solve problem 2 though.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
-</li>
-</ol>
-</div>
 ]]></content:encoded></item><item><title>About</title><link>https://tomaugspurger.github.io/about/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://tomaugspurger.github.io/about/</guid><description>Hi, I&amp;rsquo;m Tom. I&amp;rsquo;m a programmer living in Des Moines, IA. I work for Microsoft.
 Talks Pandas: .head() to .tail() | video | materials Mind the Gap! Bridging the scikit-learn - pandas dtype divide | video | materials Pandas: .head() to .tail() | video | materials Podcasts Microsoft Planetary Computer on Talk Python Pandas Extension Arrays on Podcast.__init__. Writing Effective Pandas: A series on writing effective, idiomatic pandas. A few posts on Medium with various co-authors.</description><content:encoded><![CDATA[<p>Hi, I&rsquo;m Tom. I&rsquo;m a programmer living in Des Moines, IA.
 I work for Microsoft.</p>
