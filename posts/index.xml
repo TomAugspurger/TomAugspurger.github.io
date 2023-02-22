@@ -1,4 +1,127 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.github.io/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Thu, 09 Feb 2023 08:10:59 -0600</lastBuildDate><atom:link href="https://tomaugspurger.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Dask-GeoPandas Spatial Partitioning Performance</title><link>https://tomaugspurger.github.io/posts/dask-geopandas-partitions/</link><pubDate>Thu, 09 Feb 2023 08:10:59 -0600</pubDate><guid>https://tomaugspurger.github.io/posts/dask-geopandas-partitions/</guid><description>A college reached out yesterday about a performance issue they were hitting when working with the Microsoft Building Footprints dataset we host on the Planetary Computer. They wanted to get the building footprints for a small section of Turkey, but noticed that the performance was relatively slow and it seemed like a lot of data was being read.
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.github.io/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Wed, 22 Feb 2023 15:11:37 -0600</lastBuildDate><atom:link href="https://tomaugspurger.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>py-spy in Azure Batch</title><link>https://tomaugspurger.github.io/posts/azure-batch-pyspy/</link><pubDate>Wed, 22 Feb 2023 15:11:37 -0600</pubDate><guid>https://tomaugspurger.github.io/posts/azure-batch-pyspy/</guid><description>Today, I was debugging a hanging task in Azure Batch. This short post records how I used py-spy to investigate the problem.
+Background Azure Batch is a compute service that we use to run container workloads. In this case, we start up a container that processes a bunch of GOES-GLM data to create STAC items for the Planetary Computer . The workflow is essentially a big
+for url in urls: local_file = download_url(url) stac.</description><content:encoded><![CDATA[<p>Today, I was debugging a hanging task in <a href="https://learn.microsoft.com/en-us/azure/batch/batch-technical-overview">Azure Batch</a>.
+This short post records how I used <a href="https://github.com/benfred/py-spy">py-spy</a> to investigate the problem.</p>
+<h2 id="background">Background</h2>
+<p>Azure Batch is a compute service that we use to run <a href="https://learn.microsoft.com/en-us/azure/batch/batch-docker-container-workloads">container
+workloads</a>.
+In this case, we start up a container that processes a bunch of GOES-GLM data to
+create <a href="https://stacspec.org/en">STAC items</a> for the <a href="http://planetarycomputer.microsoft.com/">Planetary
+Computer</a> . The workflow is essentially
+a big</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">for</span> url <span style="color:#f92672">in</span> urls:
+</span></span><span style="display:flex;"><span>    local_file <span style="color:#f92672">=</span> download_url(url)
+</span></span><span style="display:flex;"><span>    stac<span style="color:#f92672">.</span>create_item(local_file)
+</span></span></code></pre></div><p>We noticed that some Azure Batch tasks were hanging. Based on our logs, we knew
+it was somewhere in that for loop, but couldn&rsquo;t determine exactly where things
+were hanging. The <a href="https://github.com/stactools-packages/goes-glm">goes-glm</a> stactools package we used does read a NetCDF file,
+and my experience with Dask biased me towards thinking the <code>netcdf</code> library (or
+the HDF5 reader it uses) was hanging. But I wanted to confirm that before trying
+to implement a fix.</p>
+<h2 id="debugging">Debugging</h2>
+<p>I wasn&rsquo;t able to reproduce the hanging locally, so I needed some way to debug
+the actual hanging process itself. My go-to tool for this type of task is
+<a href="https://github.com/benfred/py-spy">py-spy</a>. It does a lot, but in this case we&rsquo;ll use <code>py-spy dump</code> to get
+something like a traceback for what&rsquo;s currently running (and hanging) in the
+process.</p>
+<p>Azure Batch has a handy feature for SSH-ing into the running task nodes. With an
+auto-generated user and password, I had a shell on the node with the hanging
+process.</p>
+<p>The only wrinkle here is that we&rsquo;re using containerized workloads, so the actual
+process was in a Docker container and not in the host&rsquo;s process list (I&rsquo;ll try
+to follow Jacob Tomlinson&rsquo;s lead and be <a href="https://jacobtomlinson.dev/posts/2023/being-intentional-with-container-terminology/">intentional</a> about
+container terminology). The <code>py-spy</code> documentation has some details on how to
+use <code>py-spy</code> with docker. This <a href="https://github.com/benfred/py-spy/issues/49">comment</a> in particular has some more
+details on how to run py-spy on the host to detect a process running in a
+container. The upshot is a command like this, run on the Azure Batch node:</p>
+<pre tabindex="0"><code>$ root@...:/home/yqjjaq/# docker run -it --pid=container:244fdfc65349 --rm --privileged --cap-add SYS_PTRACE python /bin/bash
+</code></pre><p>where <code>244fdfc65349</code> is the ID of the container with the hanging process. I used
+the <code>python</code> image and then <code>pip install</code>ed <code>py-spy</code> in that debugging container
+(you could also use some container image with <code>py-spy</code> already installed).
+Finally, I was able to run <code>py-spy dump</code> inside that running container to get
+the trace:</p>
+<pre tabindex="0"><code>root@306ad36c7ae3:/# py-spy dump --pid 1
+Process 1: /opt/conda/bin/python /opt/conda/bin/pctasks task run blob://pctaskscommon/taskio/run/827e3fa4-be68-49c9-b8c3-3d63b31962ba/process-chunk/3/create-items/input --sas-token ... --account-url https://pctaskscommon.blob.core.windows.net/
+Python v3.8.16 (/opt/conda/bin/python3.8)
+
+Thread 0x7F8C69A78740 (active): &#34;MainThread&#34;
+    read (ssl.py:1099)
+    recv_into (ssl.py:1241)
+    readinto (socket.py:669)
+    _read_status (http/client.py:277)
+    begin (http/client.py:316)
+    getresponse (http/client.py:1348)
+    _make_request (urllib3/connectionpool.py:444)
+    urlopen (urllib3/connectionpool.py:703)
+    send (requests/adapters.py:489)
+    send (requests/sessions.py:701)
+    request (requests/sessions.py:587)
+    send (core/pipeline/transport/_requests_basic.py:338)
+    send (blob/_shared/base_client.py:333)
+    send (blob/_shared/base_client.py:333)
+    send (core/pipeline/_base.py:100)
+    send (core/pipeline/_base.py:69)
+    send (core/pipeline/_base.py:69)
+    send (blob/_shared/policies.py:290)
+    send (core/pipeline/_base.py:69)
+    send (core/pipeline/_base.py:69)
+    send (core/pipeline/_base.py:69)
+    send (blob/_shared/policies.py:489)
+    send (core/pipeline/_base.py:69)
+    send (core/pipeline/policies/_redirect.py:160)
+    send (core/pipeline/_base.py:69)
+    send (core/pipeline/_base.py:69)
+    send (core/pipeline/_base.py:69)
+    send (core/pipeline/_base.py:69)
+    send (core/pipeline/_base.py:69)
+    run (core/pipeline/_base.py:205)
+    download (blob/_generated/operations/_blob_operations.py:180)
+    _initial_request (blob/_download.py:386)
+    __init__ (blob/_download.py:349)
+    download_blob (blob/_blob_client.py:848)
+    wrapper_use_tracer (core/tracing/decorator.py:78)
+    &lt;lambda&gt; (core/storage/blob.py:514)
+    with_backoff (core/utils/backoff.py:136)
+    download_file (core/storage/blob.py:513)
+    create_item (goes_glm.py:32)
+    create_items (dataset/items/task.py:117)
+    run (dataset/items/task.py:153)
+    parse_and_run (task/task.py:53)
+    run_task (task/run.py:138)
+    run_cmd (task/_cli.py:32)
+    run_cmd (task/cli.py:50)
+    new_func (click/decorators.py:26)
+    invoke (click/core.py:760)
+    invoke (click/core.py:1404)
+    invoke (click/core.py:1657)
+    invoke (click/core.py:1657)
+    main (click/core.py:1055)
+    __call__ (click/core.py:1130)
+    cli (cli/cli.py:140)
+    &lt;module&gt; (pctasks:8)
+Thread 0x7F8C4A84F700 (idle): &#34;fsspecIO&#34;
+    select (selectors.py:468)
+    _run_once (asyncio/base_events.py:1823)
+    run_forever (asyncio/base_events.py:570)
+    run (threading.py:870)
+    _bootstrap_inner (threading.py:932)
+    _bootstrap (threading.py:890)
+Thread 0x7F8C4A00E700 (active): &#34;ThreadPoolExecutor-0_0&#34;
+    _worker (concurrent/futures/thread.py:78)
+    run (threading.py:870)
+    _bootstrap_inner (threading.py:932)
+    _bootstrap (threading.py:890)
+</code></pre><p>And we&rsquo;ve found our culprit! The line</p>
+<pre tabindex="0"><code>download_file (core/storage/blob.py:513)
+</code></pre><p>and everything above it indicates that the process is hanging in the <em>download</em>
+stage, not the NetCDF reading stage!</p>
+<h2 id="this-fix">This fix</h2>
+<p>&ldquo;Fixing&rdquo; this is pretty easy. The Python SDK for Azure Blob Storage includes the
+option to set a timeout. Now if the download hangs it should raise a
+<code>TimeoutError</code>. Then our handler will automatically catch and retry it, and
+hopefully succeed. It doesn&rsquo;t address the actual cause of something deep inside
+the networking stack hanging, but it&rsquo;s good enough for our purposes.</p>
+]]></content:encoded></item><item><title>Dask-GeoPandas Spatial Partitioning Performance</title><link>https://tomaugspurger.github.io/posts/dask-geopandas-partitions/</link><pubDate>Thu, 09 Feb 2023 08:10:59 -0600</pubDate><guid>https://tomaugspurger.github.io/posts/dask-geopandas-partitions/</guid><description>A college reached out yesterday about a performance issue they were hitting when working with the Microsoft Building Footprints dataset we host on the Planetary Computer. They wanted to get the building footprints for a small section of Turkey, but noticed that the performance was relatively slow and it seemed like a lot of data was being read.
 This post details how we debugged what was going on, and the steps we took to fix it.</description><content:encoded><![CDATA[<p>A college reached out yesterday about a performance issue they were hitting when
 working with the <a href="https://planetarycomputer.microsoft.com/dataset/ms-buildings">Microsoft Building Footprints</a> dataset we host
 on the Planetary Computer. They wanted to get the building footprints for a
