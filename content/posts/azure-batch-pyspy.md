@@ -144,10 +144,19 @@ stage, not the NetCDF reading stage!
 ## This fix
 
 "Fixing" this is pretty easy. The Python SDK for Azure Blob Storage includes the
-option to set a timeout. Now if the download hangs it should raise a
-`TimeoutError`. Then our handler will automatically catch and retry it, and
-hopefully succeed. It doesn't address the actual cause of something deep inside
+option to set a `read_timeout` when creating the connection client. Now if the
+download hangs it should raise a `TimeoutError`. Then our handler will
+automatically catch and retry it, and hopefully succeed. It doesn't address
+the actual cause of something deep inside
 the networking stack hanging, but it's good enough for our purposes.
+
+Update: 2023-02-28. Turns out, the "fix" wasn't actually a fix. The process hung
+again the next day. Naturally, I turned to this blog post to find the incantations
+to run (which is why I wrote it in the first place).
+
+As for getting closer to an actual cause of the hang, a colleague suggested upgrading
+Python versions since there were some fixes in that area between 3.8 and 3.11. After
+about a week, there have been zero hangs on Python 3.11.
 
 [py-spy]: https://github.com/benfred/py-spy
 [goes-glm]: https://github.com/stactools-packages/goes-glm
