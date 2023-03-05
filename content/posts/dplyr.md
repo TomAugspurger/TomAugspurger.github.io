@@ -1,11 +1,16 @@
 ---
 title: dplyr and pandas
-date: 2014-10-16 7:00
-slug: dplry-pandas
+# date: 2014-10-16
+# date: 2020-01-01
+# date: 2020-04-01
+date: 2023-02-22T15:11:37-06:00
+slug: dplyr-pandas
 tags:
   - python
   - data science
   - pandas
+aliases:
+  - dplry-pandas
 ---
 
 

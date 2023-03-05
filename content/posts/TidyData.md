@@ -1,6 +1,6 @@
 ---
 title: Tidy Data in Action
-date: 2014-03-27 16:00
+date: "2014-03-27"
 slug: Tidy Data in Action
 category: scripts
 tags:

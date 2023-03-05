@@ -1,7 +1,9 @@
-Title: Compatibility Code
-Date: 2019-12-12
-Slug: compatibility
+---
+title: Compatibility Code
+date: 2019-12-12T00:00:00
+slug: compatibility
 status: draft
+---
 
 # Compatibility Code
 

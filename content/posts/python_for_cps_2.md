@@ -1,7 +1,7 @@
 ---
 title: Using Python to tackle the CPS (Part 2)
-date: 2014-02-04 12:00
-slug: tackling the cps (part 2)
+date: 2014-02-04T12:00:00
+slug: tackling-the-cps-2
 category: python
 tags:
   - pandas
