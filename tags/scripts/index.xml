@@ -1,160 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>scripts on Tom's Blog</title><link>https://tomaugspurger.github.io/tags/scripts/</link><description>Recent content in scripts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><atom:link href="https://tomaugspurger.github.io/tags/scripts/index.xml" rel="self" type="application/rss+xml"/><item><title>Organizing Papers</title><link>https://tomaugspurger.github.io/posts/organizing-papers/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://tomaugspurger.github.io/posts/organizing-papers/</guid><description>As a graduate student, you read a lot of journal articles&amp;hellip; a lot. With the material in the articles being as difficult as it is, I didn&amp;rsquo;t want to worry about organizing everything as well. That&amp;rsquo;s why I wrote this script to help (I may have also been procrastinating from studying for my qualifiers). This was one of my earliest little projects, so I&amp;rsquo;m not claiming that this is the best way to do anything.</description><content:encoded><![CDATA[<p>As a graduate student, you read a lot of journal articles&hellip; <em>a lot</em>.
-With the material in the articles being as difficult as it is, I didn&rsquo;t want to worry about organizing everything as well.
-That&rsquo;s why I wrote <a href="https://gist.github.com/TomAugspurger/8976751">this script</a> to help (I may have also been procrastinating from studying for my qualifiers). This was one of my earliest little projects, so I&rsquo;m not claiming that this is the best way to do anything.</p>
-<p>My goal was to have a central repository of papers that was organized by an author&rsquo;s last name. Under each author&rsquo;s name would go all of their papers I had read or planned to read.
-I needed it to be portable so that I could access any paper from my computer or iPad, so Dropbox was a necessity. I also needed to organize the papers by subject. I wanted to easily get to all the papers on Asset Pricing, without having to go through each of the authors separately.
-<a href="http://en.wikipedia.org/wiki/Symbolic_link">Symbolic links</a> were a natural solution to my problem.
-A canonical copy of each paper would be stored under <code>/Drobox/Papers/&lt;author name&gt;</code>, and I could refer that paper from <code>/Macro/Asset Pricing/</code> with a symbolic link. Symbolic links avoid the problem of having multiple copies of the same paper. Any highlighting or notes I make on a paper is automatically spread to anywhere that paper is linked from.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> os
-</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> re
-</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> sys
-</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> subprocess
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> pathlib
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Parser</span>(object):
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, path,
-</span></span><span style="display:flex;"><span>                 repo<span style="color:#f92672">=</span>pathlib<span style="color:#f92672">.</span>PosixPath(<span style="color:#e6db74">&#39;/Users/tom/Economics/Papers&#39;</span>)):
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>repo <span style="color:#f92672">=</span> repo
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>path <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>path_parse(path)
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>exists <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>check_existance(self<span style="color:#f92672">.</span>path)
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>is_full <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>check_full(path)
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>check_type(self<span style="color:#f92672">.</span>path)
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>added <span style="color:#f92672">=</span> []
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">path_parse</span>(self, path):
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;&#34;&#34;Ensures a common point of entry to the functions.
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        Returns a pathlib.PosixPath object
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;&#34;&#34;</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> isinstance(path, pathlib<span style="color:#f92672">.</span>PosixPath):
-</span></span><span style="display:flex;"><span>            path <span style="color:#f92672">=</span> pathlib<span style="color:#f92672">.</span>PosixPath(path)
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> path
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> path
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">check_existance</span>(self, path):
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> path<span style="color:#f92672">.</span>exists():
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">raise</span> <span style="color:#a6e22e">OSError</span>(<span style="color:#e6db74">&#39;The supplied path does not exist.&#39;</span>)
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">True</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">check_type</span>(self, path):
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> path<span style="color:#f92672">.</span>is_dir():
-</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>is_dir <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
-</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>is_file <span style="color:#f92672">=</span> <span style="color:#66d9ef">False</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
-</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>is_file <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
-</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>is_dir <span style="color:#f92672">=</span> <span style="color:#66d9ef">False</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">check_full</span>(self, path):
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> path<span style="color:#f92672">.</span>parent()<span style="color:#f92672">.</span>as_posix() <span style="color:#f92672">in</span> path<span style="color:#f92672">.</span>as_posix():
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">True</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">parser</span>(self, f):
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;&#34;&#34;The parsing logic to find authors and paper name from a file.
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        f is a full path.
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;&#34;&#34;</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
-</span></span><span style="display:flex;"><span>            file_name <span style="color:#f92672">=</span> f<span style="color:#f92672">.</span>parts[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]
-</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>file_name <span style="color:#f92672">=</span> file_name
-</span></span><span style="display:flex;"><span>            r <span style="color:#f92672">=</span> re<span style="color:#f92672">.</span>compile(<span style="color:#e6db74">r</span><span style="color:#e6db74">&#39; \([\d-]{0,4}\)&#39;</span>)
-</span></span><span style="display:flex;"><span>            sep_authors <span style="color:#f92672">=</span> re<span style="color:#f92672">.</span>compile(<span style="color:#e6db74">r</span><span style="color:#e6db74">&#39; &amp; |, | and&#39;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>            all_authors, paper <span style="color:#f92672">=</span> re<span style="color:#f92672">.</span>split(r, file_name)
-</span></span><span style="display:flex;"><span>            paper <span style="color:#f92672">=</span> paper<span style="color:#f92672">.</span>lstrip(<span style="color:#e6db74">&#39; - &#39;</span>)
-</span></span><span style="display:flex;"><span>            authors <span style="color:#f92672">=</span> re<span style="color:#f92672">.</span>split(sep_authors, all_authors)
-</span></span><span style="display:flex;"><span>            authors <span style="color:#f92672">=</span> [author<span style="color:#f92672">.</span>strip(<span style="color:#e6db74">&#39;&amp; &#39;</span> <span style="color:#f92672">or</span> <span style="color:#e6db74">&#39;and &#39;</span>) <span style="color:#66d9ef">for</span> author <span style="color:#f92672">in</span> authors]
-</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>authors, self<span style="color:#f92672">.</span>paper <span style="color:#f92672">=</span> authors, paper
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> (authors, paper)
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span>:
-</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">&#39;Missed on </span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">.</span>format(file_name))
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">make_dir</span>(self, authors):
-</span></span><span style="display:flex;"><span>        repo <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>repo
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> author <span style="color:#f92672">in</span> authors:
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">try</span>:
-</span></span><span style="display:flex;"><span>                os<span style="color:#f92672">.</span>mkdir(repo[author]<span style="color:#f92672">.</span>as_posix())
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">OSError</span>:
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">pass</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">copy_and_link</span>(self, authors, f, replace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>):
-</span></span><span style="display:flex;"><span>        repo <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>repo
-</span></span><span style="display:flex;"><span>        file_name <span style="color:#f92672">=</span> f<span style="color:#f92672">.</span>parts[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> author <span style="color:#f92672">in</span> authors:
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> author <span style="color:#f92672">==</span> authors[<span style="color:#ae81ff">0</span>]:
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">try</span>:
-</span></span><span style="display:flex;"><span>                    subprocess<span style="color:#f92672">.</span>call([<span style="color:#e6db74">&#34;cp&#34;</span>, f<span style="color:#f92672">.</span>as_posix(),
-</span></span><span style="display:flex;"><span>                                    repo[author]<span style="color:#f92672">.</span>as_posix()])
-</span></span><span style="display:flex;"><span>                    success <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">except</span>:
-</span></span><span style="display:flex;"><span>                    success <span style="color:#f92672">=</span> <span style="color:#66d9ef">False</span>
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span>:
-</span></span><span style="display:flex;"><span>                subprocess<span style="color:#f92672">.</span>call([<span style="color:#e6db74">&#34;ln&#34;</span>, <span style="color:#e6db74">&#34;-s&#34;</span>,
-</span></span><span style="display:flex;"><span>                                repo[authors[<span style="color:#ae81ff">0</span>]][file_name]<span style="color:#f92672">.</span>as_posix(),
-</span></span><span style="display:flex;"><span>                                repo[author]<span style="color:#f92672">.</span>as_posix()])
-</span></span><span style="display:flex;"><span>                success <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> replace <span style="color:#f92672">and</span> author <span style="color:#f92672">==</span> authors[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">and</span> success:
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">try</span>:
-</span></span><span style="display:flex;"><span>                    f<span style="color:#f92672">.</span>unlink()
-</span></span><span style="display:flex;"><span>                    subprocess<span style="color:#f92672">.</span>call([<span style="color:#e6db74">&#34;ln&#34;</span>, <span style="color:#e6db74">&#34;-s&#34;</span>,
-</span></span><span style="display:flex;"><span>                                    repo[authors[<span style="color:#ae81ff">0</span>]][file_name]<span style="color:#f92672">.</span>as_posix(),
-</span></span><span style="display:flex;"><span>                                    f<span style="color:#f92672">.</span>parts[:<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]<span style="color:#f92672">.</span>as_posix()])
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">except</span>:
-</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">raise</span> <span style="color:#a6e22e">OSError</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">main</span>(self, f):
-</span></span><span style="display:flex;"><span>        authors, paper <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>parser(f)
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>make_dir(authors)
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>copy_and_link(authors, f)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">run</span>(self):
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>exists <span style="color:#f92672">and</span> self<span style="color:#f92672">.</span>is_full:
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>is_dir:
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">for</span> f <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>path:
-</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">if</span> f<span style="color:#f92672">.</span>parts[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;.&#39;</span> <span style="color:#f92672">or</span> f<span style="color:#f92672">.</span>is_symlink():
-</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">pass</span>
-</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">else</span>:
-</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">try</span>:
-</span></span><span style="display:flex;"><span>                            self<span style="color:#f92672">.</span>main(f)
-</span></span><span style="display:flex;"><span>                            self<span style="color:#f92672">.</span>added<span style="color:#f92672">.</span>append(f)
-</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">except</span>:
-</span></span><span style="display:flex;"><span>                            print(<span style="color:#e6db74">&#39;Failed on </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#39;</span> <span style="color:#f92672">%</span> str(f))
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span>:
-</span></span><span style="display:flex;"><span>                self<span style="color:#f92672">.</span>main(self<span style="color:#f92672">.</span>path)
-</span></span><span style="display:flex;"><span>                self<span style="color:#f92672">.</span>added<span style="color:#f92672">.</span>append(self<span style="color:#f92672">.</span>path)
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> item <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>added:
-</span></span><span style="display:flex;"><span>                print(item<span style="color:#f92672">.</span>parts[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>])
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
-</span></span><span style="display:flex;"><span>    p <span style="color:#f92672">=</span> pathlib<span style="color:#f92672">.</span>PosixPath(sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">1</span>])
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">try</span>:
-</span></span><span style="display:flex;"><span>        repo <span style="color:#f92672">=</span> pathlib<span style="color:#f92672">.</span>PosixPath(sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">2</span>])
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">except</span>:
-</span></span><span style="display:flex;"><span>        repo <span style="color:#f92672">=</span> pathlib<span style="color:#f92672">.</span>PosixPath(<span style="color:#e6db74">&#39;/Users/tom/Economics/Papers&#39;</span>)
-</span></span><span style="display:flex;"><span>    print(p)
-</span></span><span style="display:flex;"><span>    obj <span style="color:#f92672">=</span> Parser(p, repo)
-</span></span><span style="display:flex;"><span>    obj<span style="color:#f92672">.</span>run()
-</span></span></code></pre></div><p>The script takes two arguments, the folder to work on and the folder to store the results (defaults to <code>/Users/tom/Economics/Papers</code>). Already a could things jump out that I should update. If I ever wanted to add more sophisticated command line arguments I would want to switch to something like <a href="http://docs.python.org/dev/library/argparse.html"><code>argparse</code></a>. I also shouldn&rsquo;t have something like <code>/Users/tom</code> anywhere. This kills portability since it&rsquo;s specific to my computer (use <code>os.path.expanduser('~')</code> instead).</p>
-<p>I create a <code>Parser</code> which finds every paper in the directory given by the first argument. I had to settle on a standard naming for my papers. I chose <code>Author1, Author2, ... and AuthorN (YYYY) - Paper Title</code>. Whenever <code>Parser</code> find that pattern, it splits off the Authors from the title of the paper, and stores the location of the file.</p>
-<p>After doing this for each paper in the directory, it&rsquo;s time to copy and link the files.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">for</span> author <span style="color:#f92672">in</span> authors:
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> author <span style="color:#f92672">==</span> authors[<span style="color:#ae81ff">0</span>]:
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
-</span></span><span style="display:flex;"><span>            subprocess<span style="color:#f92672">.</span>call([<span style="color:#e6db74">&#34;cp&#34;</span>, f<span style="color:#f92672">.</span>as_posix(),
-</span></span><span style="display:flex;"><span>                            repo[author]<span style="color:#f92672">.</span>as_posix()])
-</span></span><span style="display:flex;"><span>            success <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span>:
-</span></span><span style="display:flex;"><span>            success <span style="color:#f92672">=</span> <span style="color:#66d9ef">False</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
-</span></span><span style="display:flex;"><span>        subprocess<span style="color:#f92672">.</span>call([<span style="color:#e6db74">&#34;ln&#34;</span>, <span style="color:#e6db74">&#34;-s&#34;</span>,
-</span></span><span style="display:flex;"><span>                        repo[authors[<span style="color:#ae81ff">0</span>]][file_name]<span style="color:#f92672">.</span>as_posix(),
-</span></span><span style="display:flex;"><span>                        repo[author]<span style="color:#f92672">.</span>as_posix()])
-</span></span><span style="display:flex;"><span>        success <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
-</span></span></code></pre></div><p>Since I just one one actual copy of the paper on file, I only copy the paper to the first author&rsquo;s sub-folder. Thats the <code>if author == authors[0]</code>. Every other author just links to the copy stored in the first author&rsquo;s folder. The wiser me of today would use something like <a href="http://docs.python.org/2/library/shutil.html"><code>shutil</code></a> to copy the files instead of <code>subprocess</code>, but I was still new to python.</p>
-<iframe src="https://www.flickr.com/photos/81581328@N02/12501636805/player/3eb021f38a" height="509" width="800"  frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen oallowfullscreen msallowfullscreen></iframe>
-<p>The biggest drawback is that I can&rsquo;t differentiate multiple authors with the same last name that well. I need to edit the original names to include the first initials (<code>C. Romer and D. Romer (2010)</code>). But overall I&rsquo;m pleased with the results.</p>
-]]></content:encoded></item><item><title>Tidy Data in Action</title><link>https://tomaugspurger.github.io/posts/tidy-data-in-action/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://tomaugspurger.github.io/posts/tidy-data-in-action/</guid><description>Hadley Whickham wrote a famous paper (for a certain definition of famous) about the importance of tidy data when doing data analysis. I want to talk a bit about that, using an example from a StackOverflow post, with a solution using pandas. The principles of tidy data aren&amp;rsquo;t language specific.
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>scripts on Tom's Blog</title><link>https://tomaugspurger.github.io/tags/scripts/</link><description>Recent content in scripts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>tom.w.augspurger@gmail.com (Tom Augspurger)</managingEditor><webMaster>tom.w.augspurger@gmail.com (Tom Augspurger)</webMaster><lastBuildDate>Thu, 27 Mar 2014 00:00:00 +0000</lastBuildDate><atom:link href="https://tomaugspurger.github.io/tags/scripts/index.xml" rel="self" type="application/rss+xml"/><item><title>Tidy Data in Action</title><link>https://tomaugspurger.github.io/posts/tidy-data-in-action/</link><pubDate>Thu, 27 Mar 2014 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.github.io/posts/tidy-data-in-action/</guid><description>Hadley Whickham wrote a famous paper (for a certain definition of famous) about the importance of tidy data when doing data analysis. I want to talk a bit about that, using an example from a StackOverflow post, with a solution using pandas. The principles of tidy data aren&amp;rsquo;t language specific.
 A tidy dataset must satisfy three criteria (page 4 in Whickham&amp;rsquo;s paper):
 Each variable forms a column. Each observation forms a row.</description><content:encoded><![CDATA[<p><a href="http://had.co.nz">Hadley Whickham</a> wrote a famous paper (for a certain definition of famous) about the importance of <a href="http://vita.had.co.nz/papers/tidy-data.pdf">tidy data</a> when doing data analysis.
 I want to talk a bit about that, using an example from a StackOverflow post, with a solution using <a href="http://pandas.pydata.org">pandas</a>. The principles of tidy data aren&rsquo;t language specific.</p>
@@ -395,4 +239,160 @@ But honestly, I&rsquo;m having trouble writing the messy data version.
 You don&rsquo;t really have anything to group on, so you&rsquo;d need to keep track of the row where you last saw this team (either in <code>AwayTeam</code> or <code>HomeTeam</code>).
 And then each row will have two answers, one for each team.
 It&rsquo;s certainly possible to write the necessary code, but the fact that I&rsquo;m struggling so much to write the messy version is pretty good evidence for the importance of tidy data.</p>
+]]></content:encoded></item><item><title>Organizing Papers</title><link>https://tomaugspurger.github.io/posts/organizing-papers/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.github.io/posts/organizing-papers/</guid><description>As a graduate student, you read a lot of journal articles&amp;hellip; a lot. With the material in the articles being as difficult as it is, I didn&amp;rsquo;t want to worry about organizing everything as well. That&amp;rsquo;s why I wrote this script to help (I may have also been procrastinating from studying for my qualifiers). This was one of my earliest little projects, so I&amp;rsquo;m not claiming that this is the best way to do anything.</description><content:encoded><![CDATA[<p>As a graduate student, you read a lot of journal articles&hellip; <em>a lot</em>.
+With the material in the articles being as difficult as it is, I didn&rsquo;t want to worry about organizing everything as well.
+That&rsquo;s why I wrote <a href="https://gist.github.com/TomAugspurger/8976751">this script</a> to help (I may have also been procrastinating from studying for my qualifiers). This was one of my earliest little projects, so I&rsquo;m not claiming that this is the best way to do anything.</p>
+<p>My goal was to have a central repository of papers that was organized by an author&rsquo;s last name. Under each author&rsquo;s name would go all of their papers I had read or planned to read.
+I needed it to be portable so that I could access any paper from my computer or iPad, so Dropbox was a necessity. I also needed to organize the papers by subject. I wanted to easily get to all the papers on Asset Pricing, without having to go through each of the authors separately.
+<a href="http://en.wikipedia.org/wiki/Symbolic_link">Symbolic links</a> were a natural solution to my problem.
+A canonical copy of each paper would be stored under <code>/Drobox/Papers/&lt;author name&gt;</code>, and I could refer that paper from <code>/Macro/Asset Pricing/</code> with a symbolic link. Symbolic links avoid the problem of having multiple copies of the same paper. Any highlighting or notes I make on a paper is automatically spread to anywhere that paper is linked from.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> os
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> re
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> sys
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> subprocess
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> pathlib
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Parser</span>(object):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, path,
+</span></span><span style="display:flex;"><span>                 repo<span style="color:#f92672">=</span>pathlib<span style="color:#f92672">.</span>PosixPath(<span style="color:#e6db74">&#39;/Users/tom/Economics/Papers&#39;</span>)):
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>repo <span style="color:#f92672">=</span> repo
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>path <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>path_parse(path)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>exists <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>check_existance(self<span style="color:#f92672">.</span>path)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>is_full <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>check_full(path)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>check_type(self<span style="color:#f92672">.</span>path)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>added <span style="color:#f92672">=</span> []
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">path_parse</span>(self, path):
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;&#34;&#34;Ensures a common point of entry to the functions.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        Returns a pathlib.PosixPath object
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> isinstance(path, pathlib<span style="color:#f92672">.</span>PosixPath):
+</span></span><span style="display:flex;"><span>            path <span style="color:#f92672">=</span> pathlib<span style="color:#f92672">.</span>PosixPath(path)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> path
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> path
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">check_existance</span>(self, path):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> path<span style="color:#f92672">.</span>exists():
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">raise</span> <span style="color:#a6e22e">OSError</span>(<span style="color:#e6db74">&#39;The supplied path does not exist.&#39;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">True</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">check_type</span>(self, path):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> path<span style="color:#f92672">.</span>is_dir():
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>is_dir <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>is_file <span style="color:#f92672">=</span> <span style="color:#66d9ef">False</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>is_file <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>is_dir <span style="color:#f92672">=</span> <span style="color:#66d9ef">False</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">check_full</span>(self, path):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> path<span style="color:#f92672">.</span>parent()<span style="color:#f92672">.</span>as_posix() <span style="color:#f92672">in</span> path<span style="color:#f92672">.</span>as_posix():
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">True</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">parser</span>(self, f):
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;&#34;&#34;The parsing logic to find authors and paper name from a file.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        f is a full path.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            file_name <span style="color:#f92672">=</span> f<span style="color:#f92672">.</span>parts[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>file_name <span style="color:#f92672">=</span> file_name
+</span></span><span style="display:flex;"><span>            r <span style="color:#f92672">=</span> re<span style="color:#f92672">.</span>compile(<span style="color:#e6db74">r</span><span style="color:#e6db74">&#39; \([\d-]{0,4}\)&#39;</span>)
+</span></span><span style="display:flex;"><span>            sep_authors <span style="color:#f92672">=</span> re<span style="color:#f92672">.</span>compile(<span style="color:#e6db74">r</span><span style="color:#e6db74">&#39; &amp; |, | and&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            all_authors, paper <span style="color:#f92672">=</span> re<span style="color:#f92672">.</span>split(r, file_name)
+</span></span><span style="display:flex;"><span>            paper <span style="color:#f92672">=</span> paper<span style="color:#f92672">.</span>lstrip(<span style="color:#e6db74">&#39; - &#39;</span>)
+</span></span><span style="display:flex;"><span>            authors <span style="color:#f92672">=</span> re<span style="color:#f92672">.</span>split(sep_authors, all_authors)
+</span></span><span style="display:flex;"><span>            authors <span style="color:#f92672">=</span> [author<span style="color:#f92672">.</span>strip(<span style="color:#e6db74">&#39;&amp; &#39;</span> <span style="color:#f92672">or</span> <span style="color:#e6db74">&#39;and &#39;</span>) <span style="color:#66d9ef">for</span> author <span style="color:#f92672">in</span> authors]
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>authors, self<span style="color:#f92672">.</span>paper <span style="color:#f92672">=</span> authors, paper
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> (authors, paper)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span>:
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">&#39;Missed on </span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">.</span>format(file_name))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">make_dir</span>(self, authors):
+</span></span><span style="display:flex;"><span>        repo <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>repo
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> author <span style="color:#f92672">in</span> authors:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>                os<span style="color:#f92672">.</span>mkdir(repo[author]<span style="color:#f92672">.</span>as_posix())
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">OSError</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">copy_and_link</span>(self, authors, f, replace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>):
+</span></span><span style="display:flex;"><span>        repo <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>repo
+</span></span><span style="display:flex;"><span>        file_name <span style="color:#f92672">=</span> f<span style="color:#f92672">.</span>parts[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> author <span style="color:#f92672">in</span> authors:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> author <span style="color:#f92672">==</span> authors[<span style="color:#ae81ff">0</span>]:
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>                    subprocess<span style="color:#f92672">.</span>call([<span style="color:#e6db74">&#34;cp&#34;</span>, f<span style="color:#f92672">.</span>as_posix(),
+</span></span><span style="display:flex;"><span>                                    repo[author]<span style="color:#f92672">.</span>as_posix()])
+</span></span><span style="display:flex;"><span>                    success <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">except</span>:
+</span></span><span style="display:flex;"><span>                    success <span style="color:#f92672">=</span> <span style="color:#66d9ef">False</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>                subprocess<span style="color:#f92672">.</span>call([<span style="color:#e6db74">&#34;ln&#34;</span>, <span style="color:#e6db74">&#34;-s&#34;</span>,
+</span></span><span style="display:flex;"><span>                                repo[authors[<span style="color:#ae81ff">0</span>]][file_name]<span style="color:#f92672">.</span>as_posix(),
+</span></span><span style="display:flex;"><span>                                repo[author]<span style="color:#f92672">.</span>as_posix()])
+</span></span><span style="display:flex;"><span>                success <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> replace <span style="color:#f92672">and</span> author <span style="color:#f92672">==</span> authors[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">and</span> success:
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>                    f<span style="color:#f92672">.</span>unlink()
+</span></span><span style="display:flex;"><span>                    subprocess<span style="color:#f92672">.</span>call([<span style="color:#e6db74">&#34;ln&#34;</span>, <span style="color:#e6db74">&#34;-s&#34;</span>,
+</span></span><span style="display:flex;"><span>                                    repo[authors[<span style="color:#ae81ff">0</span>]][file_name]<span style="color:#f92672">.</span>as_posix(),
+</span></span><span style="display:flex;"><span>                                    f<span style="color:#f92672">.</span>parts[:<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]<span style="color:#f92672">.</span>as_posix()])
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">except</span>:
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">raise</span> <span style="color:#a6e22e">OSError</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">main</span>(self, f):
+</span></span><span style="display:flex;"><span>        authors, paper <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>parser(f)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>make_dir(authors)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>copy_and_link(authors, f)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">run</span>(self):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>exists <span style="color:#f92672">and</span> self<span style="color:#f92672">.</span>is_full:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>is_dir:
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">for</span> f <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>path:
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">if</span> f<span style="color:#f92672">.</span>parts[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;.&#39;</span> <span style="color:#f92672">or</span> f<span style="color:#f92672">.</span>is_symlink():
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>                            self<span style="color:#f92672">.</span>main(f)
+</span></span><span style="display:flex;"><span>                            self<span style="color:#f92672">.</span>added<span style="color:#f92672">.</span>append(f)
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">except</span>:
+</span></span><span style="display:flex;"><span>                            print(<span style="color:#e6db74">&#39;Failed on </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#39;</span> <span style="color:#f92672">%</span> str(f))
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>                self<span style="color:#f92672">.</span>main(self<span style="color:#f92672">.</span>path)
+</span></span><span style="display:flex;"><span>                self<span style="color:#f92672">.</span>added<span style="color:#f92672">.</span>append(self<span style="color:#f92672">.</span>path)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> item <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>added:
+</span></span><span style="display:flex;"><span>                print(item<span style="color:#f92672">.</span>parts[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
+</span></span><span style="display:flex;"><span>    p <span style="color:#f92672">=</span> pathlib<span style="color:#f92672">.</span>PosixPath(sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">1</span>])
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>        repo <span style="color:#f92672">=</span> pathlib<span style="color:#f92672">.</span>PosixPath(sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">2</span>])
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">except</span>:
+</span></span><span style="display:flex;"><span>        repo <span style="color:#f92672">=</span> pathlib<span style="color:#f92672">.</span>PosixPath(<span style="color:#e6db74">&#39;/Users/tom/Economics/Papers&#39;</span>)
+</span></span><span style="display:flex;"><span>    print(p)
+</span></span><span style="display:flex;"><span>    obj <span style="color:#f92672">=</span> Parser(p, repo)
+</span></span><span style="display:flex;"><span>    obj<span style="color:#f92672">.</span>run()
+</span></span></code></pre></div><p>The script takes two arguments, the folder to work on and the folder to store the results (defaults to <code>/Users/tom/Economics/Papers</code>). Already a could things jump out that I should update. If I ever wanted to add more sophisticated command line arguments I would want to switch to something like <a href="http://docs.python.org/dev/library/argparse.html"><code>argparse</code></a>. I also shouldn&rsquo;t have something like <code>/Users/tom</code> anywhere. This kills portability since it&rsquo;s specific to my computer (use <code>os.path.expanduser('~')</code> instead).</p>
+<p>I create a <code>Parser</code> which finds every paper in the directory given by the first argument. I had to settle on a standard naming for my papers. I chose <code>Author1, Author2, ... and AuthorN (YYYY) - Paper Title</code>. Whenever <code>Parser</code> find that pattern, it splits off the Authors from the title of the paper, and stores the location of the file.</p>
+<p>After doing this for each paper in the directory, it&rsquo;s time to copy and link the files.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">for</span> author <span style="color:#f92672">in</span> authors:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> author <span style="color:#f92672">==</span> authors[<span style="color:#ae81ff">0</span>]:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            subprocess<span style="color:#f92672">.</span>call([<span style="color:#e6db74">&#34;cp&#34;</span>, f<span style="color:#f92672">.</span>as_posix(),
+</span></span><span style="display:flex;"><span>                            repo[author]<span style="color:#f92672">.</span>as_posix()])
+</span></span><span style="display:flex;"><span>            success <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span>:
+</span></span><span style="display:flex;"><span>            success <span style="color:#f92672">=</span> <span style="color:#66d9ef">False</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>        subprocess<span style="color:#f92672">.</span>call([<span style="color:#e6db74">&#34;ln&#34;</span>, <span style="color:#e6db74">&#34;-s&#34;</span>,
+</span></span><span style="display:flex;"><span>                        repo[authors[<span style="color:#ae81ff">0</span>]][file_name]<span style="color:#f92672">.</span>as_posix(),
+</span></span><span style="display:flex;"><span>                        repo[author]<span style="color:#f92672">.</span>as_posix()])
+</span></span><span style="display:flex;"><span>        success <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
+</span></span></code></pre></div><p>Since I just one one actual copy of the paper on file, I only copy the paper to the first author&rsquo;s sub-folder. Thats the <code>if author == authors[0]</code>. Every other author just links to the copy stored in the first author&rsquo;s folder. The wiser me of today would use something like <a href="http://docs.python.org/2/library/shutil.html"><code>shutil</code></a> to copy the files instead of <code>subprocess</code>, but I was still new to python.</p>
+<iframe src="https://www.flickr.com/photos/81581328@N02/12501636805/player/3eb021f38a" height="509" width="800"  frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen oallowfullscreen msallowfullscreen></iframe>
+<p>The biggest drawback is that I can&rsquo;t differentiate multiple authors with the same last name that well. I need to edit the original names to include the first initials (<code>C. Romer and D. Romer (2010)</code>). But overall I&rsquo;m pleased with the results.</p>
 ]]></content:encoded></item></channel></rss>
