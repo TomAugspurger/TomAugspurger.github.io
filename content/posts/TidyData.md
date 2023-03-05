@@ -8,6 +8,8 @@ tags:
   - scripts
   - data science
   - pandas
+aliases:
+  - /tidy-data-in-action.html
 ---
 
 

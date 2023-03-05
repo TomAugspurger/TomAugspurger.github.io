@@ -8,6 +8,7 @@ tags:
   - pandas
 aliases:
   - dplry-pandas
+  - /dplry-pandas.html
 ---
 
 

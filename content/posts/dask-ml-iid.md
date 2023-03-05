@@ -3,6 +3,8 @@ title: "Rewriting scikit-learn for big data, in under 9 hours."
 date: 2018-01-28
 slug: "dask-ml-iid"
 status: draft
+aliases:
+  - /dask-ml-iid.html
 ---
 
 This past week, I had a chance to visit some of the scikit-learn developers at

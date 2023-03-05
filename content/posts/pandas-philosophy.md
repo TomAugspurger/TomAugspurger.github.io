@@ -4,6 +4,8 @@ date: 2018-08-14
 slug: pandas-moral-philosophy
 tags:
   - pandas
+aliases:
+  - /pandas-moral-philosophy.html
 ---
 
 The other day, I put up a [Twitter poll](https://twitter.com/TomAugspurger/status/1026578613389455360) asking a simple question: What's the type of `series.values`?

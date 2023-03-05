@@ -2,6 +2,8 @@
 title: dask-ml 0.4.1 Released
 date: 2018-02-13
 slug: dask-ml-041
+aliases:
+  - /dask-ml-041.html
 ---
 
 *This work is supported by [Anaconda Inc](http://anaconda.com/) and the Data

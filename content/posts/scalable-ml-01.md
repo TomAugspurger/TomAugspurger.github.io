@@ -2,6 +2,8 @@
 title: "Scalable Machine Learning (Part 1)"
 date: 2017-09-11
 slug: scalable-ml-01
+aliases:
+  - /scalable-ml-01.html
 ---
 
 *This work is supported by [Anaconda Inc.] and the Data Driven Discovery

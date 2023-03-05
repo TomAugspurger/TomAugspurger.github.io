@@ -4,6 +4,8 @@ date: 2018-02-12
 slug: pandas-extension-arrays
 tags:
    - pandas
+aliases:
+  - /pandas-extension-arrays.html
 ---
 
 This is a status update on some enhancements for pandas. The goal of the work

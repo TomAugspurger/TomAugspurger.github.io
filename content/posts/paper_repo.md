@@ -6,6 +6,8 @@ category: scripts
 tags:
    - python
    - scripts
+aliases:
+  - /organizing-papers.html
 ---
 
 As a graduate student, you read a lot of journal articles... *a lot*.

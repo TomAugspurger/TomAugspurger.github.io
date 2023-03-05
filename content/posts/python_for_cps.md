@@ -5,6 +5,8 @@ slug: tackling-the-cps
 category: python
 tags:
   - pandas
+aliases:
+  - /tackling-the-cps.html
 ---
 
 The [Current Population Survey](http://www.census.gov/cps/) is an important source of data for economists. It's modern form took shape in the 70's and unfortunately the data format and distribution shows its age. Some centers like [IPUMS](https://cps.ipums.org/cps/) have attempted to put a nicer face on accessing the data, but they haven't done everything yet. In this series I'll describe methods I used to fetch, parse, and analyze CPS data for my second year paper. Today I'll describe fetching the data. Everything is available at the paper's [GitHub Repository](https://github.com/TomAugspurger/dnwr-zlb).

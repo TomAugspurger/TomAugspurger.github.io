@@ -3,6 +3,8 @@ title: Maintaining Performance
 date: 2020-04-01
 tags:
   - pandas
+aliases:
+  - /maintaining-performance.html
 ---
 
 As pandas' [documentation](https://pandas.pydata.org/docs/) claims: pandas

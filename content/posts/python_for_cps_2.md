@@ -5,6 +5,8 @@ slug: tackling-the-cps-2
 category: python
 tags:
   - pandas
+aliases:
+  /tackling-the-cps-2.html
 ---
 
 [Last time](http://tomaugspurger.github.io/blog/2014/01/27/tackling%20the%20cps/), we used Python to fetch some data from the [Current Population Survey](http://www.census.gov/cps/). Today, we'll work on parsing the files we just downloaded.

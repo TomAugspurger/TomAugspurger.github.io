@@ -1,10 +1,12 @@
 ---
 title: Using Python to tackle the CPS (Part 3)
 date: 2014-05-19T12:00:00
-slug: tacking-the-cps-3
+slug: tackling-the-cps-3
 category: python
 tags:
   - pandas
+aliases:
+  - /tackling-the-cps-3.html
 ---
 
 In <a href="http://tomaugspurger.github.io/blog/2014/02/04/tackling%20the%20cps%20(part%202)/">part 2</a> of this series, we set the stage to parse the data files themselves.

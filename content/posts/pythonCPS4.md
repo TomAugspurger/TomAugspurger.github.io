@@ -5,6 +5,8 @@ slug: tackling-the-cps-4
 category: python
 tags:
   - pandas
+aliases:
+  - /tackling-the-cps-4.html
 ---
 
 Last time, we got to where we'd like to have started: One file per month, with each month laid out the same.

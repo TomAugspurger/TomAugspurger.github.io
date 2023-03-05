@@ -2,6 +2,8 @@
 title: Tabular Data in Scikit-Learn and Dask-ML
 date: 2018-09-17
 slug: sklearn-dask-tabular
+aliases:
+  - /sklearn-dask-tabular.html
 ---
 
 Scikit-Learn 0.20.0 will contain some nice new features for working with tabular data.

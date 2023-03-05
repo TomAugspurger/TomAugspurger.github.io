@@ -3,6 +3,8 @@ Title: pandas + binder
 Date: 2019-07-21
 tags:
   - pandas
+aliases:
+   /pandas-binder.html
 ---
 
 This post describes the start of a journey to get pandas' documentation running

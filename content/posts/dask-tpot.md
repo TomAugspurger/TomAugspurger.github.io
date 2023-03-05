@@ -2,6 +2,8 @@
 title: Distributed Auto-ML with TPOT with Dask
 date: 2018-08-30
 slug: distributed-tpot
+aliases:
+  - /distributed-tpot.html
 ---
 
 *This work is supported by [Anaconda Inc][anaconda].*

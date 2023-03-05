@@ -1,6 +1,8 @@
 ---
 title: Introducing Stitch
 date: 2016-08-30
+aliases:
+  - /introducing-stitch.html
 ---
 
 Today I released [`stitch`](https://github.com/pystitch/stitch) into the

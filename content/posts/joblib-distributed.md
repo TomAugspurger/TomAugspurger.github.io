@@ -2,6 +2,8 @@
 title: Easy distributed training with Joblib and dask
 date: 2018-02-05
 slug: distributed-joblib
+aliases:
+  /distributed-joblib.html
 ---
 
 *This work is supported by [Anaconda Inc](http://anaconda.com/) and the Data

@@ -2,6 +2,8 @@
 title: dask-ml
 date: 2017-10-26
 slug: dask-ml-announce
+aliases:
+  - /dask-ml-announce.html
 ---
 
 Today we released the first version of ``dask-ml``, a library for parallel and
