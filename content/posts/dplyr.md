@@ -1,9 +1,6 @@
 ---
 title: dplyr and pandas
-# date: 2014-10-16
-# date: 2020-01-01
-# date: 2020-04-01
-date: 2023-02-22T15:11:37-06:00
+date: 2014-10-16T07:00:00
 slug: dplyr-pandas
 tags:
   - python
