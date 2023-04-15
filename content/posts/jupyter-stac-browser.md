@@ -1,6 +1,7 @@
 ---
 title: "Jupyter, STAC, and Tool Building"
 date: 2023-04-15T08:00:00-05:00
+slug: "jupyter-stac-browser"
 ---
 
 Over in Planetary Computer land, we're [working on](https://github.com/microsoft/planetary-computer-tasks/pull/167) bringing [Sentinel-5P](https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-5p) into our STAC catalog.
