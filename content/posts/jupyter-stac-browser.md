@@ -12,7 +12,7 @@ STAC items require a `geometry` property, a GeoJSON object that describes the fo
 
 That initial footprint, shown in orange, would render the STAC collection essentially useless for spatial searches. The assets don't actually cover (most of) the southern hemisphere.
 
-[Pete Gadomksi](https://fosstodon.org/@gadomski) did some really great work to understand the problem and fix it (hopefully once and for all). As the satellite crosses the antimeridian, a pole, or both, naive approaches to generating a footprint fails. It takes some more [complicated logic](https://github.com/gadomski/antimeridian/blob/main/src/antimeridian/_implementation.py) to generate a good geometry. That's now available as [antimeridian](https://pypi.org/project/antimeridian) on PyPI. It produces much more sensible footprints:
+[Pete Gadomski](https://fosstodon.org/@gadomski) did some really great work to understand the problem and fix it (hopefully once and for all). As the satellite crosses the antimeridian, a pole, or both, naive approaches to generating a footprint fails. It takes some more [complicated logic](https://github.com/gadomski/antimeridian/blob/main/src/antimeridian/_implementation.py) to generate a good geometry. That's now available as [antimeridian](https://pypi.org/project/antimeridian) on PyPI. It produces much more sensible footprints:
 
 ![](https://user-images.githubusercontent.com/58314/231868768-5439edcd-5e5a-40a9-b3f9-12947a081b85.png)
 
