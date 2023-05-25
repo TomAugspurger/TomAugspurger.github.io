@@ -1,4 +1,16 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.github.io/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>tom.w.augspurger@gmail.com (Tom Augspurger)</managingEditor><webMaster>tom.w.augspurger@gmail.com (Tom Augspurger)</webMaster><lastBuildDate>Sat, 15 Apr 2023 08:00:00 -0500</lastBuildDate><atom:link href="https://tomaugspurger.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Jupyter, STAC, and Tool Building</title><link>https://tomaugspurger.github.io/posts/jupyter-stac-browser/</link><pubDate>Sat, 15 Apr 2023 08:00:00 -0500</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.github.io/posts/jupyter-stac-browser/</guid><description>Over in Planetary Computer land, we&amp;rsquo;re working on bringing Sentinel-5P into our STAC catalog.
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.github.io/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>tom.w.augspurger@gmail.com (Tom Augspurger)</managingEditor><webMaster>tom.w.augspurger@gmail.com (Tom Augspurger)</webMaster><lastBuildDate>Thu, 25 May 2023 12:04:06 -0500</lastBuildDate><atom:link href="https://tomaugspurger.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>National Water Model on Azure</title><link>https://tomaugspurger.github.io/posts/noaa-nwm/</link><pubDate>Thu, 25 May 2023 12:04:06 -0500</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.github.io/posts/noaa-nwm/</guid><description>A few colleagues and I recently presented at the CIROH Training and Developers Conference. In preparation for that I created a Jupyter Book. You can view it at https://tomaugspurger.github.io/noaa-nwm/intro.html I created a few cloud-optimized versions for subsets of the data, but those will be going away since we don&amp;rsquo;t have operational pipelines to keep them up to date. But hopefully the static notebooks are still helpful.
+Lessons learned Aside from running out of time (I always prepare too much material for the amount of time), I think things went well.</description><content:encoded><![CDATA[<p>A few colleagues and I recently presented at the <a href="https://ciroh.ua.edu/devconference/">CIROH Training and Developers Conference</a>.
+In preparation for that I created a <a href="https://jupyterbook.org/en/stable/intro.html">Jupyter Book</a>. You can view it at <a href="https://tomaugspurger.github.io/noaa-nwm/intro.html">https://tomaugspurger.github.io/noaa-nwm/intro.html</a>
+I created a few cloud-optimized versions for subsets of the data, but those will be going away since we don&rsquo;t have operational pipelines to keep them up to date. But hopefully the static notebooks are still helpful.</p>
+<h2 id="lessons-learned">Lessons learned</h2>
+<p>Aside from running out of time (I always prepare too much material for the amount of time), I think things went well. JupyterHub (perhaps + Dask) and Kubernetes continues to be a great way to run a workshop.</p>
+<p>The code for processing the data into cloud-optimized formats (either Kerchunk indexes, Zarr, or (geo)parquet) is at <a href="https://github.com/TomAugspurger/noaa-nwm/tree/main/processing">https://github.com/TomAugspurger/noaa-nwm/tree/main/processing</a></p>
+<p>To process the data I needed to create some Dask clusters. I had the opportunity to use <a href="https://kubernetes.dask.org/">dask-kubernetes&rsquo;</a> new <a href="https://kubernetes.dask.org/en/latest/operator.html">Dask Operator</a>. It was great!</p>
+<p>The actual pipelines for processing the raw files into cloud-optimized formats (or Kerchunk indexes) continues to be a challenge.
+A large chunk of that complexity does come from the data itself, and I gather that the National Water Model is pretty complex, at a fundamental level. I ran into issues with corrupt files (which have since been fixed). An update to the National Water Model changed its internal chunking structure, which is incompatible with Kerchunk&rsquo;s current implementation. These were pretty difficult to debug.</p>
+<p>I think the main takeway from the conference was that we (either the users of this data, the Planetary Computer, NODD, or the Office of Water Prediction) needs to do <em>something</em> to make this data more usable on the cloud. Most likely some sort of Kerchunk index is the first stop, but this won&rsquo;t handle every use case (see the <a href="https://tomaugspurger.github.io/noaa-nwm/04-timeseries.html">timeseries</a> notebook for an example). Maintaining operational pipelines is a challenge, but
+hoepfully we can take it on some day.</p>
+]]></content:encoded></item><item><title>Jupyter, STAC, and Tool Building</title><link>https://tomaugspurger.github.io/posts/jupyter-stac-browser/</link><pubDate>Sat, 15 Apr 2023 08:00:00 -0500</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.github.io/posts/jupyter-stac-browser/</guid><description>Over in Planetary Computer land, we&amp;rsquo;re working on bringing Sentinel-5P into our STAC catalog.
 STAC items require a geometry property, a GeoJSON object that describes the footprint of the assets. Thanks to the satellites&amp;rsquo; orbit and the (spatial) size of the assets, we started with some&amp;hellip;interesting&amp;hellip; footprints:
 That initial footprint, shown in orange, would render the STAC collection essentially useless for spatial searches. The assets don&amp;rsquo;t actually cover (most of) the southern hemisphere.</description><content:encoded><![CDATA[<p>Over in Planetary Computer land, we&rsquo;re <a href="https://github.com/microsoft/planetary-computer-tasks/pull/167">working on</a> bringing <a href="https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-5p">Sentinel-5P</a> into our STAC catalog.</p>
 <p>STAC items require a <code>geometry</code> property, a GeoJSON object that describes the footprint of the assets. Thanks to the satellites&rsquo; orbit and the (spatial) size of the assets, we started with some&hellip;interesting&hellip; footprints:</p>
@@ -2974,22 +2986,22 @@ more expensive since you&rsquo;ll have network overhead to worry about, in addit
 the serialization costs.</p>
 <p>Fortunately, modules like <code>concurrent.futures</code> and libraries like <code>dask</code> make it
 easy to swap one mode in for another. Let&rsquo;s make a little dask array:</p>
-<pre tabindex="0"><code>import dask.array as da
-import dask
-import dask.threaded
-import dask.multiprocessing
-
-X = da.random.uniform(size=(10000, 10), chunks=(1000, 10))
-result = X / (X.T @ X).sum(1)
-</code></pre><p>We can swap out the scheduler with a context-manager:</p>
-<pre tabindex="0"><code>%%time
-with dask.set_options(get=dask.threaded.get):
-    # threaded is the default for dask.array anyway
-    result.compute()
-</code></pre><pre tabindex="0"><code>%%time
-with dask.set_options(get=dask.multiprocessing.get):
-    result.compute()
-</code></pre><p>Every dask collection (<code>dask.array</code>, <code>dask.dataframe</code>, <code>dask.bag</code>) has a default
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> dask.array <span style="color:#66d9ef">as</span> da
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> dask
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> dask.threaded
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> dask.multiprocessing
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>X <span style="color:#f92672">=</span> da<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>uniform(size<span style="color:#f92672">=</span>(<span style="color:#ae81ff">10000</span>, <span style="color:#ae81ff">10</span>), chunks<span style="color:#f92672">=</span>(<span style="color:#ae81ff">1000</span>, <span style="color:#ae81ff">10</span>))
+</span></span><span style="display:flex;"><span>result <span style="color:#f92672">=</span> X <span style="color:#f92672">/</span> (X<span style="color:#f92672">.</span>T <span style="color:#f92672">@</span> X)<span style="color:#f92672">.</span>sum(<span style="color:#ae81ff">1</span>)
+</span></span></code></pre></div><p>We can swap out the scheduler with a context-manager:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">%%</span>time
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">with</span> dask<span style="color:#f92672">.</span>set_options(get<span style="color:#f92672">=</span>dask<span style="color:#f92672">.</span>threaded<span style="color:#f92672">.</span>get):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># threaded is the default for dask.array anyway</span>
+</span></span><span style="display:flex;"><span>    result<span style="color:#f92672">.</span>compute()
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">%%</span>time
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">with</span> dask<span style="color:#f92672">.</span>set_options(get<span style="color:#f92672">=</span>dask<span style="color:#f92672">.</span>multiprocessing<span style="color:#f92672">.</span>get):
+</span></span><span style="display:flex;"><span>    result<span style="color:#f92672">.</span>compute()
+</span></span></code></pre></div><p>Every dask collection (<code>dask.array</code>, <code>dask.dataframe</code>, <code>dask.bag</code>) has a default
 scheduler that typically works well for the kinds of operations it does. For
 <code>dask.array</code> and <code>dask.dataframe</code>, the shared-memory threaded scheduler is used.</p>
 <h2 id="cost-models">Cost Models</h2>
