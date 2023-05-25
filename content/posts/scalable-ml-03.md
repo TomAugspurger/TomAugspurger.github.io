@@ -63,7 +63,7 @@ the serialization costs.
 Fortunately, modules like `concurrent.futures` and libraries like `dask` make it
 easy to swap one mode in for another. Let's make a little dask array:
 
-```{python}
+```python
 import dask.array as da
 import dask
 import dask.threaded
@@ -75,14 +75,14 @@ result = X / (X.T @ X).sum(1)
 
 We can swap out the scheduler with a context-manager:
 
-```{python}
+```python
 %%time
 with dask.set_options(get=dask.threaded.get):
     # threaded is the default for dask.array anyway
     result.compute()
 ```
 
-```{python}
+```python
 %%time
 with dask.set_options(get=dask.multiprocessing.get):
     result.compute()
