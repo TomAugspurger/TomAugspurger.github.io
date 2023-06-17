@@ -1,4 +1,4 @@
-baseURL = 'https://tomaugspurger.github.io'
+baseURL = 'https://tomaugspurger.net'
 languageCode = 'en-us'
 title = "Tom's Blog"
 theme = 'PaperMod'

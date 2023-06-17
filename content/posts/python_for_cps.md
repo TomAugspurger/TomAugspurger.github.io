@@ -55,4 +55,4 @@ This reads the data from at url and write writes it do a file.
 
 Finally, I run [`renamer.py`](https://github.com/TomAugspurger/dnwr-zlb/blob/master/data_wrangling/cps_wrangling/panel_construction/renamer.py) to clean up the file names. Just because the CPS is inconsistent doesn't mean that we have to be.
 
-In the [next post](http://tomaugspurger.github.io/blog/2014/02/04/tackling%20the%20cps%20(part%202)/) I'll describe parsing the files we just downloaded.
+In the [next post](http://tomaugspurger.net/blog/2014/02/04/tackling%20the%20cps%20(part%202)/) I'll describe parsing the files we just downloaded.

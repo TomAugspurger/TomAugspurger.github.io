@@ -9,7 +9,7 @@ aliases:
   - /tackling-the-cps-3.html
 ---
 
-In <a href="http://tomaugspurger.github.io/blog/2014/02/04/tackling%20the%20cps%20(part%202)/">part 2</a> of this series, we set the stage to parse the data files themselves.
+In <a href="http://tomaugspurger.net/blog/2014/02/04/tackling%20the%20cps%20(part%202)/">part 2</a> of this series, we set the stage to parse the data files themselves.
 
 As a reminder, we have a dictionary that looks like
 
