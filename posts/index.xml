@@ -1,4 +1,67 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>tom.w.augspurger@gmail.com (Tom Augspurger)</managingEditor><webMaster>tom.w.augspurger@gmail.com (Tom Augspurger)</webMaster><lastBuildDate>Thu, 25 May 2023 12:04:06 -0500</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>National Water Model on Azure</title><link>https://tomaugspurger.net/posts/noaa-nwm/</link><pubDate>Thu, 25 May 2023 12:04:06 -0500</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/noaa-nwm/</guid><description>A few colleagues and I recently presented at the CIROH Training and Developers Conference. In preparation for that I created a Jupyter Book. You can view it at https://tomaugspurger.net/noaa-nwm/intro.html I created a few cloud-optimized versions for subsets of the data, but those will be going away since we don&amp;rsquo;t have operational pipelines to keep them up to date. But hopefully the static notebooks are still helpful.
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>tom.w.augspurger@gmail.com (Tom Augspurger)</managingEditor><webMaster>tom.w.augspurger@gmail.com (Tom Augspurger)</webMaster><lastBuildDate>Sun, 13 Aug 2023 14:30:19 -0500</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Gone Rafting</title><link>https://tomaugspurger.net/posts/gone-rafting/</link><pubDate>Sun, 13 Aug 2023 14:30:19 -0500</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/gone-rafting/</guid><description>Last week, I was fortunate to attend Dave Beazley&amp;rsquo;s Rafting Trip course. The pretext of the course is to implement the Raft Consensus Algorithm.
+I&amp;rsquo;ll post more about Raft, and the journey of implementing, it later. But in brief, Raft is an algorithm that lets a cluster of machines work together to reliably do something. If you had a service that needed to stay up (and stay consistent), even if some of the machines in the cluster went down, then you might want to use Raft.</description><content:encoded><![CDATA[<p>Last week, I was fortunate to attend Dave Beazley&rsquo;s <a href="https://dabeaz.com/raft.html">Rafting
+Trip</a> course. The pretext of the course is to
+implement the <a href="https://raft.github.io/">Raft Consensus Algorithm</a>.</p>
+<p>I&rsquo;ll post more about Raft, and the journey of implementing, it later. But in
+brief, Raft is an algorithm that lets a cluster of machines work together to
+<em>reliably</em> do something. If you had a service that needed to stay up (and stay
+consistent), even if some of the machines in the cluster went down, then you
+might want to use Raft.</p>
+<p>Raft achieves this consensus and availability through <em>log replication</em>. A
+single node of the cluster is elected as the Leader, and all other nodes are
+Followers. The Leader interacts with clients to accept new commands (<code>set x=41</code>,
+or <code>get y</code>). The Leader notes these commands in its logs and sends them to the
+other nodes in the cluster. Once the logs have been replicated to a majority of
+the nodes in a cluster, the Leader can <em>apply</em> the command (actually doing it)
+and respond to the client. That&rsquo;s the &ldquo;normal operation&rdquo; mode of Raft. Beyond
+that, much of the complexity of Raft comes from handling all the edge cases
+(what if a leader crashes? What if the leader comes back? What if there&rsquo;s a
+network partition and two nodes try to become leader? and on, and on)</p>
+<p>Raft was just about perfect for a week-long course. It&rsquo;s a complex enough
+problem to challenge just about anyone. But it&rsquo;s not <em>so</em> big that a person
+can&rsquo;t hope to implement it in a week.</p>
+<p>I liked the actual structure of the course itself. The actual &ldquo;lecture&rdquo; time was
+pretty short. We&rsquo;d typically start the day with a short overview of one
+component of the problem. But after that, we spent a majority of the time
+actually working on the project. Dave didn&rsquo;t just throw us to the wolves, but
+there was many a reference to <a href="https://knowyourmeme.com/memes/how-to-draw-an-owl">&ldquo;Draw the rest of the
+owl&rdquo;</a>.</p>
+<p>That said, I <em>really</em> benefited from Dave&rsquo;s gentle nudges on which part of the
+puzzle to work on next. The design space of implementing Raft is incredibly large.
+A typical Raft implementation will need to handle, at a minimum:</p>
+<ol>
+<li>Communicating between multiple machines</li>
+<li>Handling events (messages over the network, timers to call elections, etc.)</li>
+<li>Leader elections</li>
+<li>The Log</li>
+<li>Log replication</li>
+<li>Achieving consensus</li>
+<li>The State Machine (e.g. updating the Key Value store)</li>
+<li>Client interaction (a surprisingly tricky part, that completely blew up my
+implementation)</li>
+</ol>
+<p>You can implement these in just about any order. Going into the class I had no
+idea which would be &ldquo;best&rdquo; to do first (I still don&rsquo;t think there&rsquo;s a right
+order, but focusing on the Log and Log replication does seem like as good a
+start as any).</p>
+<p>And that&rsquo;s just the <em>order</em> you do things in. There&rsquo;s also the question of <em>how</em>
+you go about implementing it. Are you using threads and queues, or asyncio?
+Mutable or immutable data structures? How do you test and monitor this?</p>
+<p>But I think the biggest decision is around how you actually architect the
+system. How do you break this large problem down into smaller components? And
+how do those components interact? <em>That&rsquo;s</em> the kind of thinking that&rsquo;s helpful
+in my day job, and this project really taught be a lot (specifically, that I
+still have a ton to learn about designing and implementing this type of system).</p>
+<p>Our class was in-person (Dave&rsquo;s last course in this specific office). While I
+missed my big monitor and fancy ergonomic keyboard of my home-office, (not to
+mention my family), I am glad I got to go in person. It was nice to just let out
+an exasperated sigh and chat with classmate about how they&rsquo;re handling a
+particularly tricky part of the project.</p>
+<p>I want to clean up a few parts of my implementation (AKA, trash the whole thing
+and start over). Once done I&rsquo;ll make a followup post.</p>
+<p>Thanks to Dave for hosting a great course, the other classmates, and to my
+family for letting me ditch them to go type on a laptop for a week.</p>
+]]></content:encoded></item><item><title>National Water Model on Azure</title><link>https://tomaugspurger.net/posts/noaa-nwm/</link><pubDate>Thu, 25 May 2023 12:04:06 -0500</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/noaa-nwm/</guid><description>A few colleagues and I recently presented at the CIROH Training and Developers Conference. In preparation for that I created a Jupyter Book. You can view it at https://tomaugspurger.net/noaa-nwm/intro.html I created a few cloud-optimized versions for subsets of the data, but those will be going away since we don&amp;rsquo;t have operational pipelines to keep them up to date. But hopefully the static notebooks are still helpful.
 Lessons learned Aside from running out of time (I always prepare too much material for the amount of time), I think things went well.</description><content:encoded><![CDATA[<p>A few colleagues and I recently presented at the <a href="https://ciroh.ua.edu/devconference/">CIROH Training and Developers Conference</a>.
 In preparation for that I created a <a href="https://jupyterbook.org/en/stable/intro.html">Jupyter Book</a>. You can view it at <a href="https://tomaugspurger.net/noaa-nwm/intro.html">https://tomaugspurger.net/noaa-nwm/intro.html</a>
 I created a few cloud-optimized versions for subsets of the data, but those will be going away since we don&rsquo;t have operational pipelines to keep them up to date. But hopefully the static notebooks are still helpful.</p>
