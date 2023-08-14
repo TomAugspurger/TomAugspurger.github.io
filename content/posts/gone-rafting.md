@@ -26,13 +26,13 @@ network partition and two nodes try to become leader? and on, and on)
 
 Raft was just about perfect for a week-long course. It's a complex enough
 problem to challenge just about anyone. But it's not *so* big that a person
-can't hope to implement it in a week.
+can't hope to implement (much of) it in a week.
 
-I liked the actual structure of the course itself. The actual "lecture" time was
-pretty short. We'd typically start the day with a short overview of one
-component of the problem. But after that, we spent a majority of the time
-actually working on the project. Dave didn't just throw us to the wolves, but
-there was many a reference to ["Draw the rest of the
+I liked the structure of the course itself. The actual "lecture" time was pretty
+short. We'd typically start the day with a short overview of one component of
+the problem. But after that, we spent a majority of the time actually working on
+the project. Dave didn't just throw us to the wolves, but there was many a
+reference to ["Draw the rest of the
 owl"](https://knowyourmeme.com/memes/how-to-draw-an-owl).
 
 That said, I *really* benefited from Dave's gentle nudges on which part of the
@@ -48,6 +48,7 @@ A typical Raft implementation will need to handle, at a minimum:
 7. The State Machine (e.g. updating the Key Value store)
 8. Client interaction (a surprisingly tricky part, that completely blew up my
    implementation)
+9. Persistence
 
 You can implement these in just about any order. Going into the class I had no
 idea which would be "best" to do first (I still don't think there's a right
@@ -61,14 +62,15 @@ Mutable or immutable data structures? How do you test and monitor this?
 But I think the biggest decision is around how you actually architect the
 system. How do you break this large problem down into smaller components? And
 how do those components interact? *That's* the kind of thinking that's helpful
-in my day job, and this project really taught be a lot (specifically, that I
+in my day job, and this project really taught me a lot (specifically, that I
 still have a ton to learn about designing and implementing this type of system).
 
 Our class was in-person (Dave's last course in this specific office). While I
 missed my big monitor and fancy ergonomic keyboard of my home-office, (not to
 mention my family), I am glad I got to go in person. It was nice to just let out
 an exasperated sigh and chat with classmate about how they're handling a
-particularly tricky part of the project.
+particularly tricky part of the project. The loved the informal conversations at
+breakfast and lunch (which inevitably turned back to aft).
 
 I want to clean up a few parts of my implementation (AKA, trash the whole thing
 and start over). Once done I'll make a followup post.
