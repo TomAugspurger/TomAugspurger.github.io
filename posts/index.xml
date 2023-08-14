@@ -52,7 +52,8 @@ Mutable or immutable data structures? How do you test and monitor this?</p>
 system. How do you break this large problem down into smaller components? And
 how do those components interact? <em>That&rsquo;s</em> the kind of thinking that&rsquo;s helpful
 in my day job, and this project really taught me a lot (specifically, that I
-still have a ton to learn about designing and implementing this type of system).</p>
+still have a ton to learn about designing and implementing this type of system).
+Also, it reinforced how difficult distributed systems can be.</p>
 <p>Our class was in-person (Dave&rsquo;s last course in this specific office). While I
 missed my big monitor and fancy ergonomic keyboard of my home-office, (not to
 mention my family), I am glad I got to go in person. It was nice to just let out
