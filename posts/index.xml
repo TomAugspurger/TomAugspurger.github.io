@@ -19,12 +19,12 @@ that, much of the complexity of Raft comes from handling all the edge cases
 network partition and two nodes try to become leader? and on, and on)</p>
 <p>Raft was just about perfect for a week-long course. It&rsquo;s a complex enough
 problem to challenge just about anyone. But it&rsquo;s not <em>so</em> big that a person
-can&rsquo;t hope to implement it in a week.</p>
-<p>I liked the actual structure of the course itself. The actual &ldquo;lecture&rdquo; time was
-pretty short. We&rsquo;d typically start the day with a short overview of one
-component of the problem. But after that, we spent a majority of the time
-actually working on the project. Dave didn&rsquo;t just throw us to the wolves, but
-there was many a reference to <a href="https://knowyourmeme.com/memes/how-to-draw-an-owl">&ldquo;Draw the rest of the
+can&rsquo;t hope to implement (much of) it in a week.</p>
+<p>I liked the structure of the course itself. The actual &ldquo;lecture&rdquo; time was pretty
+short. We&rsquo;d typically start the day with a short overview of one component of
+the problem. But after that, we spent a majority of the time actually working on
+the project. Dave didn&rsquo;t just throw us to the wolves, but there was many a
+reference to <a href="https://knowyourmeme.com/memes/how-to-draw-an-owl">&ldquo;Draw the rest of the
 owl&rdquo;</a>.</p>
 <p>That said, I <em>really</em> benefited from Dave&rsquo;s gentle nudges on which part of the
 puzzle to work on next. The design space of implementing Raft is incredibly large.
@@ -39,6 +39,7 @@ A typical Raft implementation will need to handle, at a minimum:</p>
 <li>The State Machine (e.g. updating the Key Value store)</li>
 <li>Client interaction (a surprisingly tricky part, that completely blew up my
 implementation)</li>
+<li>Persistence</li>
 </ol>
 <p>You can implement these in just about any order. Going into the class I had no
 idea which would be &ldquo;best&rdquo; to do first (I still don&rsquo;t think there&rsquo;s a right
@@ -50,13 +51,14 @@ Mutable or immutable data structures? How do you test and monitor this?</p>
 <p>But I think the biggest decision is around how you actually architect the
 system. How do you break this large problem down into smaller components? And
 how do those components interact? <em>That&rsquo;s</em> the kind of thinking that&rsquo;s helpful
-in my day job, and this project really taught be a lot (specifically, that I
+in my day job, and this project really taught me a lot (specifically, that I
 still have a ton to learn about designing and implementing this type of system).</p>
 <p>Our class was in-person (Dave&rsquo;s last course in this specific office). While I
 missed my big monitor and fancy ergonomic keyboard of my home-office, (not to
 mention my family), I am glad I got to go in person. It was nice to just let out
 an exasperated sigh and chat with classmate about how they&rsquo;re handling a
-particularly tricky part of the project.</p>
+particularly tricky part of the project. The loved the informal conversations at
+breakfast and lunch (which inevitably turned back to aft).</p>
 <p>I want to clean up a few parts of my implementation (AKA, trash the whole thing
 and start over). Once done I&rsquo;ll make a followup post.</p>
 <p>Thanks to Dave for hosting a great course, the other classmates, and to my
