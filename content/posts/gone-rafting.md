@@ -64,6 +64,7 @@ system. How do you break this large problem down into smaller components? And
 how do those components interact? *That's* the kind of thinking that's helpful
 in my day job, and this project really taught me a lot (specifically, that I
 still have a ton to learn about designing and implementing this type of system).
+Also, it reinforced how difficult distributed systems can be.
 
 Our class was in-person (Dave's last course in this specific office). While I
 missed my big monitor and fancy ergonomic keyboard of my home-office, (not to
