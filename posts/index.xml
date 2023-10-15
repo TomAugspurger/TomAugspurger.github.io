@@ -1,4 +1,136 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>tom.w.augspurger@gmail.com (Tom Augspurger)</managingEditor><webMaster>tom.w.augspurger@gmail.com (Tom Augspurger)</webMaster><lastBuildDate>Sun, 13 Aug 2023 14:30:19 -0500</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Gone Rafting</title><link>https://tomaugspurger.net/posts/gone-rafting/</link><pubDate>Sun, 13 Aug 2023 14:30:19 -0500</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/gone-rafting/</guid><description>Last week, I was fortunate to attend Dave Beazley&amp;rsquo;s Rafting Trip course. The pretext of the course is to implement the Raft Consensus Algorithm.
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>tom.w.augspurger@gmail.com (Tom Augspurger)</managingEditor><webMaster>tom.w.augspurger@gmail.com (Tom Augspurger)</webMaster><lastBuildDate>Sun, 15 Oct 2023 12:00:00 -0500</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>STAC Updates I'm Excited About</title><link>https://tomaugspurger.net/posts/stac-updates/</link><pubDate>Sun, 15 Oct 2023 12:00:00 -0500</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/stac-updates/</guid><description>I wanted to share an update on a couple of developments in the STAC ecosystem that I&amp;rsquo;m excited about. It&amp;rsquo;s a great sign that even after 2 years after its initial release, the STAC ecosystem is still growing and improving how we can catalog, serve, and access geospatial data.
+STAC and Geoparquet A STAC API is a great way to query for data. But, like any API serving JSON, its throughput is limited.</description><content:encoded><![CDATA[<p>I wanted to share an update on a couple of developments in the <a href="https://stacspec.org/">STAC</a> ecosystem
+that I&rsquo;m excited about. It&rsquo;s a great sign that even after 2 years after its
+initial release, the STAC ecosystem is still growing and improving how we can
+catalog, serve, and access geospatial data.</p>
+<h2 id="stac-and-geoparquet">STAC and Geoparquet</h2>
+<p>A STAC API is a great way to query for data. But, like any API serving JSON, its
+throughput is limited. So in May 2022, the Planetary Computer team decided to
+export snapshots of our STAC database as <a href="https://geoparquet.org/">geoparquet</a>. Each STAC collection is
+exported as a Parquet dataset, where each record in the dataset is a STAC item.
+We pitched this as a way to do <a href="https://planetarycomputer.microsoft.com/docs/quickstarts/stac-geoparquet/">bulk queries</a> over the data, where
+returning many and many pages of JSON would be slow (and expensive for our
+servers and database).</p>
+<p>Looking at the <a href="https://github.com/stac-utils/stac-geoparquet/commits/main?after=a5a5bf2d958672c36f0c4c4cc827970833c18380+69&amp;branch=main&amp;qualified_name=refs%2Fheads%2Fmain">commit history</a>, the initial prototype was done over a
+couple of days. I wish I had my notes from our discussions, but this feels like
+the kind of thing that came out of an informal discussion like &ldquo;This access
+pattern kind of sucks&rdquo;, followed by &ldquo;What if we &hellip;. ?&rdquo;, and then &ldquo;Let&rsquo;s
+try it!<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>&rdquo;. And so we tried it, and it&rsquo;s been great!</p>
+<p>I think STAC as geoparquet can become a standard way to transfer STAC data in
+bulk. Chris Holmes has an <a href="https://github.com/stac-utils/stac-geoparquet/pull/28">open PR</a> defining a specification for
+what the columns and types should be, which will help more tools than just that
+<code>stac-geoparquet</code> library interpret the data.</p>
+<p>And Kyle Barron has an <a href="https://github.com/stac-utils/stac-geoparquet/pull/27">open PR</a> making the <code>stac-geoparquet</code>
+library &ldquo;arrow-native&rdquo; by using <a href="https://arrow.apache.org/">Apache Arrow</a> arrays and tables directly
+(via pyarrow), rather than pandas / geopandas. When I initially sketched out
+<code>stac-geoparquet</code>, it might have been just a bit early to do that. But given
+that we&rsquo;re dealing with complicated, nested types (which isn&rsquo;t NumPy&rsquo;s strong
+suite) and we aren&rsquo;t doing any analysis (which <em>is</em> pandas / NumPy&rsquo;s strong
+suite), this will be a great way to move the data around.</p>
+<p>Now I&rsquo;m just hoping for a PostgreSQL <a href="https://arrow.apache.org/docs/format/ADBC.html">ADBC</a> adapter so that our PostGIS
+database can output the STAC items as Arrow memory. Then we can be all Arrow
+from the time the data leaves the database to the time we&rsquo;re writing the parquet
+files.</p>
+<h2 id="stac-and-kerchunk">STAC and Kerchunk</h2>
+<p><a href="https://fsspec.github.io/kerchunk/">Kerchunk</a> is, I think, going to see some widespread adoption over the next year
+or two. It&rsquo;s a project (both a Python library and a specification) for putting a
+cloud-optimized veneer on top of non-cloud optimized data formats (like NetCDF /
+<a href="https://www.hdfgroup.org/">HDF5</a> and GRIB2).</p>
+<p>Briefly, those file formats tend not to work great in the cloud because</p>
+<ol>
+<li>In the cloud, we want to read files over the network (data are stored in Blob
+Storage, which is on a different machine than your compute). These file
+formats are pretty complicated, and can typically only be read by one library
+implemented in C / C++, which isn&rsquo;t always able to read data over the
+network.</li>
+<li>Reading the <em>metadata</em> (to build a structure like an xarray Dataset) tends to
+require reading many small pieces of data from many parts of the file. This
+is slow over the network, where each small read could translate to an HTTP
+request. On an SSD, seeking around the file to gather metadata is fine. Over
+the network, it&rsquo;s slow.</li>
+</ol>
+<p>Together, those mean that you aren&rsquo;t able to easily load subsets of the data
+(even if the data are internally chunked!). You can&rsquo;t load the metadata to do
+your filtering operations, and even if you could you might need to download the
+whole file just to throw away a bunch of data.</p>
+<p>That&rsquo;s where Kerchunk comes in. The idea is that the data provider can scan the
+files once ahead of time, extracting the <em>Kerchunk indices</em>, which include</p>
+<ol>
+<li>The metadata (dimension names, coordinate values, attributes, etc.), letting
+you build a high-level object like an <code>xarray.Dataset</code> without needing any
+(additional) HTTP requests.</li>
+<li>The byte offsets for each chunk of each data variable, letting you access
+arbitrary subsets of the data without needing to download and discard
+unnecessary data.</li>
+</ol>
+<p>You store that metadata somewhere (in a JSON file, say) and users access the
+original NetCDF / GRIB2 data via that Kerchunk index file. You can even do
+metadata-only operations, like combining data variables from many files, or
+concatenating along a dimension to make a time series, without ever downloading
+the data.</p>
+<p>We&rsquo;ve had some <a href="https://planetarycomputer.microsoft.com/dataset/nasa-nex-gddp-cmip6#Example-Notebook">experimental support</a> for accessing a couple
+datasets hosted on the Planetary Computer via Kerchunk indices for a while now.
+We generated some indices and through them up in Blob Storage, including them as
+an asset in the STAC item. I&rsquo;ve never really been happy with how how that works
+in practice, because of the extra hop from STAC to Kerchunk to the actual data.</p>
+<p>I think that Kerchunk is just weird enough and hard enough to use that it can
+take time for users to feel comfortable with it. It&rsquo;s hard to explain that if
+you want the data from <em>this</em> NetCDF file, you need to download this <em>other</em>
+JSON file, and then open that up with this other fsspec filesystem (no, not the
+Azure Blob Storage filesystem where the NetCDF and JSON files are, that&rsquo;ll come
+later), and pass that result to the Zarr reader in xarray (no, the data isn&rsquo;t
+stored in Zarr, we&rsquo;re just using the Zarr API to access the data via the
+references&hellip;).</p>
+<p>Those two additional levels of indirection (through a sidecar JSON file and then
+the Zarr reader via fsspec&rsquo;s reference file system) are a real hurdle. So some
+of my teammate&rsquo;s are working on storing the Kerchunk indices in the STAC
+items.</p>
+<p>My goal is to enable an access pattern like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> <span style="color:#f92672">import</span> xarray <span style="color:#66d9ef">as</span> xr
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> <span style="color:#f92672">import</span> pystac_client
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> catalog <span style="color:#f92672">=</span> pystac_client<span style="color:#f92672">.</span>Client<span style="color:#f92672">.</span>open(<span style="color:#e6db74">&#34;https://planetarycomputer.microsoft.com/api/stac/v1&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> items <span style="color:#f92672">=</span> catalog<span style="color:#f92672">.</span>search(collections<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#34;noaa-nwm&#34;</span>], datetime<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;2023-10-15&#34;</span>, query<span style="color:#f92672">=...</span>)
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> ds <span style="color:#f92672">=</span> xr<span style="color:#f92672">.</span>open_dataset(items, engine<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;stac&#34;</span>)
+</span></span></code></pre></div><p>Where the step from STAC to xarray / pandas / whatever is as easy with NetCDF or
+GRIB2 data as it is with COGs are Zarr data (thanks to projects like <a href="https://stackstac.readthedocs.io/en/latest/">stackstac</a>
+and <a href="https://odc-stac.readthedocs.io/">odc-stac</a>.) This is using ideas from Julia Signell&rsquo;s <a href="https://github.com/stac-utils/xpystac">xpystac</a> library for
+that final layer, which would know how to translate the STAC items (with
+embedded Kerchunk references) into an xarray Dataset.</p>
+<p>I just made an <a href="https://github.com/stac-utils/xstac/pull/38">update</a> to <a href="https://github.com/stac-utils/xstac">xstac</a>,
+a library for creating STAC items for data that can be reresented as an xarray
+Datasets, to add support for embedding Kerchunk indices in a STAC item
+representing a dataset. The goal is to be &ldquo;STAC-native&rdquo; (by using things like
+the datacube extension), while still providing enough information for Kerchunk
+to do its thing. I&rsquo;ll do a proper STAC extension later, but I want to get some
+real-world usage of it first.</p>
+<p>I think this is similar in spirit to how
+<a href="https://docs.earthmover.io/">Arraylake</a> can store Kerchunk indices in their
+database, which hooks into their Zarr-compatible API.</p>
+<p>The main concern here is that we&rsquo;d blow up the size of the STAC items. That
+would bloat our database, slow down STAC queries and responses. But overall, I
+think it&rsquo;s worth it for the ergonomics when it comes to loading the data. We&rsquo;ll
+see.</p>
+<h2 id="getting-involved">Getting Involved</h2>
+<p>Reach out, either on GitHub or by email, if you&rsquo;re interested in getting
+involved in any of these projects.</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>I do distinctly remember that our <a href="https://planetarycomputer.microsoft.com/docs/overview/qgis-plugin/">&ldquo;hosted
+QGIS&rdquo;</a>
+was exactly that. <a href="https://github.com/yuvipanda">Yuvi</a> had made a
+<a href="https://discourse.pangeo.io/t/run-linux-desktop-apps-in-mybinder-org-your-jupyterhub/1978">post</a>
+on the Pangeo Discourse and
+<a href="http://awesomesongbook.com/00s_songs/00s_songs.html">Dan</a> had asked about
+how Desktop GIS users could use Planetary Computer data (we had just helped
+fund the STAC plugin for QGIS). I added that JupyterHub profile based on
+Yuvi and Scott Hendersen&rsquo;s work and haven&rsquo;t touched it since.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+]]></content:encoded></item><item><title>Gone Rafting</title><link>https://tomaugspurger.net/posts/gone-rafting/</link><pubDate>Sun, 13 Aug 2023 14:30:19 -0500</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/gone-rafting/</guid><description>Last week, I was fortunate to attend Dave Beazley&amp;rsquo;s Rafting Trip course. The pretext of the course is to implement the Raft Consensus Algorithm.
 I&amp;rsquo;ll post more about Raft, and the journey of implementing, it later. But in brief, Raft is an algorithm that lets a cluster of machines work together to reliably do something. If you had a service that needed to stay up (and stay consistent), even if some of the machines in the cluster went down, then you might want to use Raft.</description><content:encoded><![CDATA[<p>Last week, I was fortunate to attend Dave Beazley&rsquo;s <a href="https://dabeaz.com/raft.html">Rafting
 Trip</a> course. The pretext of the course is to
 implement the <a href="https://raft.github.io/">Raft Consensus Algorithm</a>.</p>
