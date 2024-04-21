@@ -143,19 +143,7 @@ Davis](https://twitter.com/jiffyclub), which measures performance at the
 function-level. For large enough slowdowns, the issue will jump out immediately
 with snakeviz.
 
-[**pandas 0.25**](https://gistcdn.rawgit.org/TomAugspurger/bad09c3e4a03338590545033ad2da925/353fbf67bb1ff7c6f039854af1c2d51cb503c865/pandas-0.25_static.html)
-
-<iframe title="pandas-0.25 snakeviz"
-        width="900px"
-        height="600px"
-        src="https://gistcdn.rawgit.org/TomAugspurger/bad09c3e4a03338590545033ad2da925/353fbf67bb1ff7c6f039854af1c2d51cb503c865/pandas-0.25_static.html"></iframe>
-
-[**pandas 1.0**](https://gistcdn.rawgit.org/TomAugspurger/98bc79523187f1fde3093b5af63ae68c/5b1d3815fb2319ff365c3881daeac70bf9077e77/pandas-1.0_static.html)
-
-<iframe title="pandas 1.0.3 snakeviz"
-        width="900px"
-        height="600px"
-        src="https://gistcdn.rawgit.org/TomAugspurger/98bc79523187f1fde3093b5af63ae68c/5b1d3815fb2319ff365c3881daeac70bf9077e77/pandas-1.0_static.html"></iframe>
+![Snakeviz chart showing where time was spent](https://jiffyclub.github.io/snakeviz/img/icicle.png)
 
 From the [snakeviz
 docs](https://jiffyclub.github.io/snakeviz/#interpreting-results), these charts
