@@ -807,16 +807,8 @@ version of Python). Then I ensure that I can reproduce the slowdown.</p>
 Davis</a>, which measures performance at the
 function-level. For large enough slowdowns, the issue will jump out immediately
 with snakeviz.</p>
-<p><a href="https://gistcdn.rawgit.org/TomAugspurger/bad09c3e4a03338590545033ad2da925/353fbf67bb1ff7c6f039854af1c2d51cb503c865/pandas-0.25_static.html"><strong>pandas 0.25</strong></a></p>
-<iframe title="pandas-0.25 snakeviz"
-        width="900px"
-        height="600px"
-        src="https://gistcdn.rawgit.org/TomAugspurger/bad09c3e4a03338590545033ad2da925/353fbf67bb1ff7c6f039854af1c2d51cb503c865/pandas-0.25_static.html"></iframe>
-<p><a href="https://gistcdn.rawgit.org/TomAugspurger/98bc79523187f1fde3093b5af63ae68c/5b1d3815fb2319ff365c3881daeac70bf9077e77/pandas-1.0_static.html"><strong>pandas 1.0</strong></a></p>
-<iframe title="pandas 1.0.3 snakeviz"
-        width="900px"
-        height="600px"
-        src="https://gistcdn.rawgit.org/TomAugspurger/98bc79523187f1fde3093b5af63ae68c/5b1d3815fb2319ff365c3881daeac70bf9077e77/pandas-1.0_static.html"></iframe>
+<p><img loading="lazy" src="https://jiffyclub.github.io/snakeviz/img/icicle.png" alt="Snakeviz chart showing where time was spent"  />
+</p>
 <p>From the <a href="https://jiffyclub.github.io/snakeviz/#interpreting-results">snakeviz
 docs</a>, these charts
 show</p>

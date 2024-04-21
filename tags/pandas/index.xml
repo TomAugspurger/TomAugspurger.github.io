@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>pandas on Tom's Blog</title><link>https://tomaugspurger.net/tags/pandas/</link><description>Recent content in pandas on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>tom.w.augspurger@gmail.com (Tom Augspurger)</managingEditor><webMaster>tom.w.augspurger@gmail.com (Tom Augspurger)</webMaster><lastBuildDate>Wed, 01 Apr 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://tomaugspurger.net/tags/pandas/index.xml" rel="self" type="application/rss+xml"/><item><title>Maintaining Performance</title><link>https://tomaugspurger.net/posts/performance-regressions/</link><pubDate>Wed, 01 Apr 2020 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/performance-regressions/</guid><description>As pandas&amp;rsquo; documentation claims: pandas provides high-performance data structures. But how do we verify that the claim is correct? And how do we ensure that it stays correct over many releases. This post describes
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Pandas on Tom's Blog</title><link>https://tomaugspurger.net/tags/pandas/</link><description>Recent content in Pandas on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>tom.w.augspurger@gmail.com (Tom Augspurger)</managingEditor><webMaster>tom.w.augspurger@gmail.com (Tom Augspurger)</webMaster><lastBuildDate>Wed, 01 Apr 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://tomaugspurger.net/tags/pandas/index.xml" rel="self" type="application/rss+xml"/><item><title>Maintaining Performance</title><link>https://tomaugspurger.net/posts/performance-regressions/</link><pubDate>Wed, 01 Apr 2020 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/performance-regressions/</guid><description>As pandas&amp;rsquo; documentation claims: pandas provides high-performance data structures. But how do we verify that the claim is correct? And how do we ensure that it stays correct over many releases. This post describes
 pandas&amp;rsquo; current setup for monitoring performance My personal debugging strategy for understanding and fixing performance regressions when they occur. I hope that the first section topic is useful for library maintainers and the second topic is generally useful for people writing performance-sensitive code.</description><content:encoded><![CDATA[<p>As pandas&rsquo; <a href="https://pandas.pydata.org/docs/">documentation</a> claims: pandas
 provides <em>high-performance</em> data structures. But how do we verify that the claim
 is correct? And how do we ensure that it <em>stays</em> correct over many releases.
@@ -106,16 +106,8 @@ version of Python). Then I ensure that I can reproduce the slowdown.</p>
 Davis</a>, which measures performance at the
 function-level. For large enough slowdowns, the issue will jump out immediately
 with snakeviz.</p>
-<p><a href="https://gistcdn.rawgit.org/TomAugspurger/bad09c3e4a03338590545033ad2da925/353fbf67bb1ff7c6f039854af1c2d51cb503c865/pandas-0.25_static.html"><strong>pandas 0.25</strong></a></p>
-<iframe title="pandas-0.25 snakeviz"
-        width="900px"
-        height="600px"
-        src="https://gistcdn.rawgit.org/TomAugspurger/bad09c3e4a03338590545033ad2da925/353fbf67bb1ff7c6f039854af1c2d51cb503c865/pandas-0.25_static.html"></iframe>
-<p><a href="https://gistcdn.rawgit.org/TomAugspurger/98bc79523187f1fde3093b5af63ae68c/5b1d3815fb2319ff365c3881daeac70bf9077e77/pandas-1.0_static.html"><strong>pandas 1.0</strong></a></p>
-<iframe title="pandas 1.0.3 snakeviz"
-        width="900px"
-        height="600px"
-        src="https://gistcdn.rawgit.org/TomAugspurger/98bc79523187f1fde3093b5af63ae68c/5b1d3815fb2319ff365c3881daeac70bf9077e77/pandas-1.0_static.html"></iframe>
+<p><img loading="lazy" src="https://jiffyclub.github.io/snakeviz/img/icicle.png" alt="Snakeviz chart showing where time was spent"  />
+</p>
 <p>From the <a href="https://jiffyclub.github.io/snakeviz/#interpreting-results">snakeviz
 docs</a>, these charts
 show</p>
