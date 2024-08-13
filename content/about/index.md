@@ -3,13 +3,16 @@ title: About
 ---
 
 Hi, I'm Tom. I'm a programmer living in Des Moines, IA.
-I work for Microsoft.
 
 ## Talks
 
 - Pandas: `.head() to .tail()` | [video](https://www.youtube.com/watch?v=7vuO9QXDN50) | [materials](https://github.com/tomaugspurger/pydata-chi-h2t)
 - Mind the Gap! Bridging the scikit-learn - pandas dtype divide | [video](https://www.youtube.com/watch?v=KLPtEBokqQ0) | [materials](https://github.com/tomaugspurger/mtg)
 - Pandas: `.head() to .tail()` | [video](https://www.youtube.com/watch?v=otCriSKVV_8) | [materials](https://github.com/tomaugspurger/pydataSeattle)
+- Scalable Sustainability with the Planetary Computer (PyData Global) | [video](https://www.youtube.com/watch?v=FzZY9pEl8GU&pp=ygUOdG9tIGF1Z3NwdXJnZXI%3D) | [materials](https://github.com/TomAugspurger/scalable-sustainability-pydata-global)
+- Scalable Sustainability Tutorial (Cloud Native Geospatial Day 2022) | [video](https://youtu.be/o3FvOKdfR_c?si=ECHBW8v6FihYti3U) | [materials](https://github.com/TomAugspurger/pc-cng-outreach-2022)
+- Scalable Geospatial Analysis | [video](https://youtu.be/84VNWk_zFTM?si=eceXbNlv7oZn3FhH)
+- Planetary Computer overview at NASA's Data and Computing Architecture Study (with Bruno) | [video](https://youtu.be/8eudm6tRUsU?si=sUnJKreMV6WE6u08&t=548)
 
 ## Podcasts
 

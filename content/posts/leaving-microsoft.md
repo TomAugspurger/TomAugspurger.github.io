@@ -5,6 +5,8 @@ date: 2024-08-12T07:00:00-05:00
 
 I have, as they say, some personal news to share. On Monday I (along with some *very* talented teammates, see [below](#whats-next) if you're hiring) was laid off from Microsoft as part of a reorganization. Like my [Moving to Microsoft](/posts/whats-next) post, I wanted to jot down some of the things I got to work on.
 
+For those of you wondering, the [Planetary Computer](https://planetarycomputer.microsoft.com) project *does* continue, just without me.
+
 ## Reflections
 
 It should go without saying that *all* of this was a team effort. I've been incredibly fortunate to have great teammates over the years, but the team building out the [Planetary Computer](http://planetarycomputer.microsoft.com/) was especially fantastic.
