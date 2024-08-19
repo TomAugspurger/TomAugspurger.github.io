@@ -17725,6 +17725,8 @@ Talks Pandas: .head() to .tail() | video | materials Mind the Gap! Bridging the 
 <h2 id="contact">Contact</h2>
 <p>Either on Mastodon <a href="https://mastodon.social/@TomAugspurger">@TomAugspurger@mastodon.social</a> or by email
 at <a href="mailto:tom.w.augspurger@gmail.com">tom.w.augspurger@gmail.com</a>.</p>
+<h2 id="résumé">Résumé</h2>
+<p>Here&rsquo;s my <a href="/assets/resume.pdf">résumé</a> (pdf).</p>
 <h2 id="this-blog">This Blog</h2>
 <p>This blog uses <a href="https://gohugo.io/">Hugo</a> as a static-site generator and the <a href="https://github.com/adityatelange/hugo-PaperMod/">PaperMod</a> theme.</p>
 ]]></content:encoded></item><item><title>Organizing Papers</title><link>https://tomaugspurger.net/posts/organizing-papers/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/organizing-papers/</guid><description>As a graduate student, you read a lot of journal articles&amp;hellip; a lot. With the material in the articles being as difficult as it is, I didn&amp;rsquo;t want to worry about organizing everything as well. That&amp;rsquo;s why I wrote this script to help (I may have also been procrastinating from studying for my qualifiers). This was one of my earliest little projects, so I&amp;rsquo;m not claiming that this is the best way to do anything.</description><content:encoded><![CDATA[<p>As a graduate student, you read a lot of journal articles&hellip; <em>a lot</em>.
