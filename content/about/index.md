@@ -33,6 +33,10 @@ Hi, I'm Tom. I'm a programmer living in Des Moines, IA.
 Either on Mastodon [@TomAugspurger@mastodon.social](https://mastodon.social/@TomAugspurger) or by email
 at <tom.w.augspurger@gmail.com>.
 
+## Résumé
+
+Here's my [résumé](/assets/resume.pdf) (pdf).
+
 ## This Blog
 
 This blog uses [Hugo](https://gohugo.io/) as a static-site generator and the [PaperMod](https://github.com/adityatelange/hugo-PaperMod/) theme.
