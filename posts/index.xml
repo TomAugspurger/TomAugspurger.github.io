@@ -1,4 +1,252 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>tom.w.augspurger@gmail.com (Tom Augspurger)</managingEditor><webMaster>tom.w.augspurger@gmail.com (Tom Augspurger)</webMaster><lastBuildDate>Thu, 29 Aug 2024 20:00:00 -0500</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>stac-geoparquet</title><link>https://tomaugspurger.net/posts/stac-geoparquet/</link><pubDate>Thu, 29 Aug 2024 20:00:00 -0500</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/stac-geoparquet/</guid><description>I wrote up a quick introduction to stac-geoparquet on the Cloud Native Geo blog with Kyle Barron and Chris Holmes.
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>tom.w.augspurger@gmail.com (Tom Augspurger)</managingEditor><webMaster>tom.w.augspurger@gmail.com (Tom Augspurger)</webMaster><lastBuildDate>Sat, 31 Aug 2024 12:00:00 -0500</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Serializing Dataclasses</title><link>https://tomaugspurger.net/posts/serializing-dataclasses/</link><pubDate>Sat, 31 Aug 2024 12:00:00 -0500</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/serializing-dataclasses/</guid><description>This post is a bit of a tutorial on serializing and deserializing Python dataclasses. I&amp;rsquo;ve been hacking on zarr-python-v3 a bit, which uses some dataclasses to represent some metadata objects. Those objects need to be serialized to and deserialized from JSON.
+This is a (surprisingly?) challenging area, and there are several excellent libraries out there that you should probably use. My personal favorite is msgspec, but cattrs, pydantic, and pyserde are also options.</description><content:encoded><![CDATA[<p>This post is a bit of a tutorial on serializing and deserializing Python
+<a href="https://docs.python.org/3/library/dataclasses.html">dataclasses</a>.  I&rsquo;ve been hacking on <a href="https://github.com/zarr-developers/zarr-python/">zarr-python-v3</a> a bit, which uses some
+dataclasses to represent some metadata objects. Those objects need to be
+serialized to and deserialized from JSON.</p>
+<p>This is a (surprisingly?) challenging area, and there are several excellent
+libraries out there that you should probably use. My personal favorite is
+<a href="https://jcristharif.com/msgspec/">msgspec</a>, but <a href="https://catt.rs/en/stable/">cattrs</a>, <a href="https://docs.pydantic.dev/latest/">pydantic</a>, and <a href="https://yukinarit.github.io/pyserde/guide/en/">pyserde</a> are also options. But
+hopefully this can be helpful for understanding how those libraries work at a
+conceptual level (their exact implementations will look very different.) In
+zarr-python&rsquo;s case, this didn&rsquo;t <em>quite</em> warrant needing to bring in a
+dependency, so we rolled our own.</p>
+<p>Like msgspec and cattrs, I like to have serialization logic separate from the
+core metadata logic. Ideally, you don&rsquo;t need to pollute your object models with
+serialization methods, and don&rsquo;t need to shoehorn your business logic to fit the
+needs of serialization (too much). And ideally the actual validation is done at
+the boundaries of your program, where you&rsquo;re actually converting from the
+unstructured JSON to your structured models. Internal to your program, you have
+static type checking to ensure you&rsquo;re passing around the appropriate types.</p>
+<p>This is my first time diving into these topics, so if you spot anything that&rsquo;s
+confusing or plain wrong, then <a href="https://mastodon.social/@TomAugspurger">let me know</a>.</p>
+<h2 id="overview">Overview</h2>
+<p>At a high level, we want a pair of methods that can serialize some dataclass
+instance into a format like JSON and deserialize that output back into the
+original dataclass.</p>
+<p>The main challenge during serialization is encountering fields that Python&rsquo;s
+<a href="https://docs.python.org/3/library/json.html">json</a> module doesn&rsquo;t natively support.  This might be &ldquo;complex&rdquo; objects like
+Python datetimes or NumPy dtype objects. Or it could be instances of other
+dataclasses if you have some nested data structure.</p>
+<p>When deserializing, there are <em>lots</em> of pitfalls to avoid, but our main goal is
+to support <em>typed deserialization</em>. Any time we converted a value (like a
+datetime to a string, or a dataclass to a dict), we&rsquo;ll need to undo that
+conversion into the proper type.</p>
+<h2 id="example">Example</h2>
+<p>To help make things clearer, we&rsquo;ll work with this example:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#a6e22e">@dataclasses.dataclass</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ArrayMetadata</span>:
+</span></span><span style="display:flex;"><span>    shape: tuple[int, <span style="color:#f92672">...</span>]
+</span></span><span style="display:flex;"><span>    timestamp: datetime<span style="color:#f92672">.</span>datetime  <span style="color:#75715e"># note 1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@dataclasses.dataclass</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">EncoderA</span>:
+</span></span><span style="display:flex;"><span>    value: int
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@dataclasses.dataclass</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">EncoderB</span>:
+</span></span><span style="display:flex;"><span>    value: int
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@dataclasses.dataclass</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Metadata</span>:
+</span></span><span style="display:flex;"><span>    version: typing<span style="color:#f92672">.</span>Literal[<span style="color:#e6db74">&#34;3&#34;</span>]   <span style="color:#75715e"># note 2</span>
+</span></span><span style="display:flex;"><span>    array_metadata: ArrayMetadata  <span style="color:#75715e"># note 2</span>
+</span></span><span style="display:flex;"><span>    encoder: EncoderA <span style="color:#f92672">|</span> EncoderB   <span style="color:#75715e"># note 4</span>
+</span></span><span style="display:flex;"><span>    attributes: dict[str, typing<span style="color:#f92672">.</span>Any]
+</span></span><span style="display:flex;"><span>    name: str <span style="color:#f92672">|</span> <span style="color:#66d9ef">None</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>     <span style="color:#75715e"># note 5</span>
+</span></span></code></pre></div><p>Successfully serializing an instance of <code>Metadata</code> requires working through a few things:</p>
+<ol>
+<li>Python datetimes are not natively serializable by Python&rsquo;s JSON encoder.</li>
+<li><code>version</code> is a <code>Literal[&quot;3&quot;]</code>, in other words <code>&quot;3&quot;</code> is only valid value there. We&rsquo;d ideally
+validate that when deserializing <code>Metadata</code> (since we can&rsquo;t rely on a static linter like <code>mypy</code> to validate JSON data read from a file).</li>
+<li><code>Metadata.array_metadata</code> is a nested dataclass. We&rsquo;ll need to recursively apply any special serialization / deserialization logic to any dataclasses we encounter</li>
+<li><code>Metadata.encoder</code> is a union type, between <code>EncoderA</code> and <code>EncoderB</code>. We&rsquo;ll need to ensure that the serialized version has enough information to deserialize this into the correct variant of that Union</li>
+<li><code>name</code> is an <code>Optional[str]</code>. This is similar to a Union between two concrete types, where one of the types happens to be None.</li>
+</ol>
+<h2 id="serialization">Serialization</h2>
+<p>Serialization is <em>relatively</em> easy compared to deserialization. Given an
+instance of <code>Metadata</code>, we&rsquo;ll use <code>dataclasses.asdict</code> to convert the dataclass
+to a dictionary of strings to values. The main challenge is telling the JSON
+encoder how to serialize each of those values, which might have be &ldquo;complex&rdquo;
+types (whether they be dataclasses or some builtin type like
+<code>datetime.datetime</code>).  There are a few ways to do this, but the simplest way to
+do it is probably to use the <code>default</code> keyword of <code>json.dumps</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">encode_value</span>(x):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> dataclasses<span style="color:#f92672">.</span>is_dataclass(x):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> dataclasses<span style="color:#f92672">.</span>asdict(x)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">elif</span> isinstance(x, datetime<span style="color:#f92672">.</span>datetime):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x<span style="color:#f92672">.</span>isoformat()
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># other special cases... </span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> x
+</span></span></code></pre></div><p>If Python encounters a value it doesn&rsquo;t know how to serialize, it will use your function.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> json<span style="color:#f92672">.</span>dumps({<span style="color:#e6db74">&#34;a&#34;</span>: datetime<span style="color:#f92672">.</span>datetime(<span style="color:#ae81ff">2000</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>)}, default<span style="color:#f92672">=</span>serialize)
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#39;{&#34;a&#34;: &#34;2000-01-01T00:00:00&#34;}&#39;</span>
+</span></span></code></pre></div><p>For aesthetic reasons, we&rsquo;ll use <code>functools.singledispatch</code> to write that:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> dataclasses<span style="color:#f92672">,</span> datetime<span style="color:#f92672">,</span> typing<span style="color:#f92672">,</span> json<span style="color:#f92672">,</span> functools
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@functools.singledispatch</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">encode_value</span>(x: typing<span style="color:#f92672">.</span>Any) <span style="color:#f92672">-&gt;</span> typing<span style="color:#f92672">.</span>Any:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> dataclasses<span style="color:#f92672">.</span>is_dataclass(x):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> dataclasses<span style="color:#f92672">.</span>asdict(x)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> x
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@encode_value.register</span>(datetime<span style="color:#f92672">.</span>datetime)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@encode_value.register</span>(datetime<span style="color:#f92672">.</span>date)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_</span>(x: datetime<span style="color:#f92672">.</span>date <span style="color:#f92672">|</span> datetime<span style="color:#f92672">.</span>datetime) <span style="color:#f92672">-&gt;</span> str:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> x<span style="color:#f92672">.</span>isoformat()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@encode_value.register</span>(complex)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_</span>(x: complex) <span style="color:#f92672">-&gt;</span> list[float, float]:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> [x<span style="color:#f92672">.</span>real, x<span style="color:#f92672">.</span>imag]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># more implementations for additional type...</span>
+</span></span></code></pre></div><p>You&rsquo;ll build up a list of <a href="https://jcristharif.com/msgspec/supported-types.html">supported types</a>
+that your system can serialize.</p>
+<p>And define your serializer like so:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">serialize</span>(x):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> json<span style="color:#f92672">.</span>dumps(x, default<span style="color:#f92672">=</span>encode_value)
+</span></span></code></pre></div><p>and use it like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> metadata <span style="color:#f92672">=</span> Metadata(
+</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>     version<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;3&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>     array_metadata<span style="color:#f92672">=</span>ArrayMetadata(shape<span style="color:#f92672">=</span>(<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>),
+</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>     timestamp<span style="color:#f92672">=</span>datetime<span style="color:#f92672">.</span>datetime(<span style="color:#ae81ff">2000</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>)),
+</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>     encoder<span style="color:#f92672">=</span>EncoderA(value<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>),
+</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>     attributes<span style="color:#f92672">=</span>{<span style="color:#e6db74">&#34;foo&#34;</span>: <span style="color:#e6db74">&#34;bar&#34;</span>}
+</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span> )
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> serialized <span style="color:#f92672">=</span> serialize(metadata)
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> serialized
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#39;{&#34;version&#34;: &#34;3&#34;, &#34;array_metadata&#34;: {&#34;shape&#34;: [2, 2], &#34;timestamp&#34;: &#34;2000-01-01T00:00:00&#34;}, &#34;encoder&#34;: {&#34;value&#34;: 1}, &#34;attributes&#34;: {&#34;foo&#34;: &#34;bar&#34;}, &#34;name&#34;: null}&#39;</span>
+</span></span></code></pre></div><h2 id="deserialization">Deserialization</h2>
+<p>We&rsquo;ve done serialization, so we should be about halfway done, right? Ha! Because we&rsquo;ve signed up for <em>typed</em> deserialization, which will let us faithfully round-trip some objects, we have more work to do.</p>
+<p>A plain &ldquo;roundtrip&rdquo; like <code>json.loads</code> only gets us part of the way there:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> json<span style="color:#f92672">.</span>loads(serialized)
+</span></span><span style="display:flex;"><span>{<span style="color:#e6db74">&#39;version&#39;</span>: <span style="color:#e6db74">&#39;3&#39;</span>,
+</span></span><span style="display:flex;"><span> <span style="color:#e6db74">&#39;array_metadata&#39;</span>: {<span style="color:#e6db74">&#39;shape&#39;</span>: [<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>], <span style="color:#e6db74">&#39;timestamp&#39;</span>: <span style="color:#e6db74">&#39;2000-01-01T00:00:00&#39;</span>},
+</span></span><span style="display:flex;"><span> <span style="color:#e6db74">&#39;encoder&#39;</span>: {<span style="color:#e6db74">&#39;value&#39;</span>: <span style="color:#ae81ff">1</span>},
+</span></span><span style="display:flex;"><span> <span style="color:#e6db74">&#39;attributes&#39;</span>: {<span style="color:#e6db74">&#39;foo&#39;</span>: <span style="color:#e6db74">&#39;bar&#39;</span>},
+</span></span><span style="display:flex;"><span> <span style="color:#e6db74">&#39;name&#39;</span>: <span style="color:#66d9ef">None</span>}
+</span></span></code></pre></div><p>We have plain dictionaries instead of instances of our dataclasses and the
+timestamp is still a string.  In short, we need to decode all the values we
+encoded earlier. To do that, we need the user to give us a <em>bit</em> more
+information: We need to know the desired dataclass to deserialize into.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">deserialize</span>(into: type[T], data: bytes) <span style="color:#f92672">-&gt;</span> T:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span>
+</span></span></code></pre></div><p>Given some type <code>T</code> (which we&rsquo;ll assume is a dataclass; we could do some things
+with type annotations to actually check that) like <code>Metadata</code>, we&rsquo;ll build
+an instance using the deserialized data (with the properly decoded types!)</p>
+<p>Users will call that like</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> deserialize(into<span style="color:#f92672">=</span>Metadata, data<span style="color:#f92672">=</span>deserialized)
+</span></span><span style="display:flex;"><span>Metadata(<span style="color:#f92672">...</span>)
+</span></span></code></pre></div><p>For a dataclass type like <code>Metadata</code>, we can get the types of all of its
+fields at runtime with <a href="https://docs.python.org/3/library/typing.html#typing.get_type_hints"><code>typing.get_type_hints</code></a>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> typing<span style="color:#f92672">.</span>get_type_hints(Metadata)
+</span></span><span style="display:flex;"><span>{<span style="color:#e6db74">&#39;version&#39;</span>: typing<span style="color:#f92672">.</span>Literal[<span style="color:#e6db74">&#39;3&#39;</span>],
+</span></span><span style="display:flex;"><span> <span style="color:#e6db74">&#39;array_metadata&#39;</span>: __main__<span style="color:#f92672">.</span>ArrayMetadata,
+</span></span><span style="display:flex;"><span> <span style="color:#e6db74">&#39;encoder&#39;</span>: __main__<span style="color:#f92672">.</span>EncoderA <span style="color:#f92672">|</span> __main__<span style="color:#f92672">.</span>EncoderB,
+</span></span><span style="display:flex;"><span> <span style="color:#e6db74">&#39;attributes&#39;</span>: dict[str, typing<span style="color:#f92672">.</span>Any],
+</span></span><span style="display:flex;"><span> <span style="color:#e6db74">&#39;name&#39;</span>: str <span style="color:#f92672">|</span> <span style="color:#66d9ef">None</span>}
+</span></span></code></pre></div><p>So we &ldquo;just&rdquo; need to write a <code>decode_value</code> function that mirrors our
+<code>encode_value</code> function from earlier.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">decode_value</span>(into: type[T], value: Any) <span style="color:#f92672">-&gt;</span> T:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># the default implementation just calls the constructor, like int(x)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># In practice, you have to deal with a lot more details like</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Any, Literal, etc.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> into(value)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@decode_value.register</span>(datetime<span style="color:#f92672">.</span>datetime)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@decode_value.register</span>(datetime<span style="color:#f92672">.</span>date)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_</span>(into, value):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> into<span style="color:#f92672">.</span>fromisoformat(value)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@decode_value.register</span>(complex)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_</span>(into, value):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> into(<span style="color:#f92672">*</span>value)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># ... additional implementations</span>
+</span></span></code></pre></div><p>Unfortunately, &ldquo;just&rdquo; writing that decoder proved to be challenging (have I
+mentioned that you should be using msgspec for this yet?). Probably the biggest challenge was
+dealing with Union types. The msgspec docs cover this really well in its <a href="https://jcristharif.com/msgspec/structs.html#tagged-unions">Tagged Unions</a> section, but I&rsquo;ll give a brief overview.</p>
+<p>Let&rsquo;s take a look at the declaration of <code>encoder</code> again:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#a6e22e">@dataclasses.dataclass</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">EncoderA</span>:
+</span></span><span style="display:flex;"><span>    value: int
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@dataclasses.dataclass</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">EncoderB</span>:
+</span></span><span style="display:flex;"><span>    key: str
+</span></span><span style="display:flex;"><span>    value: int
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Metadata</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span>
+</span></span><span style="display:flex;"><span>    encoder: EncoderA <span style="color:#f92672">|</span> EncoderB
+</span></span></code></pre></div><p>Right now, we serialize that as something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-JSON" data-lang="JSON"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;encoder&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;value&#34;</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>With that, it&rsquo;s impossible to choose between <code>EncoderA</code> and <code>EncoderB</code> without
+some heuristic like &ldquo;pick the first one&rdquo;, or &ldquo;pick the first one that succeeds&rdquo;.
+There&rsquo;s just not enough information available to the decoder. The idea of a
+&ldquo;tagged union&rdquo; is to embed a bit more information in the serialized
+representation that lets the decoder know which to pick.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-JSON" data-lang="JSON"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;encoder&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;value&#34;</span>: <span style="color:#ae81ff">1</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;type&#34;</span>: <span style="color:#e6db74">&#34;EncoderA&#34;</span>,
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now when the decoder looks at the type hints it&rsquo;ll see <code>EncoderA | EncoderB</code> as
+the options, and can pick <code>EncoderA</code> based on the <code>type</code> field in the serialized
+object.  We have introduced a new complication, though: how do we get <code>type</code> in
+there in the first place?</p>
+<p>There&rsquo;s probably multiple ways, but I went with <a href="https://docs.python.org/3/library/typing.html#typing.Annotated"><code>typing.Annotated</code></a>.  It&rsquo;s not
+the most user-friendly, but it lets you put additional metadata on the type
+hints, which can be used for whatever you want. We&rsquo;d require the user to specify
+the variants of the union types as something like</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Tag</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">EncoderA</span>:
+</span></span><span style="display:flex;"><span>    value: int
+</span></span><span style="display:flex;"><span>    type: typing<span style="color:#f92672">.</span>Annotated[typing<span style="color:#f92672">.</span>Literal[<span style="color:#e6db74">&#34;a&#34;</span>], Tag] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;a&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">EncoderB</span>:
+</span></span><span style="display:flex;"><span>    value: int
+</span></span><span style="display:flex;"><span>    key: str
+</span></span><span style="display:flex;"><span>    type: typing<span style="color:#f92672">.</span>Annotated[typing<span style="color:#f92672">.</span>Literal[<span style="color:#e6db74">&#34;b&#34;</span>], Tag] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;b&#34;</span>
+</span></span></code></pre></div><p>(Other libraries might use something like the classes name as the value (by
+default) rather than requiring a single-valued Literal there.)</p>
+<p>Now we have a <code>type</code> key that&rsquo;ll show up in the serialized form.
+When our decoder encounters a union of types to deserialize into,
+it can inspect their types hints with <code>include_extras</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> typing<span style="color:#f92672">.</span>get_type_hints(EncoderA, include_extras<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>{<span style="color:#e6db74">&#39;value&#39;</span>: int,
+</span></span><span style="display:flex;"><span> <span style="color:#e6db74">&#39;type&#39;</span>: typing<span style="color:#f92672">.</span>Annotated[typing<span style="color:#f92672">.</span>Literal[<span style="color:#e6db74">&#39;a&#39;</span>], <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">class</span> <span style="color:#960050;background-color:#1e0010">&#39;</span><span style="color:#a6e22e">__main__</span><span style="color:#f92672">.</span>Tag<span style="color:#e6db74">&#39;&gt;]}</span>
+</span></span></code></pre></div><p>By walking each of those pairs, the decoder can figure out which
+value in <code>type</code> maps to which dataclass type:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> tags_to_types
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;a&#34;</span>: EncoderA,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;b&#34;</span>: EncoderB,
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Finally, given the object <code>{&quot;type&quot;: &quot;a&quot;, &quot;value&quot;: 1}</code> it can pick the correct
+dataclass type to use. Then <em>that</em> can be fed through <code>decode_value(EncoderA, value)</code> to recursively decode all of its types properly.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>There&rsquo;s much more to doing this <em>well</em> that I&rsquo;ve skipped over in the name of
+simplicity (validation, nested types like <code>list[Metadata]</code> or tuples, good error
+messages, performance, extensibility, &hellip;).  Once again, you should probably be
+using <a href="https://jcristharif.com/msgspec/">msgspec</a> for this. But at least now you might have a bit of an idea how
+these libraries work and how type annotations can be used at runtime in Python.</p>
+]]></content:encoded></item><item><title>stac-geoparquet</title><link>https://tomaugspurger.net/posts/stac-geoparquet/</link><pubDate>Thu, 29 Aug 2024 20:00:00 -0500</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/stac-geoparquet/</guid><description>I wrote up a quick introduction to stac-geoparquet on the Cloud Native Geo blog with Kyle Barron and Chris Holmes.
 The key takeaway:
 STAC GeoParquet offers a very convenient and high-performance way to distribute large STAC collections, provided the items in that collection are pretty homogenous
 Check out the project at http://github.com/stac-utils/stac-geoparquet.</description><content:encoded><![CDATA[<p>I wrote up a quick <a href="https://cloudnativegeo.org/blog/2024/08/introduction-to-stac-geoparquet/">introduction to stac-geoparquet</a> on the Cloud Native Geo blog with <a href="https://kylebarron.dev/">Kyle Barron</a> and <a href="https://beta.source.coop/cholmes">Chris Holmes</a>.</p>
