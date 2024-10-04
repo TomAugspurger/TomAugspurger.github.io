@@ -3,10 +3,6 @@ languageCode = 'en-us'
 title = "Tom's Blog"
 theme = 'PaperMod'
 
-[author]
-name = "Tom Augspurger"
-email = "tom.w.augspurger@gmail.com"
-
 [markup.goldmark.renderer]
 unsafe= true
 
@@ -43,3 +39,9 @@ url = "index.xml"
 
 [params]
 ShowFullTextinRSS = true
+
+[[parmas.author]]
+name = "Tom Augspurger"
+email = "tom.w.augspurger@gmail.com"
+
+

@@ -1,6 +1,6 @@
 ---
 title: Organizing Papers
-date: 2014-02-13 12:00
+date: 2014-02-13
 slug: Organizing Papers
 category: scripts
 tags:
