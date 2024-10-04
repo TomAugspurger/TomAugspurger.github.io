@@ -1,5 +1,14 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Pandas on Tom's Blog</title><link>https://tomaugspurger.net/tags/pandas/</link><description>Recent content in Pandas on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>tom.w.augspurger@gmail.com (Tom Augspurger)</managingEditor><webMaster>tom.w.augspurger@gmail.com (Tom Augspurger)</webMaster><lastBuildDate>Wed, 01 Apr 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://tomaugspurger.net/tags/pandas/index.xml" rel="self" type="application/rss+xml"/><item><title>Maintaining Performance</title><link>https://tomaugspurger.net/posts/performance-regressions/</link><pubDate>Wed, 01 Apr 2020 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/performance-regressions/</guid><description>As pandas&amp;rsquo; documentation claims: pandas provides high-performance data structures. But how do we verify that the claim is correct? And how do we ensure that it stays correct over many releases. This post describes
-pandas&amp;rsquo; current setup for monitoring performance My personal debugging strategy for understanding and fixing performance regressions when they occur. I hope that the first section topic is useful for library maintainers and the second topic is generally useful for people writing performance-sensitive code.</description><content:encoded><![CDATA[<p>As pandas&rsquo; <a href="https://pandas.pydata.org/docs/">documentation</a> claims: pandas
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Pandas on Tom's Blog</title><link>https://tomaugspurger.net/tags/pandas/</link><description>Recent content in Pandas on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Wed, 01 Apr 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://tomaugspurger.net/tags/pandas/index.xml" rel="self" type="application/rss+xml"/><item><title>Maintaining Performance</title><link>https://tomaugspurger.net/posts/performance-regressions/</link><pubDate>Wed, 01 Apr 2020 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/performance-regressions/</guid><description>&lt;p>As pandas&amp;rsquo; &lt;a href="https://pandas.pydata.org/docs/">documentation&lt;/a> claims: pandas
+provides &lt;em>high-performance&lt;/em> data structures. But how do we verify that the claim
+is correct? And how do we ensure that it &lt;em>stays&lt;/em> correct over many releases.
+This post describes&lt;/p>
+&lt;ol>
+&lt;li>pandas&amp;rsquo; current setup for monitoring performance&lt;/li>
+&lt;li>My personal debugging strategy for understanding and fixing performance
+regressions when they occur.&lt;/li>
+&lt;/ol>
+&lt;p>I hope that the first section topic is useful for library maintainers and the
+second topic is generally useful for people writing performance-sensitive code.&lt;/p></description><content:encoded><![CDATA[<p>As pandas&rsquo; <a href="https://pandas.pydata.org/docs/">documentation</a> claims: pandas
 provides <em>high-performance</em> data structures. But how do we verify that the claim
 is correct? And how do we ensure that it <em>stays</em> correct over many releases.
 This post describes</p>
@@ -44,7 +53,7 @@ the <code>asv</code> CLI, benchmarks can be run for a specific commit with
 <code>asv continuous &lt;GIT RANGE&gt;</code>. Finally, <code>asv</code> will collect performance over time
 and can visualize the output. You can see pandas&rsquo; at
 <a href="https://pandas.pydata.org/speed/pandas/">https://pandas.pydata.org/speed/pandas/</a>.</p>
-<p><img loading="lazy" src="/images/asv-overview.png" alt="pandas&amp;rsquo; asv overview"  />
+<p><img loading="lazy" src="/images/asv-overview.png" alt="pandas&rsquo; asv overview"  />
 </p>
 <h2 id="detecting-regressions">Detecting Regressions</h2>
 <p><code>asv</code> is designed to be run continuously over a project&rsquo;s lifetime. In theory, a
@@ -198,7 +207,7 @@ public CI providers. And even if we could finish it in time, we couldn&rsquo;t r
 trust the results. These benchmarks, at least as written, really do need
 dedicated hardware to be stable over time. Pandas has a machine in my basement,
 but maintaining that has been a time-consuming, challenging process.</p>
-<p><img loading="lazy" src="/images/benchmark-server.png" alt="Pandas&amp;rsquo; benchmark server"  />
+<p><img loading="lazy" src="/images/benchmark-server.png" alt="Pandas&rsquo; benchmark server"  />
 </p>
 <p>This is my current setup, which stuffs the benchmark server (the black Intel
 NUC) and a router next to my wife&rsquo;s art storage. We reached this solution after
@@ -212,7 +221,7 @@ The outputs are <code>rsync</code>ed over to the pandas webserver and served at
 see pandas&rsquo; at
 <a href="https://pandas.pydata.org/speed/pandas">https://pandas.pydata.org/speed/pandas/</a>.
 If this seems like a house of cards waiting to tumble, that&rsquo;s because it is.</p>
-<p><img loading="lazy" src="/images/performance-airflow.png" alt="pandas&amp;rsquo; airflow server"  />
+<p><img loading="lazy" src="/images/performance-airflow.png" alt="pandas&rsquo; airflow server"  />
 </p>
 <p>Pandas has applied for a NumFOCUS small development grant to improve our
 benchmark process. Ideally maintainers would be able to ask a bot <code>@asv-bot run -b memory_usage</code> which would kick off a process that pulled down the pull
@@ -241,8 +250,17 @@ faster than <code>PandasArray</code>&rsquo;s.&#160;<a href="#fnref:2" class="foo
 </li>
 </ol>
 </div>
-]]></content:encoded></item><item><title>pandas + binder</title><link>https://tomaugspurger.net/posts/pandas-binder/</link><pubDate>Sun, 21 Jul 2019 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/pandas-binder/</guid><description>This post describes the start of a journey to get pandas&amp;rsquo; documentation running on Binder. The end result is this nice button:
-For a while now I&amp;rsquo;ve been jealous of Dask&amp;rsquo;s examples repository. That&amp;rsquo;s a repository containing a collection of Jupyter notebooks demonstrating Dask in action. It stitches together some tools to present a set of documentation that is both viewable as a static site at examples.dask.org, and as a executable notebooks on mybinder.</description><content:encoded><![CDATA[<p>This post describes the start of a journey to get pandas&rsquo; documentation running
+]]></content:encoded></item><item><title>pandas + binder</title><link>https://tomaugspurger.net/posts/pandas-binder/</link><pubDate>Sun, 21 Jul 2019 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/pandas-binder/</guid><description>&lt;p>This post describes the start of a journey to get pandas&amp;rsquo; documentation running
+on Binder. The end result is this nice button:&lt;/p>
+&lt;p>&lt;a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb">&lt;img loading="lazy" src="https://mybinder.org/badge_logo.svg" alt="Binder" />
+&lt;/a>&lt;/p>
+&lt;hr>
+&lt;p>For a while now I&amp;rsquo;ve been jealous of &lt;a href="https://github.com/dask/dask-examples">Dask&amp;rsquo;s examples
+repository&lt;/a>. That&amp;rsquo;s a repository containing a
+collection of Jupyter notebooks demonstrating Dask in action. It stitches
+together some tools to present a set of documentation that is both viewable
+as a static site at &lt;a href="https://examples.dask.org">examples.dask.org&lt;/a>, and as a executable notebooks
+on &lt;a href="https://mybinder.org/v2/gh/dask/dask-examples/master?urlpath=lab">mybinder&lt;/a>.&lt;/p></description><content:encoded><![CDATA[<p>This post describes the start of a journey to get pandas&rsquo; documentation running
 on Binder. The end result is this nice button:</p>
 <p><a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb"><img loading="lazy" src="https://mybinder.org/badge_logo.svg" alt="Binder"  />
 </a></p>
@@ -337,11 +355,16 @@ I suspect not. We still needed to solve problem 2 though.&#160;<a href="#fnref:1
 </li>
 </ol>
 </div>
-]]></content:encoded></item><item><title>Moral Philosophy for pandas or: What is `.values`?</title><link>https://tomaugspurger.net/posts/pandas-moral-philosophy/</link><pubDate>Tue, 14 Aug 2018 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/pandas-moral-philosophy/</guid><description>The other day, I put up a Twitter poll asking a simple question: What&amp;rsquo;s the type of series.values?
-Pop Quiz! What are the possible results for the following:
-&amp;gt;&amp;gt;&amp;gt; type(pandas.Series.values)
-&amp;mdash; Tom Augspurger (@TomAugspurger) August 6, 2018 I was a bit limited for space, so I&amp;rsquo;ll expand on the options here. Choose as many as you want.
-NumPy ndarray pandas Categorical (or all of the above) An Index or any of it&amp;rsquo;s subclasses (DatetimeIndex, CategoricalIndex, RangeIndex, etc.</description><content:encoded><![CDATA[<p>The other day, I put up a <a href="https://twitter.com/TomAugspurger/status/1026578613389455360">Twitter poll</a> asking a simple question: What&rsquo;s the type of <code>series.values</code>?</p>
+]]></content:encoded></item><item><title>Moral Philosophy for pandas or: What is `.values`?</title><link>https://tomaugspurger.net/posts/pandas-moral-philosophy/</link><pubDate>Tue, 14 Aug 2018 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/pandas-moral-philosophy/</guid><description>&lt;p>The other day, I put up a &lt;a href="https://twitter.com/TomAugspurger/status/1026578613389455360">Twitter poll&lt;/a> asking a simple question: What&amp;rsquo;s the type of &lt;code>series.values&lt;/code>?&lt;/p>
+&lt;blockquote class="twitter-tweet" data-lang="en">&lt;p lang="en" dir="ltr">Pop Quiz! What are the possible results for the following:&lt;br>&lt;br>&amp;gt;&amp;gt;&amp;gt; type(pandas.Series.values)&lt;/p>&amp;mdash; Tom Augspurger (@TomAugspurger) &lt;a href="https://twitter.com/TomAugspurger/status/1026578613389455360?ref_src=twsrc%5Etfw">August 6, 2018&lt;/a>&lt;/blockquote> &lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8">&lt;/script>
+&lt;p>I was a bit limited for space, so I&amp;rsquo;ll expand on the options here. Choose as many as you want.&lt;/p>
+&lt;ol>
+&lt;li>NumPy ndarray&lt;/li>
+&lt;li>pandas Categorical (or all of the above)&lt;/li>
+&lt;li>An Index or any of it&amp;rsquo;s subclasses (DatetimeIndex, CategoricalIndex, RangeIndex, etc.) (or all of the above)&lt;/li>
+&lt;li>None or all of the above&lt;/li>
+&lt;/ol>
+&lt;p>I was prompted to write this post because &lt;em>a.)&lt;/em> this is an (unfortunately) confusing topic and &lt;em>b.)&lt;/em> it&amp;rsquo;s undergoing a lot of change right now (and, &lt;em>c.)&lt;/em> I had this awesome title in my head).&lt;/p></description><content:encoded><![CDATA[<p>The other day, I put up a <a href="https://twitter.com/TomAugspurger/status/1026578613389455360">Twitter poll</a> asking a simple question: What&rsquo;s the type of <code>series.values</code>?</p>
 <blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">Pop Quiz! What are the possible results for the following:<br><br>&gt;&gt;&gt; type(pandas.Series.values)</p>&mdash; Tom Augspurger (@TomAugspurger) <a href="https://twitter.com/TomAugspurger/status/1026578613389455360?ref_src=twsrc%5Etfw">August 6, 2018</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> 
 <p>I was a bit limited for space, so I&rsquo;ll expand on the options here. Choose as many as you want.</p>
 <ol>
@@ -408,8 +431,20 @@ That will do the right thing for any data type.</p>
 <h2 id="the-far-future">The Far Future</h2>
 <p>I&rsquo;m hopeful that some day all we&rsquo;ll have a common language for these data types.
 There&rsquo;s a lot going on in the numeric Python ecosystem right now. Stay tuned!</p>
-]]></content:encoded></item><item><title>Modern Pandas (Part 8): Scaling</title><link>https://tomaugspurger.net/posts/modern-8-scaling/</link><pubDate>Mon, 23 Apr 2018 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/modern-8-scaling/</guid><description>This is part 1 in my series on writing modern idiomatic pandas.
-Modern Pandas Method Chaining Indexes Fast Pandas Tidy Data Visualization Time Series Scaling As I sit down to write this, the third-most popular pandas question on StackOverflow covers how to use pandas for large datasets. This is in tension with the fact that a pandas DataFrame is an in memory container. You can&amp;rsquo;t have a DataFrame larger than your machine&amp;rsquo;s RAM.</description><content:encoded><![CDATA[<hr>
+]]></content:encoded></item><item><title>Modern Pandas (Part 8): Scaling</title><link>https://tomaugspurger.net/posts/modern-8-scaling/</link><pubDate>Mon, 23 Apr 2018 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/modern-8-scaling/</guid><description>&lt;hr>
+&lt;p>This is part 1 in my series on writing modern idiomatic pandas.&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-1-intro">Modern Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/method-chaining">Method Chaining&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-3-indexes">Indexes&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-4-performance">Fast Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-5-tidy">Tidy Data&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-6-visualization">Visualization&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-7-timeseries">Time Series&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-8-scaling">Scaling&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>As I sit down to write this, the third-most popular pandas question on StackOverflow covers &lt;a href="https://stackoverflow.com/q/14262433/1889400">how to use pandas for large datasets&lt;/a>. This is in tension with the fact that a pandas DataFrame is an in memory container. &lt;em>You can&amp;rsquo;t have a &lt;code>DataFrame&lt;/code> larger than your machine&amp;rsquo;s RAM&lt;/em>. In practice, your available RAM should be several times the size of your dataset, as you or pandas will have to make intermediate copies as part of the analysis.&lt;/p></description><content:encoded><![CDATA[<hr>
 <p>This is part 1 in my series on writing modern idiomatic pandas.</p>
 <ul>
 <li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
@@ -1246,8 +1281,14 @@ Some committees are directly tied to a candidate (this are campaign committees).
 <pre tabindex="0"><code>conda install dask
 </code></pre><p>The <a href="http://dask.pydata.org/en/latest/">dask homepage</a> has links to all the relevant documentation, and <a href="https://mybinder.org/v2/gh/dask/dask-examples/master?filepath=dataframe.ipynb">binder notebooks</a> where you can try out Dask before installing.</p>
 <p>As always, reach out to me on <a href="https://twitter.com/TomAugspurger">Twitter</a> or in the comments if you have anything to share.</p>
-]]></content:encoded></item><item><title>Extension Arrays for Pandas</title><link>https://tomaugspurger.net/posts/pandas-extension-arrays/</link><pubDate>Mon, 12 Feb 2018 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/pandas-extension-arrays/</guid><description>This is a status update on some enhancements for pandas. The goal of the work is to store things that are sufficiently array-like in a pandas DataFrame, even if they aren&amp;rsquo;t a regular NumPy array. Pandas already does this in a few places for some blessed types (like Categorical); we&amp;rsquo;d like to open that up to anybody.
-A couple months ago, a client came to Anaconda with a problem: they have a bunch of IP Address data that they&amp;rsquo;d like to work with in pandas.</description><content:encoded><![CDATA[<p>This is a status update on some enhancements for pandas. The goal of the work
+]]></content:encoded></item><item><title>Extension Arrays for Pandas</title><link>https://tomaugspurger.net/posts/pandas-extension-arrays/</link><pubDate>Mon, 12 Feb 2018 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/pandas-extension-arrays/</guid><description>&lt;p>This is a status update on some enhancements for pandas. The goal of the work
+is to store things that are sufficiently array-like in a pandas &lt;code>DataFrame&lt;/code>,
+even if they aren&amp;rsquo;t a regular NumPy array. Pandas already does this in a few
+places for some blessed types (like &lt;code>Categorical&lt;/code>); we&amp;rsquo;d like to open that up to
+anybody.&lt;/p>
+&lt;p>A couple months ago, a client came to &lt;a href="https://www.anaconda.com/">Anaconda&lt;/a> with a problem: they
+have a bunch of IP Address data that they&amp;rsquo;d like to work with in pandas. They
+didn&amp;rsquo;t just want to make a NumPy array of IP addresses for a few reasons:&lt;/p></description><content:encoded><![CDATA[<p>This is a status update on some enhancements for pandas. The goal of the work
 is to store things that are sufficiently array-like in a pandas <code>DataFrame</code>,
 even if they aren&rsquo;t a regular NumPy array. Pandas already does this in a few
 places for some blessed types (like <code>Categorical</code>); we&rsquo;d like to open that up to
@@ -1397,10 +1438,36 @@ first-class array type in pandas.</li>
 <p>Thanks to the tireless reviews from the other pandas contributors, especially
 Jeff Reback, Joris van den Bossche, and Stephen Hoyer. Look forward to these
 changes in the next major pandas release.</p>
-]]></content:encoded></item><item><title>Modern Pandas (Part 7): Timeseries</title><link>https://tomaugspurger.net/posts/modern-7-timeseries/</link><pubDate>Fri, 13 May 2016 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/modern-7-timeseries/</guid><description>This is part 7 in my series on writing modern idiomatic pandas.
-Modern Pandas Method Chaining Indexes Fast Pandas Tidy Data Visualization Time Series Scaling Timeseries Pandas started out in the financial world, so naturally it has strong timeseries support.
-The first half of this post will look at pandas&amp;rsquo; capabilities for manipulating time series data. The second half will discuss modelling time series data with statsmodels.
-%matplotlib inline import os import numpy as np import pandas as pd import pandas_datareader.</description><content:encoded><![CDATA[<hr>
+]]></content:encoded></item><item><title>Modern Pandas (Part 7): Timeseries</title><link>https://tomaugspurger.net/posts/modern-7-timeseries/</link><pubDate>Fri, 13 May 2016 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/modern-7-timeseries/</guid><description>&lt;hr>
+&lt;p>This is part 7 in my series on writing modern idiomatic pandas.&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-1-intro">Modern Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/method-chaining">Method Chaining&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-3-indexes">Indexes&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-4-performance">Fast Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-5-tidy">Tidy Data&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-6-visualization">Visualization&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-7-timeseries">Time Series&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-8-scaling">Scaling&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h1 id="timeseries">Timeseries&lt;/h1>
+&lt;p>Pandas started out in the financial world, so naturally it has strong timeseries support.&lt;/p>
+&lt;p>The first half of this post will look at pandas&amp;rsquo; capabilities for manipulating time series data.
+The second half will discuss modelling time series data with statsmodels.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">%&lt;/span>matplotlib inline
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> os
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> numpy &lt;span style="color:#66d9ef">as&lt;/span> np
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> pandas &lt;span style="color:#66d9ef">as&lt;/span> pd
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> pandas_datareader.data &lt;span style="color:#66d9ef">as&lt;/span> web
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> seaborn &lt;span style="color:#66d9ef">as&lt;/span> sns
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> matplotlib.pyplot &lt;span style="color:#66d9ef">as&lt;/span> plt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sns&lt;span style="color:#f92672">.&lt;/span>set(style&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#39;ticks&amp;#39;&lt;/span>, context&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#39;talk&amp;#39;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">if&lt;/span> int(os&lt;span style="color:#f92672">.&lt;/span>environ&lt;span style="color:#f92672">.&lt;/span>get(&lt;span style="color:#e6db74">&amp;#34;MODERN_PANDAS_EPUB&amp;#34;&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>)):
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">import&lt;/span> prep &lt;span style="color:#75715e"># noqa&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Let&amp;rsquo;s grab some stock data for Goldman Sachs using the &lt;a href="http://pandas-datareader.readthedocs.io/en/latest/">&lt;code>pandas-datareader&lt;/code>&lt;/a> package, which spun off of pandas:&lt;/p></description><content:encoded><![CDATA[<hr>
 <p>This is part 7 in my series on writing modern idiomatic pandas.</p>
 <ul>
 <li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
@@ -2820,8 +2887,24 @@ You can pretty easily <a href="http://www.statsmodels.org/dev/examples/notebooks
 I&rsquo;d recommend reading the <a href="http://www.statsmodels.org/dev/examples/index.html#statespace">notebooks</a>.
 We also didn&rsquo;t get to talk at all about Skipper Seabold&rsquo;s work on VARs, but maybe some other time.</p>
 <p>As always, <a href="https://twitter.com/tomaugspurger">feedback is welcome</a>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"></code></pre></div>]]></content:encoded></item><item><title>Modern Pandas (Part 6): Visualization</title><link>https://tomaugspurger.net/posts/modern-6-visualization/</link><pubDate>Thu, 28 Apr 2016 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/modern-6-visualization/</guid><description>This is part 6 in my series on writing modern idiomatic pandas.
-Modern Pandas Method Chaining Indexes Fast Pandas Tidy Data Visualization Time Series Scaling Visualization and Exploratory Analysis A few weeks ago, the R community went through some hand-wringing about plotting packages. For outsiders (like me) the details aren&amp;rsquo;t that important, but some brief background might be useful so we can transfer the takeaways to Python. The competing systems are &amp;ldquo;base R&amp;rdquo;, which is the plotting system built into the language, and ggplot2, Hadley Wickham&amp;rsquo;s implementation of the grammar of graphics.</description><content:encoded><![CDATA[<hr>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"></code></pre></div>]]></content:encoded></item><item><title>Modern Pandas (Part 6): Visualization</title><link>https://tomaugspurger.net/posts/modern-6-visualization/</link><pubDate>Thu, 28 Apr 2016 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/modern-6-visualization/</guid><description>&lt;hr>
+&lt;p>This is part 6 in my series on writing modern idiomatic pandas.&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-1-intro">Modern Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/method-chaining">Method Chaining&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-3-indexes">Indexes&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-4-performance">Fast Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-5-tidy">Tidy Data&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-6-visualization">Visualization&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-7-timeseries">Time Series&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-8-scaling">Scaling&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h1 id="visualization-and-exploratory-analysis">Visualization and Exploratory Analysis&lt;/h1>
+&lt;p>A few weeks ago, the R community went through some hand-wringing about plotting packages.
+For outsiders (like me) the details aren&amp;rsquo;t that important, but some brief background might be useful so we can transfer the takeaways to Python.
+The competing systems are &amp;ldquo;base R&amp;rdquo;, which is the plotting system built into the language, and ggplot2, Hadley Wickham&amp;rsquo;s implementation of the grammar of graphics.
+For those interested in more details, start with&lt;/p></description><content:encoded><![CDATA[<hr>
 <p>This is part 6 in my series on writing modern idiomatic pandas.</p>
 <ul>
 <li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
@@ -3335,10 +3418,30 @@ I want to reiterate at the end that this is just <em>my</em> way of doing data v
 Your needs might differ, meaning you might need different tools.
 You can still use pandas to get it to the point where it&rsquo;s ready to be visualized!</p>
 <p>As always, <a href="https://twitter.com/tomaugspurger">feedback is welcome</a>.</p>
-]]></content:encoded></item><item><title>Modern Pandas (Part 5): Tidy Data</title><link>https://tomaugspurger.net/posts/modern-5-tidy/</link><pubDate>Fri, 22 Apr 2016 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/modern-5-tidy/</guid><description>This is part 5 in my series on writing modern idiomatic pandas.
-Modern Pandas Method Chaining Indexes Fast Pandas Tidy Data Visualization Time Series Scaling Reshaping &amp;amp; Tidy Data Structuring datasets to facilitate analysis (Wickham 2014)
-So, you&amp;rsquo;ve sat down to analyze a new dataset. What do you do first?
-In episode 11 of Not So Standard Deviations, Hilary and Roger discussed their typical approaches. I&amp;rsquo;m with Hilary on this one, you should make sure your data is tidy.</description><content:encoded><![CDATA[<hr>
+]]></content:encoded></item><item><title>Modern Pandas (Part 5): Tidy Data</title><link>https://tomaugspurger.net/posts/modern-5-tidy/</link><pubDate>Fri, 22 Apr 2016 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/modern-5-tidy/</guid><description>&lt;hr>
+&lt;p>This is part 5 in my series on writing modern idiomatic pandas.&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-1-intro">Modern Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/method-chaining">Method Chaining&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-3-indexes">Indexes&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-4-performance">Fast Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-5-tidy">Tidy Data&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-6-visualization">Visualization&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-7-timeseries">Time Series&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-8-scaling">Scaling&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h1 id="reshaping--tidy-data">Reshaping &amp;amp; Tidy Data&lt;/h1>
+&lt;blockquote>
+&lt;p>Structuring datasets to facilitate analysis &lt;a href="http://www.jstatsoft.org/v59/i10/paper">(Wickham 2014)&lt;/a>&lt;/p>
+&lt;/blockquote>
+&lt;p>So, you&amp;rsquo;ve sat down to analyze a new dataset.
+What do you do first?&lt;/p>
+&lt;p>In episode 11 of &lt;a href="https://www.patreon.com/NSSDeviations?ty=h">Not So Standard Deviations&lt;/a>, Hilary and Roger discussed their typical approaches.
+I&amp;rsquo;m with Hilary on this one, you should make sure your data is tidy.
+Before you do any plots, filtering, transformations, summary statistics, regressions&amp;hellip;
+Without a tidy dataset, you&amp;rsquo;ll be fighting your tools to get the result you need.
+With a tidy dataset, it&amp;rsquo;s relatively easy to do all of those.&lt;/p></description><content:encoded><![CDATA[<hr>
 <p>This is part 5 in my series on writing modern idiomatic pandas.</p>
 <ul>
 <li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
@@ -4530,8 +4633,23 @@ You could you <code>pd.merge</code>, but I prefer <code>.map</code> when joining
 <p>Overall not seeing to much support for rest mattering, but we got to see some more tidy data.</p>
 <p>That&rsquo;s it for today.
 Next time we&rsquo;ll look at data visualization.</p>
-]]></content:encoded></item><item><title>Modern Panadas (Part 3): Indexes</title><link>https://tomaugspurger.net/posts/modern-3-indexes/</link><pubDate>Mon, 11 Apr 2016 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/modern-3-indexes/</guid><description>This is part 3 in my series on writing modern idiomatic pandas.
-Modern Pandas Method Chaining Indexes Fast Pandas Tidy Data Visualization Time Series Scaling Indexes can be a difficult concept to grasp at first. I suspect this is partly becuase they&amp;rsquo;re somewhat peculiar to pandas. These aren&amp;rsquo;t like the indexes put on relational database tables for performance optimizations. Rather, they&amp;rsquo;re more like the row_labels of an R DataFrame, but much more capable.</description><content:encoded><![CDATA[<hr>
+]]></content:encoded></item><item><title>Modern Panadas (Part 3): Indexes</title><link>https://tomaugspurger.net/posts/modern-3-indexes/</link><pubDate>Mon, 11 Apr 2016 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/modern-3-indexes/</guid><description>&lt;hr>
+&lt;p>This is part 3 in my series on writing modern idiomatic pandas.&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-1-intro">Modern Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/method-chaining">Method Chaining&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-3-indexes">Indexes&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-4-performance">Fast Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-5-tidy">Tidy Data&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-6-visualization">Visualization&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-7-timeseries">Time Series&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-8-scaling">Scaling&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>&lt;code>Indexes&lt;/code> can be a difficult concept to grasp at first.
+I suspect this is partly becuase they&amp;rsquo;re somewhat peculiar to pandas.
+These aren&amp;rsquo;t like the indexes put on relational database tables for performance optimizations.
+Rather, they&amp;rsquo;re more like the &lt;code>row_labels&lt;/code> of an R DataFrame, but much more capable.&lt;/p></description><content:encoded><![CDATA[<hr>
 <p>This is part 3 in my series on writing modern idiomatic pandas.</p>
 <ul>
 <li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
@@ -7294,8 +7412,21 @@ Name: dep_time, dtype: datetime64[ns]
 4   2014-01-01 17:53:00
 Name: dep_time, dtype: datetime64[ns]
 </code></pre>
-]]></content:encoded></item><item><title>Modern Pandas (Part 4): Performance</title><link>https://tomaugspurger.net/posts/modern-4-performance/</link><pubDate>Fri, 08 Apr 2016 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/modern-4-performance/</guid><description>This is part 4 in my series on writing modern idiomatic pandas.
-Modern Pandas Method Chaining Indexes Fast Pandas Tidy Data Visualization Time Series Scaling Wes McKinney, the creator of pandas, is kind of obsessed with performance. From micro-optimizations for element access, to embedding a fast hash table inside pandas, we all benefit from his and others&amp;rsquo; hard work. This post will focus mainly on making efficient use of pandas and NumPy.</description><content:encoded><![CDATA[<hr>
+]]></content:encoded></item><item><title>Modern Pandas (Part 4): Performance</title><link>https://tomaugspurger.net/posts/modern-4-performance/</link><pubDate>Fri, 08 Apr 2016 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/modern-4-performance/</guid><description>&lt;hr>
+&lt;p>This is part 4 in my series on writing modern idiomatic pandas.&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-1-intro">Modern Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/method-chaining">Method Chaining&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-3-indexes">Indexes&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-4-performance">Fast Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-5-tidy">Tidy Data&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-6-visualization">Visualization&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-7-timeseries">Time Series&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-8-scaling">Scaling&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>&lt;a href="https://twitter.com/wesmckinn">Wes McKinney&lt;/a>, the creator of pandas, is kind of obsessed with performance. From micro-optimizations for element access, to &lt;a href="https://github.com/pydata/pandas/tree/master/pandas/src/klib">embedding&lt;/a> a fast hash table inside pandas, we all benefit from his and others&amp;rsquo; hard work.
+This post will focus mainly on making efficient use of pandas and NumPy.&lt;/p></description><content:encoded><![CDATA[<hr>
 <p>This is part 4 in my series on writing modern idiomatic pandas.</p>
 <ul>
 <li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
@@ -8179,8 +8310,23 @@ In my day-to-day work of data analysis it&rsquo;s not worth the time to write an
 I&rsquo;d rather rely on pandas to be fast at what matters (label lookup on large arrays, factorizations for groupbys and merges, numerics).
 If you want to learn more about what pandas does to make things fast, checkout Jeff Tratner&rsquo; talk from PyData Seattle <a href="http://www.jeffreytratner.com/slides/pandas-under-the-hood-pydata-seattle-2015.pdf">talk</a> on pandas&rsquo; internals.</p>
 <p>Next time we&rsquo;ll look at a differnt kind of optimization: using the Tidy Data principles to facilitate efficient data analysis.</p>
-]]></content:encoded></item><item><title>Modern Pandas (Part 2): Method Chaining</title><link>https://tomaugspurger.net/posts/method-chaining/</link><pubDate>Mon, 04 Apr 2016 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/method-chaining/</guid><description>This is part 2 in my series on writing modern idiomatic pandas.
-Modern Pandas Method Chaining Indexes Fast Pandas Tidy Data Visualization Time Series Scaling Method Chaining Method chaining, where you call methods on an object one after another, is in vogue at the moment. It&amp;rsquo;s always been a style of programming that&amp;rsquo;s been possible with pandas, and over the past several releases, we&amp;rsquo;ve added methods that enable even more chaining.</description><content:encoded><![CDATA[<hr>
+]]></content:encoded></item><item><title>Modern Pandas (Part 2): Method Chaining</title><link>https://tomaugspurger.net/posts/method-chaining/</link><pubDate>Mon, 04 Apr 2016 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/method-chaining/</guid><description>&lt;hr>
+&lt;p>This is part 2 in my series on writing modern idiomatic pandas.&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-1-intro">Modern Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/method-chaining">Method Chaining&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-3-indexes">Indexes&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-4-performance">Fast Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-5-tidy">Tidy Data&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-6-visualization">Visualization&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-7-timeseries">Time Series&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-8-scaling">Scaling&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h1 id="method-chaining">Method Chaining&lt;/h1>
+&lt;p>Method chaining, where you call methods on an object one after another, is in vogue at the moment.
+It&amp;rsquo;s always been a style of programming that&amp;rsquo;s been possible with pandas,
+and over the past several releases, we&amp;rsquo;ve added methods that enable even more chaining.&lt;/p></description><content:encoded><![CDATA[<hr>
 <p>This is part 2 in my series on writing modern idiomatic pandas.</p>
 <ul>
 <li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
@@ -8483,9 +8629,27 @@ I&rsquo;m sometimes guilty of putting too much work into making my data wranglin
 This isn&rsquo;t a competition to have the best or cleanest pandas code; pandas is always just a means to the end that is your research or business problem.
 Thanks for indulging me.
 Next time we&rsquo;ll talk about a much more practical topic: performance.</p>
-]]></content:encoded></item><item><title>Modern Pandas (Part 1)</title><link>https://tomaugspurger.net/posts/modern-1-intro/</link><pubDate>Mon, 21 Mar 2016 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/modern-1-intro/</guid><description>This is part 1 in my series on writing modern idiomatic pandas.
-Modern Pandas Method Chaining Indexes Fast Pandas Tidy Data Visualization Time Series Scaling Effective Pandas Introduction This series is about how to make effective use of pandas, a data analysis library for the Python programming language. It&amp;rsquo;s targeted at an intermediate level: people who have some experience with pandas, but are looking to improve.
-Prior Art There are many great resources for learning pandas; this is not one of them.</description><content:encoded><![CDATA[<hr>
+]]></content:encoded></item><item><title>Modern Pandas (Part 1)</title><link>https://tomaugspurger.net/posts/modern-1-intro/</link><pubDate>Mon, 21 Mar 2016 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/modern-1-intro/</guid><description>&lt;hr>
+&lt;p>This is part 1 in my series on writing modern idiomatic pandas.&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-1-intro">Modern Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/method-chaining">Method Chaining&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-3-indexes">Indexes&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-4-performance">Fast Pandas&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-5-tidy">Tidy Data&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-6-visualization">Visualization&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-7-timeseries">Time Series&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://tomaugspurger.net/posts/modern-8-scaling">Scaling&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h1 id="effective-pandas">Effective Pandas&lt;/h1>
+&lt;h2 id="introduction">Introduction&lt;/h2>
+&lt;p>This series is about how to make effective use of &lt;a href="http://pandas.pydata.org">pandas&lt;/a>, a data analysis library for the Python programming language.
+It&amp;rsquo;s targeted at an intermediate level: people who have some experience with pandas, but are looking to improve.&lt;/p>
+&lt;h2 id="prior-art">Prior Art&lt;/h2>
+&lt;p>There are many great resources for learning pandas; this is not one of them.
+For beginners, I typically recommend &lt;a href="https://twitter.com/gjreda">Greg Reda&amp;rsquo;s&lt;/a> &lt;a href="http://gregreda.com/2013/10/26/intro-to-pandas-data-structures/">3-part introduction&lt;/a>, especially if they&amp;rsquo;re familiar with SQL. Of course, there&amp;rsquo;s the pandas &lt;a href="http://pandas.pydata.org/">documentation&lt;/a> itself. I gave &lt;a href="https://www.youtube.com/watch?v=otCriSKVV_8">a talk&lt;/a> at PyData Seattle targeted as an introduction if you prefer video form. Wes McKinney&amp;rsquo;s &lt;a href="http://shop.oreilly.com/product/0636920023784.do">Python for Data Analysis&lt;/a> is still the goto book (and is also a really good introduction to NumPy as well). Jake VanderPlas&amp;rsquo;s &lt;a href="http://shop.oreilly.com/product/0636920034919.do">Python Data Science Handbook&lt;/a>, in early release, is great too.
+Kevin Markham has a &lt;a href="http://www.dataschool.io/easier-data-analysis-with-pandas/">video series&lt;/a> for beginners learning pandas.&lt;/p></description><content:encoded><![CDATA[<hr>
 <p>This is part 1 in my series on writing modern idiomatic pandas.</p>
 <ul>
 <li><a href="/posts/modern-1-intro">Modern Pandas</a></li>
@@ -10455,9 +10619,12 @@ The <code>IndexSlice</code> object is just sugar for the actual python <code>sli
 The power provided by the DataFrame comes with some unavoidable complexities.
 Best practices (using <code>.loc</code> and <code>.iloc</code>) will spare you many a headache.
 We then toured a couple of commonly misunderstood sub-topics, setting with copy and Hierarchical Indexing.</p>
-]]></content:encoded></item><item><title>dplyr and pandas</title><link>https://tomaugspurger.net/posts/dplyr-pandas/</link><pubDate>Thu, 16 Oct 2014 07:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/dplyr-pandas/</guid><description>This notebook compares pandas and dplyr. The comparison is just on syntax (verbage), not performance. Whether you&amp;rsquo;re an R user looking to switch to pandas (or the other way around), I hope this guide will help ease the transition.
-We&amp;rsquo;ll work through the introductory dplyr vignette to analyze some flight data.
-I&amp;rsquo;m working on a better layout to show the two packages side by side. But for now I&amp;rsquo;m just putting the dplyr code in a comment above each python call.</description><content:encoded><![CDATA[<p>This notebook compares <a href="http://pandas.pydata.org">pandas</a>
+]]></content:encoded></item><item><title>dplyr and pandas</title><link>https://tomaugspurger.net/posts/dplyr-pandas/</link><pubDate>Thu, 16 Oct 2014 07:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/dplyr-pandas/</guid><description>&lt;p>This notebook compares &lt;a href="http://pandas.pydata.org">pandas&lt;/a>
+and &lt;a href="http://cran.r-project.org/web/packages/dplyr/index.html">dplyr&lt;/a>.
+The comparison is just on syntax (verbage), not performance. Whether you&amp;rsquo;re an R user looking to switch to pandas (or the other way around), I hope this guide will help ease the transition.&lt;/p>
+&lt;p>We&amp;rsquo;ll work through the &lt;a href="http://cran.r-project.org/web/packages/dplyr/vignettes/introduction.html">introductory dplyr vignette&lt;/a> to analyze some flight data.&lt;/p>
+&lt;p>I&amp;rsquo;m working on a better layout to show the two packages side by side.
+But for now I&amp;rsquo;m just putting the &lt;code>dplyr&lt;/code> code in a comment above each python call.&lt;/p></description><content:encoded><![CDATA[<p>This notebook compares <a href="http://pandas.pydata.org">pandas</a>
 and <a href="http://cran.r-project.org/web/packages/dplyr/index.html">dplyr</a>.
 The comparison is just on syntax (verbage), not performance. Whether you&rsquo;re an R user looking to switch to pandas (or the other way around), I hope this guide will help ease the transition.</p>
 <p>We&rsquo;ll work through the <a href="http://cran.r-project.org/web/packages/dplyr/vignettes/introduction.html">introductory dplyr vignette</a> to analyze some flight data.</p>
@@ -12375,9 +12542,15 @@ Name: distance, Length: 12, dtype: int64
 <p>There will always be a place for your &ldquo;utility belt&rdquo; package like dplyr or pandas, but it wouldn&rsquo;t hurt to be familiar with both.</p>
 <p>If you want to contribute to pandas, we&rsquo;re always looking for help at <a href="https://github.com/pydata/pandas/">https://github.com/pydata/pandas/</a>.
 You can get ahold of me directly on <a href="https://twitter.com/tomaugspurger">twitter</a>.</p>
-]]></content:encoded></item><item><title>Practical Pandas Part 3 - Exploratory Data Analysis</title><link>https://tomaugspurger.net/posts/pp03/</link><pubDate>Tue, 16 Sep 2014 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/pp03/</guid><description>Welcome back. As a reminder:
-In part 1 we got dataset with my cycling data from last year merged and stored in an HDF5 store In part 2 we did some cleaning and augmented the cycling data with data from http://forecast.io. You can find the full source code and data at this project&amp;rsquo;s GitHub repo.
-Today we&amp;rsquo;ll use pandas, seaborn, and matplotlib to do some exploratory data analysis. For fun, we&amp;rsquo;ll make some maps at the end using folium.</description><content:encoded><![CDATA[<p>Welcome back. As a reminder:</p>
+]]></content:encoded></item><item><title>Practical Pandas Part 3 - Exploratory Data Analysis</title><link>https://tomaugspurger.net/posts/pp03/</link><pubDate>Tue, 16 Sep 2014 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/pp03/</guid><description>&lt;p>Welcome back. As a reminder:&lt;/p>
+&lt;ul>
+&lt;li>In &lt;a href="http://tomaugspurger.net/blog/2014/08/26/practical-pandas-part-1-reading-the-data/">part 1&lt;/a> we got dataset with my cycling data from last year merged and stored in an HDF5 store&lt;/li>
+&lt;li>In &lt;a href="http://tomaugspurger.net/blog/2014/09/04/practical-pandas-part-2-more-tidying-more-data-and-merging/">part 2&lt;/a> we did some cleaning and augmented the cycling data with data from &lt;a href="http://forecast.io">http://forecast.io&lt;/a>.&lt;/li>
+&lt;/ul>
+&lt;p>You can find the full source code and data at this project&amp;rsquo;s &lt;a href="https://github.com/tomaugspurger/practicalpandas">GitHub repo&lt;/a>.&lt;/p>
+&lt;p>Today we&amp;rsquo;ll use pandas, seaborn, and
+matplotlib to do some exploratory data analysis.
+For fun, we&amp;rsquo;ll make some maps at the end using &lt;a href="https://folium.readthedocs.org/en/latest/">folium&lt;/a>.&lt;/p></description><content:encoded><![CDATA[<p>Welcome back. As a reminder:</p>
 <ul>
 <li>In <a href="http://tomaugspurger.net/blog/2014/08/26/practical-pandas-part-1-reading-the-data/">part 1</a> we got dataset with my cycling data from last year merged and stored in an HDF5 store</li>
 <li>In <a href="http://tomaugspurger.net/blog/2014/09/04/practical-pandas-part-2-more-tidying-more-data-and-merging/">part 2</a> we did some cleaning and augmented the cycling data with data from <a href="http://forecast.io">http://forecast.io</a>.</li>
@@ -13495,9 +13668,17 @@ opacity: 0.3,
 </body>" style="width: 100%; height: 510px; border: none"></iframe>
 <p>You can barely make out that I changed my path partway through the year to take Old Hospital Road instead of the North Ridge Trail (North boundry of my path).</p>
 <p>Folium is cool; you should check it out (really, just use anything made by <a href="https://github.com/wrobstory/">Rob</a>).</p>
-]]></content:encoded></item><item><title>Practical Pandas Part 2 - More Tidying, More Data, and Merging</title><link>https://tomaugspurger.net/posts/pp02/</link><pubDate>Thu, 04 Sep 2014 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/pp02/</guid><description>This is Part 2 in the Practical Pandas Series, where I work through a data analysis problem from start to finish.
-It&amp;rsquo;s a misconception that we can cleanly separate the data analysis pipeline into a linear sequence of steps from
-data acqusition data tidying exploratory analysis model building production As you work through a problem you&amp;rsquo;ll realize, &amp;ldquo;I need this other bit of data&amp;rdquo;, or &amp;ldquo;this would be easier if I stored the data this way&amp;rdquo;, or more commonly &amp;ldquo;strange, that&amp;rsquo;s not supposed to happen&amp;rdquo;.</description><content:encoded><![CDATA[<p><em>This is Part 2 in the Practical Pandas Series, where I work through a data analysis problem from start to finish.</em></p>
+]]></content:encoded></item><item><title>Practical Pandas Part 2 - More Tidying, More Data, and Merging</title><link>https://tomaugspurger.net/posts/pp02/</link><pubDate>Thu, 04 Sep 2014 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/pp02/</guid><description>&lt;p>&lt;em>This is Part 2 in the Practical Pandas Series, where I work through a data analysis problem from start to finish.&lt;/em>&lt;/p>
+&lt;p>It&amp;rsquo;s a misconception that we can cleanly separate the data analysis pipeline into a linear
+sequence of steps from&lt;/p>
+&lt;ol>
+&lt;li>data acqusition&lt;/li>
+&lt;li>data tidying&lt;/li>
+&lt;li>exploratory analysis&lt;/li>
+&lt;li>model building&lt;/li>
+&lt;li>production&lt;/li>
+&lt;/ol>
+&lt;p>As you work through a problem you&amp;rsquo;ll realize, &amp;ldquo;I need this other bit of data&amp;rdquo;, or &amp;ldquo;this would be easier if I stored the data this way&amp;rdquo;, or more commonly &amp;ldquo;strange, that&amp;rsquo;s not supposed to happen&amp;rdquo;.&lt;/p></description><content:encoded><![CDATA[<p><em>This is Part 2 in the Practical Pandas Series, where I work through a data analysis problem from start to finish.</em></p>
 <p>It&rsquo;s a misconception that we can cleanly separate the data analysis pipeline into a linear
 sequence of steps from</p>
 <ol>
@@ -14124,8 +14305,11 @@ and then modify the color of the patches after the fact.</p>
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>set_title(<span style="color:#e6db74">&#34;Direction of Wind Origin&#34;</span>)
 </span></span></code></pre></div><p>Colorbars are tricky in matplotlib (at least for me). So I&rsquo;m going to leave it at darker is stronger wind.</p>
 <p>That&rsquo;s all for now. Come back next time for some exploratory analysis, and if we&rsquo;re lucky, some maps!</p>
-]]></content:encoded></item><item><title>Practical Pandas Part 1 - Reading the Data</title><link>https://tomaugspurger.net/posts/pp01/</link><pubDate>Tue, 26 Aug 2014 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/pp01/</guid><description>This is the first post in a series where I&amp;rsquo;ll show how I use pandas on real-world datasets.
-For this post, we&amp;rsquo;ll look at data I collected with Cyclemeter on my daily bike ride to and from school last year. I had to manually start and stop the tracking at the beginning and end of each ride. There may have been times where I forgot to do that, so we&amp;rsquo;ll see if we can find those.</description><content:encoded><![CDATA[<p>This is the first post in a series where I&rsquo;ll show how I use pandas on real-world datasets.</p>
+]]></content:encoded></item><item><title>Practical Pandas Part 1 - Reading the Data</title><link>https://tomaugspurger.net/posts/pp01/</link><pubDate>Tue, 26 Aug 2014 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/pp01/</guid><description>&lt;p>This is the first post in a series where I&amp;rsquo;ll show how I use pandas on real-world datasets.&lt;/p>
+&lt;p>For this post, we&amp;rsquo;ll look at data I collected with &lt;a href="http://abvio.com/cyclemeter/">Cyclemeter&lt;/a> on
+my daily bike ride to and from school last year.
+I had to manually start and stop the tracking at the beginning and end of each ride. There may
+have been times where I forgot to do that, so we&amp;rsquo;ll see if we can find those.&lt;/p></description><content:encoded><![CDATA[<p>This is the first post in a series where I&rsquo;ll show how I use pandas on real-world datasets.</p>
 <p>For this post, we&rsquo;ll look at data I collected with <a href="http://abvio.com/cyclemeter/">Cyclemeter</a> on
 my daily bike ride to and from school last year.
 I had to manually start and stop the tracking at the beginning and end of each ride. There may
@@ -14655,8 +14839,8 @@ pandas&rsquo; <code>HDF5</code> integration (via pytables) for personal projects
 </span></span><span style="display:flex;"><span>          format<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;table&#39;</span>)
 </span></span></code></pre></div><p>I used the <code>table</code> format in case we want to do some querying on the HDFStore itself, but we&rsquo;ll save that for next time.</p>
 <p>That&rsquo;s it for this post. Next time, we&rsquo;ll do some exploratry data analysis on the data.</p>
-]]></content:encoded></item><item><title>Using Python to tackle the CPS (Part 4)</title><link>https://tomaugspurger.net/posts/tackling-the-cps-4/</link><pubDate>Mon, 19 May 2014 12:01:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/tackling-the-cps-4/</guid><description>Last time, we got to where we&amp;rsquo;d like to have started: One file per month, with each month laid out the same.
-As a reminder, the CPS interviews households 8 times over the course of 16 months. They&amp;rsquo;re interviewed for 4 months, take 8 months off, and are interviewed four more times. So if your first interview was in month $m$, you&amp;rsquo;re also interviewed in months $$m + 1, m + 2, m + 3, m + 12, m + 13, m + 14, m + 15$$.</description><content:encoded><![CDATA[<p>Last time, we got to where we&rsquo;d like to have started: One file per month, with each month laid out the same.</p>
+]]></content:encoded></item><item><title>Using Python to tackle the CPS (Part 4)</title><link>https://tomaugspurger.net/posts/tackling-the-cps-4/</link><pubDate>Mon, 19 May 2014 12:01:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/tackling-the-cps-4/</guid><description>&lt;p>Last time, we got to where we&amp;rsquo;d like to have started: One file per month, with each month laid out the same.&lt;/p>
+&lt;p>As a reminder, the CPS interviews households 8 times over the course of 16 months. They&amp;rsquo;re interviewed for 4 months, take 8 months off, and are interviewed four more times. So if your first interview was in month $m$, you&amp;rsquo;re also interviewed in months $$m + 1, m + 2, m + 3, m + 12, m + 13, m + 14, m + 15$$.&lt;/p></description><content:encoded><![CDATA[<p>Last time, we got to where we&rsquo;d like to have started: One file per month, with each month laid out the same.</p>
 <p>As a reminder, the CPS interviews households 8 times over the course of 16 months. They&rsquo;re interviewed for 4 months, take 8 months off, and are interviewed four more times. So if your first interview was in month $m$, you&rsquo;re also interviewed in months $$m + 1, m + 2, m + 3, m + 12, m + 13, m + 14, m + 15$$.</p>
 <p>I stored the data in <a href="http://pandas-docs.github.io/pandas-docs-travis/dsintro.html#panel">Panels</a>, the less well-known, higher-dimensional cousin of the <a href="http://pandas.pydata.org/pandas-docs/version/0.13.1/generated/pandas.DataFrame.html">DataFrame</a>. Panels are 3-D structures, which is great for this kind of data. The three dimensions are</p>
 <ol>
@@ -14682,9 +14866,17 @@ Each subsequent month has to be matched against the first month.</p>
 <p>There&rsquo;s a bit more code that handles special cases, errors, and the writing of the output.
 I was especially interested in earnings data, so I wrote that out separately.
 But now we&rsquo;re finally to the point where we can do some analysis:</p>
-]]></content:encoded></item><item><title>Using Python to tackle the CPS (Part 3)</title><link>https://tomaugspurger.net/posts/tackling-the-cps-3/</link><pubDate>Mon, 19 May 2014 12:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/tackling-the-cps-3/</guid><description>In part 2 of this series, we set the stage to parse the data files themselves.
-As a reminder, we have a dictionary that looks like
-id length start end 0 HRHHID 15 1 15 1 HRMONTH 2 16 17 2 HRYEAR4 4 18 21 3 HURESPLI 2 22 23 4 HUFINAL 3 24 26 ... ... ... ... giving the columns of the raw CPS data files. This post (or two) will describe the reading of the actual data files, and the somewhat tricky process of matching individuals across the different files.</description><content:encoded><![CDATA[<p>In <a href="http://tomaugspurger.net/blog/2014/02/04/tackling%20the%20cps%20(part%202)/">part 2</a> of this series, we set the stage to parse the data files themselves.</p>
+]]></content:encoded></item><item><title>Using Python to tackle the CPS (Part 3)</title><link>https://tomaugspurger.net/posts/tackling-the-cps-3/</link><pubDate>Mon, 19 May 2014 12:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/tackling-the-cps-3/</guid><description>&lt;p>In &lt;a href="http://tomaugspurger.net/blog/2014/02/04/tackling%20the%20cps%20(part%202)/">part 2&lt;/a> of this series, we set the stage to parse the data files themselves.&lt;/p>
+&lt;p>As a reminder, we have a dictionary that looks like&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> id length start end
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">0&lt;/span> HRHHID &lt;span style="color:#ae81ff">15&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span> &lt;span style="color:#ae81ff">15&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">1&lt;/span> HRMONTH &lt;span style="color:#ae81ff">2&lt;/span> &lt;span style="color:#ae81ff">16&lt;/span> &lt;span style="color:#ae81ff">17&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">2&lt;/span> HRYEAR4 &lt;span style="color:#ae81ff">4&lt;/span> &lt;span style="color:#ae81ff">18&lt;/span> &lt;span style="color:#ae81ff">21&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3&lt;/span> HURESPLI &lt;span style="color:#ae81ff">2&lt;/span> &lt;span style="color:#ae81ff">22&lt;/span> &lt;span style="color:#ae81ff">23&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">4&lt;/span> HUFINAL &lt;span style="color:#ae81ff">3&lt;/span> &lt;span style="color:#ae81ff">24&lt;/span> &lt;span style="color:#ae81ff">26&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">...&lt;/span> &lt;span style="color:#f92672">...&lt;/span> &lt;span style="color:#f92672">...&lt;/span> &lt;span style="color:#f92672">...&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>giving the columns of the raw CPS data files. This post (or two) will describe the reading of the actual data files, and the somewhat tricky process of matching individuals across the different files. After that we can (finally) get into analyzing the data. The old joke is that statisticians spend 80% of their time munging their data, and 20% of their time complaining about munging their data. So 4 posts about data cleaning seems reasonable.&lt;/p></description><content:encoded><![CDATA[<p>In <a href="http://tomaugspurger.net/blog/2014/02/04/tackling%20the%20cps%20(part%202)/">part 2</a> of this series, we set the stage to parse the data files themselves.</p>
 <p>As a reminder, we have a dictionary that looks like</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>         id  length  start  end
@@ -14727,9 +14919,15 @@ We select the function from the dictionary with <code>specials[func]</code> and 
 Since functions are objects in python, we&rsquo;re able to store them in dictionaries and pass them around like just about anything else.</p>
 <p>This method gave a lot of flexibility. When I discovered a new way that one month&rsquo;s layout differed from what I wanted, I simply wrote a function to handle the special case, added it to <code>func_dict</code>, and added the new special case to that month&rsquo;s speical case list.</p>
 <p>There&rsquo;s a bit more standardization and other boring stuff that gets us to a good place: each month with the same layout. Now we get get to the tricky alignment, which I&rsquo;ll save for another post.</p>
-]]></content:encoded></item><item><title>Tidy Data in Action</title><link>https://tomaugspurger.net/posts/tidy-data-in-action/</link><pubDate>Thu, 27 Mar 2014 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/tidy-data-in-action/</guid><description>Hadley Whickham wrote a famous paper (for a certain definition of famous) about the importance of tidy data when doing data analysis. I want to talk a bit about that, using an example from a StackOverflow post, with a solution using pandas. The principles of tidy data aren&amp;rsquo;t language specific.
-A tidy dataset must satisfy three criteria (page 4 in Whickham&amp;rsquo;s paper):
-Each variable forms a column. Each observation forms a row.</description><content:encoded><![CDATA[<p><a href="http://had.co.nz">Hadley Whickham</a> wrote a famous paper (for a certain definition of famous) about the importance of <a href="http://vita.had.co.nz/papers/tidy-data.pdf">tidy data</a> when doing data analysis.
+]]></content:encoded></item><item><title>Tidy Data in Action</title><link>https://tomaugspurger.net/posts/tidy-data-in-action/</link><pubDate>Thu, 27 Mar 2014 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/tidy-data-in-action/</guid><description>&lt;p>&lt;a href="http://had.co.nz">Hadley Whickham&lt;/a> wrote a famous paper (for a certain definition of famous) about the importance of &lt;a href="http://vita.had.co.nz/papers/tidy-data.pdf">tidy data&lt;/a> when doing data analysis.
+I want to talk a bit about that, using an example from a StackOverflow post, with a solution using &lt;a href="http://pandas.pydata.org">pandas&lt;/a>. The principles of tidy data aren&amp;rsquo;t language specific.&lt;/p>
+&lt;p>A tidy dataset must satisfy three criteria (page 4 in &lt;a href="http://vita.had.co.nz/papers/tidy-data.pdf">Whickham&amp;rsquo;s paper&lt;/a>):&lt;/p>
+&lt;ol>
+&lt;li>Each variable forms a column.&lt;/li>
+&lt;li>Each observation forms a row.&lt;/li>
+&lt;li>Each type of observational unit forms a table.&lt;/li>
+&lt;/ol>
+&lt;p>In this &lt;a href="http://stackoverflow.com/questions/22695680/python-pandas-timedelta-specific-rows">StackOverflow post&lt;/a>, the asker had some data NBA games, and wanted to know the number of days since a team last played. Here&amp;rsquo;s the example data:&lt;/p></description><content:encoded><![CDATA[<p><a href="http://had.co.nz">Hadley Whickham</a> wrote a famous paper (for a certain definition of famous) about the importance of <a href="http://vita.had.co.nz/papers/tidy-data.pdf">tidy data</a> when doing data analysis.
 I want to talk a bit about that, using an example from a StackOverflow post, with a solution using <a href="http://pandas.pydata.org">pandas</a>. The principles of tidy data aren&rsquo;t language specific.</p>
 <p>A tidy dataset must satisfy three criteria (page 4 in <a href="http://vita.had.co.nz/papers/tidy-data.pdf">Whickham&rsquo;s paper</a>):</p>
 <ol>
@@ -14968,9 +15166,14 @@ But honestly, I&rsquo;m having trouble writing the messy data version.
 You don&rsquo;t really have anything to group on, so you&rsquo;d need to keep track of the row where you last saw this team (either in <code>AwayTeam</code> or <code>HomeTeam</code>).
 And then each row will have two answers, one for each team.
 It&rsquo;s certainly possible to write the necessary code, but the fact that I&rsquo;m struggling so much to write the messy version is pretty good evidence for the importance of tidy data.</p>
-]]></content:encoded></item><item><title>Using Python to tackle the CPS (Part 2)</title><link>https://tomaugspurger.net/posts/tackling-the-cps-2/</link><pubDate>Tue, 04 Feb 2014 12:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/tackling-the-cps-2/</guid><description>Last time, we used Python to fetch some data from the Current Population Survey. Today, we&amp;rsquo;ll work on parsing the files we just downloaded.
-We downloaded two types of files last time:
-CPS monthly tables: a fixed-width format text file with the actual data Data Dictionaries: a text file describing the layout of the monthly tables Our goal is to parse the monthly tables. Here&amp;rsquo;s the first two lines from the unzipped January 1994 file:</description><content:encoded><![CDATA[<p><a href="http://tomaugspurger.net/blog/2014/01/27/tackling%20the%20cps/">Last time</a>, we used Python to fetch some data from the <a href="http://www.census.gov/cps/">Current Population Survey</a>. Today, we&rsquo;ll work on parsing the files we just downloaded.</p>
+]]></content:encoded></item><item><title>Using Python to tackle the CPS (Part 2)</title><link>https://tomaugspurger.net/posts/tackling-the-cps-2/</link><pubDate>Tue, 04 Feb 2014 12:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/tackling-the-cps-2/</guid><description>&lt;p>&lt;a href="http://tomaugspurger.net/blog/2014/01/27/tackling%20the%20cps/">Last time&lt;/a>, we used Python to fetch some data from the &lt;a href="http://www.census.gov/cps/">Current Population Survey&lt;/a>. Today, we&amp;rsquo;ll work on parsing the files we just downloaded.&lt;/p>
+&lt;hr>
+&lt;p>We downloaded two types of files last time:&lt;/p>
+&lt;ul>
+&lt;li>CPS monthly tables: a fixed-width format text file with the actual data&lt;/li>
+&lt;li>Data Dictionaries: a text file describing the layout of the monthly tables&lt;/li>
+&lt;/ul>
+&lt;p>Our goal is to parse the monthly tables. Here&amp;rsquo;s the first two lines from the unzipped January 1994 file:&lt;/p></description><content:encoded><![CDATA[<p><a href="http://tomaugspurger.net/blog/2014/01/27/tackling%20the%20cps/">Last time</a>, we used Python to fetch some data from the <a href="http://www.census.gov/cps/">Current Population Survey</a>. Today, we&rsquo;ll work on parsing the files we just downloaded.</p>
 <hr>
 <p>We downloaded two types of files last time:</p>
 <ul>
@@ -15019,7 +15222,7 @@ HRHHID          15     HOUSEHOLD IDENTIFIER   (Part 1)             (1 - 15)
          ...     ...    ...  ...
 </code></pre><p>This can be used as an argument pandas&rsquo; <a href="http://pandas.pydata.org/pandas-docs/dev/io.html#files-with-fixed-width-columns"><code>read_fwf</code></a> parser.</p>
 <p>Next time I&rsquo;ll talk about actually parsing the tables and wrangling them into a usable structure. After that, we will finally get to actually analyzing the data.</p>
-]]></content:encoded></item><item><title>Using Python to tackle the CPS</title><link>https://tomaugspurger.net/posts/tackling-the-cps/</link><pubDate>Mon, 27 Jan 2014 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/tackling-the-cps/</guid><description>The Current Population Survey is an important source of data for economists. It&amp;rsquo;s modern form took shape in the 70&amp;rsquo;s and unfortunately the data format and distribution shows its age. Some centers like IPUMS have attempted to put a nicer face on accessing the data, but they haven&amp;rsquo;t done everything yet. In this series I&amp;rsquo;ll describe methods I used to fetch, parse, and analyze CPS data for my second year paper.</description><content:encoded><![CDATA[<p>The <a href="http://www.census.gov/cps/">Current Population Survey</a> is an important source of data for economists. It&rsquo;s modern form took shape in the 70&rsquo;s and unfortunately the data format and distribution shows its age. Some centers like <a href="https://cps.ipums.org/cps/">IPUMS</a> have attempted to put a nicer face on accessing the data, but they haven&rsquo;t done everything yet. In this series I&rsquo;ll describe methods I used to fetch, parse, and analyze CPS data for my second year paper. Today I&rsquo;ll describe fetching the data. Everything is available at the paper&rsquo;s <a href="https://github.com/TomAugspurger/dnwr-zlb">GitHub Repository</a>.</p>
+]]></content:encoded></item><item><title>Using Python to tackle the CPS</title><link>https://tomaugspurger.net/posts/tackling-the-cps/</link><pubDate>Mon, 27 Jan 2014 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/tackling-the-cps/</guid><description>&lt;p>The &lt;a href="http://www.census.gov/cps/">Current Population Survey&lt;/a> is an important source of data for economists. It&amp;rsquo;s modern form took shape in the 70&amp;rsquo;s and unfortunately the data format and distribution shows its age. Some centers like &lt;a href="https://cps.ipums.org/cps/">IPUMS&lt;/a> have attempted to put a nicer face on accessing the data, but they haven&amp;rsquo;t done everything yet. In this series I&amp;rsquo;ll describe methods I used to fetch, parse, and analyze CPS data for my second year paper. Today I&amp;rsquo;ll describe fetching the data. Everything is available at the paper&amp;rsquo;s &lt;a href="https://github.com/TomAugspurger/dnwr-zlb">GitHub Repository&lt;/a>.&lt;/p></description><content:encoded><![CDATA[<p>The <a href="http://www.census.gov/cps/">Current Population Survey</a> is an important source of data for economists. It&rsquo;s modern form took shape in the 70&rsquo;s and unfortunately the data format and distribution shows its age. Some centers like <a href="https://cps.ipums.org/cps/">IPUMS</a> have attempted to put a nicer face on accessing the data, but they haven&rsquo;t done everything yet. In this series I&rsquo;ll describe methods I used to fetch, parse, and analyze CPS data for my second year paper. Today I&rsquo;ll describe fetching the data. Everything is available at the paper&rsquo;s <a href="https://github.com/TomAugspurger/dnwr-zlb">GitHub Repository</a>.</p>
 <p>Before diving in, you should know a bit about the data. I was working with the monthly microdata files from the CPS. These are used to estimate things like the unemployment rate you see reported every month. Since around 2002, about 60,000 households are interviewed 8 times each over a year. They&rsquo;re interviewed for 4 months, take 4 months off, and are interviewed for 4 more months after the break. Questions are asked about demographics, education, economic activity (and more).</p>
 <h2 id="fetching-the-data">Fetching the Data</h2>
 <p>This was probably the easiest part of the whole project.

@@ -1,6 +1,9 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Python on Tom's Blog</title><link>https://tomaugspurger.net/tags/python/</link><description>Recent content in Python on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>tom.w.augspurger@gmail.com (Tom Augspurger)</managingEditor><webMaster>tom.w.augspurger@gmail.com (Tom Augspurger)</webMaster><lastBuildDate>Thu, 16 Oct 2014 07:00:00 +0000</lastBuildDate><atom:link href="https://tomaugspurger.net/tags/python/index.xml" rel="self" type="application/rss+xml"/><item><title>dplyr and pandas</title><link>https://tomaugspurger.net/posts/dplyr-pandas/</link><pubDate>Thu, 16 Oct 2014 07:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/dplyr-pandas/</guid><description>This notebook compares pandas and dplyr. The comparison is just on syntax (verbage), not performance. Whether you&amp;rsquo;re an R user looking to switch to pandas (or the other way around), I hope this guide will help ease the transition.
-We&amp;rsquo;ll work through the introductory dplyr vignette to analyze some flight data.
-I&amp;rsquo;m working on a better layout to show the two packages side by side. But for now I&amp;rsquo;m just putting the dplyr code in a comment above each python call.</description><content:encoded><![CDATA[<p>This notebook compares <a href="http://pandas.pydata.org">pandas</a>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Python on Tom's Blog</title><link>https://tomaugspurger.net/tags/python/</link><description>Recent content in Python on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Thu, 16 Oct 2014 07:00:00 +0000</lastBuildDate><atom:link href="https://tomaugspurger.net/tags/python/index.xml" rel="self" type="application/rss+xml"/><item><title>dplyr and pandas</title><link>https://tomaugspurger.net/posts/dplyr-pandas/</link><pubDate>Thu, 16 Oct 2014 07:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/dplyr-pandas/</guid><description>&lt;p>This notebook compares &lt;a href="http://pandas.pydata.org">pandas&lt;/a>
+and &lt;a href="http://cran.r-project.org/web/packages/dplyr/index.html">dplyr&lt;/a>.
+The comparison is just on syntax (verbage), not performance. Whether you&amp;rsquo;re an R user looking to switch to pandas (or the other way around), I hope this guide will help ease the transition.&lt;/p>
+&lt;p>We&amp;rsquo;ll work through the &lt;a href="http://cran.r-project.org/web/packages/dplyr/vignettes/introduction.html">introductory dplyr vignette&lt;/a> to analyze some flight data.&lt;/p>
+&lt;p>I&amp;rsquo;m working on a better layout to show the two packages side by side.
+But for now I&amp;rsquo;m just putting the &lt;code>dplyr&lt;/code> code in a comment above each python call.&lt;/p></description><content:encoded><![CDATA[<p>This notebook compares <a href="http://pandas.pydata.org">pandas</a>
 and <a href="http://cran.r-project.org/web/packages/dplyr/index.html">dplyr</a>.
 The comparison is just on syntax (verbage), not performance. Whether you&rsquo;re an R user looking to switch to pandas (or the other way around), I hope this guide will help ease the transition.</p>
 <p>We&rsquo;ll work through the <a href="http://cran.r-project.org/web/packages/dplyr/vignettes/introduction.html">introductory dplyr vignette</a> to analyze some flight data.</p>
@@ -1918,9 +1921,15 @@ Name: distance, Length: 12, dtype: int64
 <p>There will always be a place for your &ldquo;utility belt&rdquo; package like dplyr or pandas, but it wouldn&rsquo;t hurt to be familiar with both.</p>
 <p>If you want to contribute to pandas, we&rsquo;re always looking for help at <a href="https://github.com/pydata/pandas/">https://github.com/pydata/pandas/</a>.
 You can get ahold of me directly on <a href="https://twitter.com/tomaugspurger">twitter</a>.</p>
-]]></content:encoded></item><item><title>Practical Pandas Part 3 - Exploratory Data Analysis</title><link>https://tomaugspurger.net/posts/pp03/</link><pubDate>Tue, 16 Sep 2014 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/pp03/</guid><description>Welcome back. As a reminder:
-In part 1 we got dataset with my cycling data from last year merged and stored in an HDF5 store In part 2 we did some cleaning and augmented the cycling data with data from http://forecast.io. You can find the full source code and data at this project&amp;rsquo;s GitHub repo.
-Today we&amp;rsquo;ll use pandas, seaborn, and matplotlib to do some exploratory data analysis. For fun, we&amp;rsquo;ll make some maps at the end using folium.</description><content:encoded><![CDATA[<p>Welcome back. As a reminder:</p>
+]]></content:encoded></item><item><title>Practical Pandas Part 3 - Exploratory Data Analysis</title><link>https://tomaugspurger.net/posts/pp03/</link><pubDate>Tue, 16 Sep 2014 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/pp03/</guid><description>&lt;p>Welcome back. As a reminder:&lt;/p>
+&lt;ul>
+&lt;li>In &lt;a href="http://tomaugspurger.net/blog/2014/08/26/practical-pandas-part-1-reading-the-data/">part 1&lt;/a> we got dataset with my cycling data from last year merged and stored in an HDF5 store&lt;/li>
+&lt;li>In &lt;a href="http://tomaugspurger.net/blog/2014/09/04/practical-pandas-part-2-more-tidying-more-data-and-merging/">part 2&lt;/a> we did some cleaning and augmented the cycling data with data from &lt;a href="http://forecast.io">http://forecast.io&lt;/a>.&lt;/li>
+&lt;/ul>
+&lt;p>You can find the full source code and data at this project&amp;rsquo;s &lt;a href="https://github.com/tomaugspurger/practicalpandas">GitHub repo&lt;/a>.&lt;/p>
+&lt;p>Today we&amp;rsquo;ll use pandas, seaborn, and
+matplotlib to do some exploratory data analysis.
+For fun, we&amp;rsquo;ll make some maps at the end using &lt;a href="https://folium.readthedocs.org/en/latest/">folium&lt;/a>.&lt;/p></description><content:encoded><![CDATA[<p>Welcome back. As a reminder:</p>
 <ul>
 <li>In <a href="http://tomaugspurger.net/blog/2014/08/26/practical-pandas-part-1-reading-the-data/">part 1</a> we got dataset with my cycling data from last year merged and stored in an HDF5 store</li>
 <li>In <a href="http://tomaugspurger.net/blog/2014/09/04/practical-pandas-part-2-more-tidying-more-data-and-merging/">part 2</a> we did some cleaning and augmented the cycling data with data from <a href="http://forecast.io">http://forecast.io</a>.</li>
@@ -3038,9 +3047,17 @@ opacity: 0.3,
 </body>" style="width: 100%; height: 510px; border: none"></iframe>
 <p>You can barely make out that I changed my path partway through the year to take Old Hospital Road instead of the North Ridge Trail (North boundry of my path).</p>
 <p>Folium is cool; you should check it out (really, just use anything made by <a href="https://github.com/wrobstory/">Rob</a>).</p>
-]]></content:encoded></item><item><title>Practical Pandas Part 2 - More Tidying, More Data, and Merging</title><link>https://tomaugspurger.net/posts/pp02/</link><pubDate>Thu, 04 Sep 2014 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/pp02/</guid><description>This is Part 2 in the Practical Pandas Series, where I work through a data analysis problem from start to finish.
-It&amp;rsquo;s a misconception that we can cleanly separate the data analysis pipeline into a linear sequence of steps from
-data acqusition data tidying exploratory analysis model building production As you work through a problem you&amp;rsquo;ll realize, &amp;ldquo;I need this other bit of data&amp;rdquo;, or &amp;ldquo;this would be easier if I stored the data this way&amp;rdquo;, or more commonly &amp;ldquo;strange, that&amp;rsquo;s not supposed to happen&amp;rdquo;.</description><content:encoded><![CDATA[<p><em>This is Part 2 in the Practical Pandas Series, where I work through a data analysis problem from start to finish.</em></p>
+]]></content:encoded></item><item><title>Practical Pandas Part 2 - More Tidying, More Data, and Merging</title><link>https://tomaugspurger.net/posts/pp02/</link><pubDate>Thu, 04 Sep 2014 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/pp02/</guid><description>&lt;p>&lt;em>This is Part 2 in the Practical Pandas Series, where I work through a data analysis problem from start to finish.&lt;/em>&lt;/p>
+&lt;p>It&amp;rsquo;s a misconception that we can cleanly separate the data analysis pipeline into a linear
+sequence of steps from&lt;/p>
+&lt;ol>
+&lt;li>data acqusition&lt;/li>
+&lt;li>data tidying&lt;/li>
+&lt;li>exploratory analysis&lt;/li>
+&lt;li>model building&lt;/li>
+&lt;li>production&lt;/li>
+&lt;/ol>
+&lt;p>As you work through a problem you&amp;rsquo;ll realize, &amp;ldquo;I need this other bit of data&amp;rdquo;, or &amp;ldquo;this would be easier if I stored the data this way&amp;rdquo;, or more commonly &amp;ldquo;strange, that&amp;rsquo;s not supposed to happen&amp;rdquo;.&lt;/p></description><content:encoded><![CDATA[<p><em>This is Part 2 in the Practical Pandas Series, where I work through a data analysis problem from start to finish.</em></p>
 <p>It&rsquo;s a misconception that we can cleanly separate the data analysis pipeline into a linear
 sequence of steps from</p>
 <ol>
@@ -3667,8 +3684,11 @@ and then modify the color of the patches after the fact.</p>
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>set_title(<span style="color:#e6db74">&#34;Direction of Wind Origin&#34;</span>)
 </span></span></code></pre></div><p>Colorbars are tricky in matplotlib (at least for me). So I&rsquo;m going to leave it at darker is stronger wind.</p>
 <p>That&rsquo;s all for now. Come back next time for some exploratory analysis, and if we&rsquo;re lucky, some maps!</p>
-]]></content:encoded></item><item><title>Practical Pandas Part 1 - Reading the Data</title><link>https://tomaugspurger.net/posts/pp01/</link><pubDate>Tue, 26 Aug 2014 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/pp01/</guid><description>This is the first post in a series where I&amp;rsquo;ll show how I use pandas on real-world datasets.
-For this post, we&amp;rsquo;ll look at data I collected with Cyclemeter on my daily bike ride to and from school last year. I had to manually start and stop the tracking at the beginning and end of each ride. There may have been times where I forgot to do that, so we&amp;rsquo;ll see if we can find those.</description><content:encoded><![CDATA[<p>This is the first post in a series where I&rsquo;ll show how I use pandas on real-world datasets.</p>
+]]></content:encoded></item><item><title>Practical Pandas Part 1 - Reading the Data</title><link>https://tomaugspurger.net/posts/pp01/</link><pubDate>Tue, 26 Aug 2014 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/pp01/</guid><description>&lt;p>This is the first post in a series where I&amp;rsquo;ll show how I use pandas on real-world datasets.&lt;/p>
+&lt;p>For this post, we&amp;rsquo;ll look at data I collected with &lt;a href="http://abvio.com/cyclemeter/">Cyclemeter&lt;/a> on
+my daily bike ride to and from school last year.
+I had to manually start and stop the tracking at the beginning and end of each ride. There may
+have been times where I forgot to do that, so we&amp;rsquo;ll see if we can find those.&lt;/p></description><content:encoded><![CDATA[<p>This is the first post in a series where I&rsquo;ll show how I use pandas on real-world datasets.</p>
 <p>For this post, we&rsquo;ll look at data I collected with <a href="http://abvio.com/cyclemeter/">Cyclemeter</a> on
 my daily bike ride to and from school last year.
 I had to manually start and stop the tracking at the beginning and end of each ride. There may
@@ -4198,9 +4218,15 @@ pandas&rsquo; <code>HDF5</code> integration (via pytables) for personal projects
 </span></span><span style="display:flex;"><span>          format<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;table&#39;</span>)
 </span></span></code></pre></div><p>I used the <code>table</code> format in case we want to do some querying on the HDFStore itself, but we&rsquo;ll save that for next time.</p>
 <p>That&rsquo;s it for this post. Next time, we&rsquo;ll do some exploratry data analysis on the data.</p>
-]]></content:encoded></item><item><title>Tidy Data in Action</title><link>https://tomaugspurger.net/posts/tidy-data-in-action/</link><pubDate>Thu, 27 Mar 2014 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/tidy-data-in-action/</guid><description>Hadley Whickham wrote a famous paper (for a certain definition of famous) about the importance of tidy data when doing data analysis. I want to talk a bit about that, using an example from a StackOverflow post, with a solution using pandas. The principles of tidy data aren&amp;rsquo;t language specific.
-A tidy dataset must satisfy three criteria (page 4 in Whickham&amp;rsquo;s paper):
-Each variable forms a column. Each observation forms a row.</description><content:encoded><![CDATA[<p><a href="http://had.co.nz">Hadley Whickham</a> wrote a famous paper (for a certain definition of famous) about the importance of <a href="http://vita.had.co.nz/papers/tidy-data.pdf">tidy data</a> when doing data analysis.
+]]></content:encoded></item><item><title>Tidy Data in Action</title><link>https://tomaugspurger.net/posts/tidy-data-in-action/</link><pubDate>Thu, 27 Mar 2014 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/tidy-data-in-action/</guid><description>&lt;p>&lt;a href="http://had.co.nz">Hadley Whickham&lt;/a> wrote a famous paper (for a certain definition of famous) about the importance of &lt;a href="http://vita.had.co.nz/papers/tidy-data.pdf">tidy data&lt;/a> when doing data analysis.
+I want to talk a bit about that, using an example from a StackOverflow post, with a solution using &lt;a href="http://pandas.pydata.org">pandas&lt;/a>. The principles of tidy data aren&amp;rsquo;t language specific.&lt;/p>
+&lt;p>A tidy dataset must satisfy three criteria (page 4 in &lt;a href="http://vita.had.co.nz/papers/tidy-data.pdf">Whickham&amp;rsquo;s paper&lt;/a>):&lt;/p>
+&lt;ol>
+&lt;li>Each variable forms a column.&lt;/li>
+&lt;li>Each observation forms a row.&lt;/li>
+&lt;li>Each type of observational unit forms a table.&lt;/li>
+&lt;/ol>
+&lt;p>In this &lt;a href="http://stackoverflow.com/questions/22695680/python-pandas-timedelta-specific-rows">StackOverflow post&lt;/a>, the asker had some data NBA games, and wanted to know the number of days since a team last played. Here&amp;rsquo;s the example data:&lt;/p></description><content:encoded><![CDATA[<p><a href="http://had.co.nz">Hadley Whickham</a> wrote a famous paper (for a certain definition of famous) about the importance of <a href="http://vita.had.co.nz/papers/tidy-data.pdf">tidy data</a> when doing data analysis.
 I want to talk a bit about that, using an example from a StackOverflow post, with a solution using <a href="http://pandas.pydata.org">pandas</a>. The principles of tidy data aren&rsquo;t language specific.</p>
 <p>A tidy dataset must satisfy three criteria (page 4 in <a href="http://vita.had.co.nz/papers/tidy-data.pdf">Whickham&rsquo;s paper</a>):</p>
 <ol>
@@ -4439,7 +4465,9 @@ But honestly, I&rsquo;m having trouble writing the messy data version.
 You don&rsquo;t really have anything to group on, so you&rsquo;d need to keep track of the row where you last saw this team (either in <code>AwayTeam</code> or <code>HomeTeam</code>).
 And then each row will have two answers, one for each team.
 It&rsquo;s certainly possible to write the necessary code, but the fact that I&rsquo;m struggling so much to write the messy version is pretty good evidence for the importance of tidy data.</p>
-]]></content:encoded></item><item><title>Organizing Papers</title><link>https://tomaugspurger.net/posts/organizing-papers/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/organizing-papers/</guid><description>As a graduate student, you read a lot of journal articles&amp;hellip; a lot. With the material in the articles being as difficult as it is, I didn&amp;rsquo;t want to worry about organizing everything as well. That&amp;rsquo;s why I wrote this script to help (I may have also been procrastinating from studying for my qualifiers). This was one of my earliest little projects, so I&amp;rsquo;m not claiming that this is the best way to do anything.</description><content:encoded><![CDATA[<p>As a graduate student, you read a lot of journal articles&hellip; <em>a lot</em>.
+]]></content:encoded></item><item><title>Organizing Papers</title><link>https://tomaugspurger.net/posts/organizing-papers/</link><pubDate>Thu, 13 Feb 2014 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/organizing-papers/</guid><description>&lt;p>As a graduate student, you read a lot of journal articles&amp;hellip; &lt;em>a lot&lt;/em>.
+With the material in the articles being as difficult as it is, I didn&amp;rsquo;t want to worry about organizing everything as well.
+That&amp;rsquo;s why I wrote &lt;a href="https://gist.github.com/TomAugspurger/8976751">this script&lt;/a> to help (I may have also been procrastinating from studying for my qualifiers). This was one of my earliest little projects, so I&amp;rsquo;m not claiming that this is the best way to do anything.&lt;/p></description><content:encoded><![CDATA[<p>As a graduate student, you read a lot of journal articles&hellip; <em>a lot</em>.
 With the material in the articles being as difficult as it is, I didn&rsquo;t want to worry about organizing everything as well.
 That&rsquo;s why I wrote <a href="https://gist.github.com/TomAugspurger/8976751">this script</a> to help (I may have also been procrastinating from studying for my qualifiers). This was one of my earliest little projects, so I&rsquo;m not claiming that this is the best way to do anything.</p>
 <p>My goal was to have a central repository of papers that was organized by an author&rsquo;s last name. Under each author&rsquo;s name would go all of their papers I had read or planned to read.

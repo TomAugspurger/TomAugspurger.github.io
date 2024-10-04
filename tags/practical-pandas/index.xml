@@ -1,6 +1,12 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Practical Pandas on Tom's Blog</title><link>https://tomaugspurger.net/tags/practical-pandas/</link><description>Recent content in Practical Pandas on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><managingEditor>tom.w.augspurger@gmail.com (Tom Augspurger)</managingEditor><webMaster>tom.w.augspurger@gmail.com (Tom Augspurger)</webMaster><lastBuildDate>Tue, 16 Sep 2014 00:00:00 +0000</lastBuildDate><atom:link href="https://tomaugspurger.net/tags/practical-pandas/index.xml" rel="self" type="application/rss+xml"/><item><title>Practical Pandas Part 3 - Exploratory Data Analysis</title><link>https://tomaugspurger.net/posts/pp03/</link><pubDate>Tue, 16 Sep 2014 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/pp03/</guid><description>Welcome back. As a reminder:
-In part 1 we got dataset with my cycling data from last year merged and stored in an HDF5 store In part 2 we did some cleaning and augmented the cycling data with data from http://forecast.io. You can find the full source code and data at this project&amp;rsquo;s GitHub repo.
-Today we&amp;rsquo;ll use pandas, seaborn, and matplotlib to do some exploratory data analysis. For fun, we&amp;rsquo;ll make some maps at the end using folium.</description><content:encoded><![CDATA[<p>Welcome back. As a reminder:</p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Practical Pandas on Tom's Blog</title><link>https://tomaugspurger.net/tags/practical-pandas/</link><description>Recent content in Practical Pandas on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Tue, 16 Sep 2014 00:00:00 +0000</lastBuildDate><atom:link href="https://tomaugspurger.net/tags/practical-pandas/index.xml" rel="self" type="application/rss+xml"/><item><title>Practical Pandas Part 3 - Exploratory Data Analysis</title><link>https://tomaugspurger.net/posts/pp03/</link><pubDate>Tue, 16 Sep 2014 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/pp03/</guid><description>&lt;p>Welcome back. As a reminder:&lt;/p>
+&lt;ul>
+&lt;li>In &lt;a href="http://tomaugspurger.net/blog/2014/08/26/practical-pandas-part-1-reading-the-data/">part 1&lt;/a> we got dataset with my cycling data from last year merged and stored in an HDF5 store&lt;/li>
+&lt;li>In &lt;a href="http://tomaugspurger.net/blog/2014/09/04/practical-pandas-part-2-more-tidying-more-data-and-merging/">part 2&lt;/a> we did some cleaning and augmented the cycling data with data from &lt;a href="http://forecast.io">http://forecast.io&lt;/a>.&lt;/li>
+&lt;/ul>
+&lt;p>You can find the full source code and data at this project&amp;rsquo;s &lt;a href="https://github.com/tomaugspurger/practicalpandas">GitHub repo&lt;/a>.&lt;/p>
+&lt;p>Today we&amp;rsquo;ll use pandas, seaborn, and
+matplotlib to do some exploratory data analysis.
+For fun, we&amp;rsquo;ll make some maps at the end using &lt;a href="https://folium.readthedocs.org/en/latest/">folium&lt;/a>.&lt;/p></description><content:encoded><![CDATA[<p>Welcome back. As a reminder:</p>
 <ul>
 <li>In <a href="http://tomaugspurger.net/blog/2014/08/26/practical-pandas-part-1-reading-the-data/">part 1</a> we got dataset with my cycling data from last year merged and stored in an HDF5 store</li>
 <li>In <a href="http://tomaugspurger.net/blog/2014/09/04/practical-pandas-part-2-more-tidying-more-data-and-merging/">part 2</a> we did some cleaning and augmented the cycling data with data from <a href="http://forecast.io">http://forecast.io</a>.</li>
@@ -1118,9 +1124,17 @@ opacity: 0.3,
 </body>" style="width: 100%; height: 510px; border: none"></iframe>
 <p>You can barely make out that I changed my path partway through the year to take Old Hospital Road instead of the North Ridge Trail (North boundry of my path).</p>
 <p>Folium is cool; you should check it out (really, just use anything made by <a href="https://github.com/wrobstory/">Rob</a>).</p>
-]]></content:encoded></item><item><title>Practical Pandas Part 2 - More Tidying, More Data, and Merging</title><link>https://tomaugspurger.net/posts/pp02/</link><pubDate>Thu, 04 Sep 2014 00:00:00 +0000</pubDate><author>tom.w.augspurger@gmail.com (Tom Augspurger)</author><guid>https://tomaugspurger.net/posts/pp02/</guid><description>This is Part 2 in the Practical Pandas Series, where I work through a data analysis problem from start to finish.
-It&amp;rsquo;s a misconception that we can cleanly separate the data analysis pipeline into a linear sequence of steps from
-data acqusition data tidying exploratory analysis model building production As you work through a problem you&amp;rsquo;ll realize, &amp;ldquo;I need this other bit of data&amp;rdquo;, or &amp;ldquo;this would be easier if I stored the data this way&amp;rdquo;, or more commonly &amp;ldquo;strange, that&amp;rsquo;s not supposed to happen&amp;rdquo;.</description><content:encoded><![CDATA[<p><em>This is Part 2 in the Practical Pandas Series, where I work through a data analysis problem from start to finish.</em></p>
+]]></content:encoded></item><item><title>Practical Pandas Part 2 - More Tidying, More Data, and Merging</title><link>https://tomaugspurger.net/posts/pp02/</link><pubDate>Thu, 04 Sep 2014 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/pp02/</guid><description>&lt;p>&lt;em>This is Part 2 in the Practical Pandas Series, where I work through a data analysis problem from start to finish.&lt;/em>&lt;/p>
+&lt;p>It&amp;rsquo;s a misconception that we can cleanly separate the data analysis pipeline into a linear
+sequence of steps from&lt;/p>
+&lt;ol>
+&lt;li>data acqusition&lt;/li>
+&lt;li>data tidying&lt;/li>
+&lt;li>exploratory analysis&lt;/li>
+&lt;li>model building&lt;/li>
+&lt;li>production&lt;/li>
+&lt;/ol>
+&lt;p>As you work through a problem you&amp;rsquo;ll realize, &amp;ldquo;I need this other bit of data&amp;rdquo;, or &amp;ldquo;this would be easier if I stored the data this way&amp;rdquo;, or more commonly &amp;ldquo;strange, that&amp;rsquo;s not supposed to happen&amp;rdquo;.&lt;/p></description><content:encoded><![CDATA[<p><em>This is Part 2 in the Practical Pandas Series, where I work through a data analysis problem from start to finish.</em></p>
 <p>It&rsquo;s a misconception that we can cleanly separate the data analysis pipeline into a linear
 sequence of steps from</p>
 <ol>
