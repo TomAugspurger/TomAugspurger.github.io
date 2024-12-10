@@ -145,9 +145,9 @@ Stuff happens. They write letters to each other. More stuff happens. They fall
 in love. More stuff happens.
 
 To me, it really comes down to the beautiful writing (with just enough structure
-around it to make all that flowery prose feel appropriate. I mean... just
+around it to make all that flowery prose feel appropriate). I mean... just
 listen: "I distract myself. I talk of tactics and of methods. I say how I know
-how I know. I make metaphors to approach the enormous fact of you on slant.").
+how I know. I make metaphors to approach the enormous fact of you on slant."
 
 Overall, I'd recommend this to just about anyone. Plus, it's short enough that
 it's not a huge time commitment if it's not your cup of tea.
@@ -161,4 +161,4 @@ Some honorable, non-book mentions that I've started reading this year:
 - [Simon Willison's blog](https://simonwillison.net) for AI stuff
 - [Marc Brooker's blog](https://brooker.co.za/blog/) for distributed computing stuff
 
-Overall, a solid year! Reach out to me if you have any questions or recommendations!
+Overall, a solid year! My full list is [on Goodreads](https://www.goodreads.com/review/list/82176424?page=1&ref=nav_mybooks) Reach out to me if you have any questions or recommendations.
