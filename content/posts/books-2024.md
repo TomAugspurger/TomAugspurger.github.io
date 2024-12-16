@@ -1,7 +1,6 @@
 ---
 title: "My 2024 Year in Books"
 date: 2024-12-11T08:00:00-06:00
-draft: true
 ---
 
 Here's another Year in Books (I missed last year, but here's [2022](books-2022.md)).
