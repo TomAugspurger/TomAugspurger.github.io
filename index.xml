@@ -1,4 +1,110 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tom's Blog</title><link>https://tomaugspurger.net/</link><description>Recent content on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Wed, 11 Dec 2024 08:00:00 -0600</lastBuildDate><atom:link href="https://tomaugspurger.net/index.xml" rel="self" type="application/rss+xml"/><item><title>My 2024 Year in Books</title><link>https://tomaugspurger.net/posts/books-2024/</link><pubDate>Wed, 11 Dec 2024 08:00:00 -0600</pubDate><guid>https://tomaugspurger.net/posts/books-2024/</guid><description>&lt;p>Here&amp;rsquo;s another Year in Books (I missed last year, but here&amp;rsquo;s &lt;a href="books-2022.md">2022&lt;/a>).&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tom's Blog</title><link>https://tomaugspurger.net/</link><description>Recent content on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Wed, 18 Dec 2024 10:33:34 -0600</lastBuildDate><atom:link href="https://tomaugspurger.net/index.xml" rel="self" type="application/rss+xml"/><item><title>Dask Geopandas Spatial Shuffle</title><link>https://tomaugspurger.net/posts/dask-geopandas-spatial-shuffle/</link><pubDate>Wed, 18 Dec 2024 10:33:34 -0600</pubDate><guid>https://tomaugspurger.net/posts/dask-geopandas-spatial-shuffle/</guid><description>&lt;p>Over at &lt;a href="https://github.com/opengeospatial/geoparquet/discussions/251">https://github.com/opengeospatial/geoparquet/discussions/251&lt;/a>, we&amp;rsquo;re
+having a nice discussion about how best to partition geoparquet files for
+serving over object storage. Thanks to geoparquet&amp;rsquo;s design, just being an
+extension of parquet, it immediately benefits from all the wisdom around how
+best to partition plain parquet datasets. The only additional wrinkle for
+geoparquet is, unsurprisingly, the geo component.&lt;/p>
+&lt;p>It&amp;rsquo;s pretty common for users to read all the features in a small spatial area (a
+city, say) so optimizing for that use case is a good default. Simplifying a bit,
+reading small spatial subsets of a larger dataset will be fastest if all the
+features that are geographically close together are also &amp;ldquo;close&amp;rdquo; together in the
+parquet dataset, and each part of the parquet dataset only contains data that&amp;rsquo;s
+physically close together. That gives you the data you want in the fewest number
+of file reads / HTTP requests, and minimizes the amount of &amp;ldquo;wasted&amp;rdquo; reads (data
+that&amp;rsquo;s read, only to be immediately discarded because it&amp;rsquo;s outside your area of
+interest).&lt;/p></description><content:encoded><![CDATA[<p>Over at <a href="https://github.com/opengeospatial/geoparquet/discussions/251">https://github.com/opengeospatial/geoparquet/discussions/251</a>, we&rsquo;re
+having a nice discussion about how best to partition geoparquet files for
+serving over object storage. Thanks to geoparquet&rsquo;s design, just being an
+extension of parquet, it immediately benefits from all the wisdom around how
+best to partition plain parquet datasets. The only additional wrinkle for
+geoparquet is, unsurprisingly, the geo component.</p>
+<p>It&rsquo;s pretty common for users to read all the features in a small spatial area (a
+city, say) so optimizing for that use case is a good default. Simplifying a bit,
+reading small spatial subsets of a larger dataset will be fastest if all the
+features that are geographically close together are also &ldquo;close&rdquo; together in the
+parquet dataset, and each part of the parquet dataset only contains data that&rsquo;s
+physically close together. That gives you the data you want in the fewest number
+of file reads / HTTP requests, and minimizes the amount of &ldquo;wasted&rdquo; reads (data
+that&rsquo;s read, only to be immediately discarded because it&rsquo;s outside your area of
+interest).</p>
+<p>Parquet datasets have two levels of nesting we can use to achieve our goal:</p>
+<ol>
+<li>Parquet files within a dataset</li>
+<li>Row groups within each parquet file</li>
+</ol>
+<p>And (simplifying over some details again) we choose the number row groups and
+files so that stuff fits in memory when we actually read some data, while
+avoiding <em>too</em> many individual files to deal with.</p>
+<p>So, given some table of geometries, we want to repartition (AKA shuffle) the
+records so that all the ones that are close in space are also close in the
+table. This process is called &ldquo;spatial partitioning&rdquo; or &ldquo;spatial shuffling&rdquo;.</p>
+<h2 id="spatial-partitioning">Spatial Partitioning</h2>
+<p><a href="https://dewey.dunnington.ca/#about">Dewey Dunnington</a> put together a <a href="https://dewey.dunnington.ca/post/2024/partitioning-strategies-for-bigger-than-memory-spatial-data/">nice
+post</a>
+on various ways of doing this spatial partitioning on a real-world dataset using
+DuckDB. This post will show how something similar can be done with
+dask-geopandas.</p>
+<h3 id="prep-the-data">Prep the data</h3>
+<p>A <a href="https://dewey.dunnington.ca/post/2024/wrangling-and-joining-130m-points-with-duckdb--the-open-source-spatial-stack/">previous
+post</a>
+from Dewy shows how to get the data. Once you&rsquo;ve downloaded and unzipped the
+Flatgeobuf file, you can convert it to geoparquet with dask-geopandas.</p>
+<p>The focus today is on repartitioning, not converting between file formats,
+so let&rsquo;s just quickly convert that Flatgeobuf to geoparquet.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>root <span style="color:#f92672">=</span> pathlib<span style="color:#f92672">.</span>Path(<span style="color:#e6db74">&#34;data&#34;</span>)
+</span></span><span style="display:flex;"><span>info <span style="color:#f92672">=</span> pyogrio<span style="color:#f92672">.</span>read_info(root <span style="color:#f92672">/</span> <span style="color:#e6db74">&#34;microsoft-buildings-point.fgb&#34;</span>)
+</span></span><span style="display:flex;"><span>split <span style="color:#f92672">=</span> root <span style="color:#f92672">/</span> <span style="color:#e6db74">&#34;microsoft-buildings-point-split.parquet&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>n_features <span style="color:#f92672">=</span> info[<span style="color:#e6db74">&#34;features&#34;</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>CHUNK_SIZE<span style="color:#f92672">=</span><span style="color:#ae81ff">1_000_000</span>
+</span></span><span style="display:flex;"><span>print(n_features <span style="color:#f92672">//</span> CHUNK_SIZE <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>chunks <span style="color:#f92672">=</span> dask<span style="color:#f92672">.</span>array<span style="color:#f92672">.</span>core<span style="color:#f92672">.</span>normalize_chunks((CHUNK_SIZE,), shape<span style="color:#f92672">=</span>(n_features,))
+</span></span><span style="display:flex;"><span>slices <span style="color:#f92672">=</span> [x[<span style="color:#ae81ff">0</span>] <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> dask<span style="color:#f92672">.</span>array<span style="color:#f92672">.</span>core<span style="color:#f92672">.</span>slices_from_chunks(chunks)]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">read_part</span>(rows):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> geopandas<span style="color:#f92672">.</span>read_file(<span style="color:#e6db74">&#34;data/microsoft-buildings-point.fgb&#34;</span>, rows<span style="color:#f92672">=</span>rows)[[<span style="color:#e6db74">&#34;geometry&#34;</span>]]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>df <span style="color:#f92672">=</span> dask<span style="color:#f92672">.</span>dataframe<span style="color:#f92672">.</span>from_map(read_part, slices)
+</span></span><span style="display:flex;"><span>shutil<span style="color:#f92672">.</span>rmtree(split, ignore_errors<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>df<span style="color:#f92672">.</span>to_parquet(split, compression<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;zstd&#34;</span>)
+</span></span></code></pre></div><h3 id="spatial-partitioning-with-dask-geopandas">Spatial Partitioning with dask-geopandas</h3>
+<p>Now we can do the spatial partitioning with dask-geopandas. The dask-geopandas
+<a href="https://dask-geopandas.readthedocs.io/en/stable/guide/spatial-partitioning.html">user
+guide</a>
+includes a nice overview of the background and different options available. But
+the basic version is to use the <code>spatial_shuffle</code> method, which computes some
+good &ldquo;divisions&rdquo; of the data and rearranges the table to be sorted by those.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>df <span style="color:#f92672">=</span> dask_geopandas<span style="color:#f92672">.</span>read_parquet(split)
+</span></span><span style="display:flex;"><span><span style="color:#f92672">%</span>time shuffled <span style="color:#f92672">=</span> df<span style="color:#f92672">.</span>spatial_shuffle(by<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;hilbert&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#f92672">%</span>time shuffled<span style="color:#f92672">.</span>to_parquet(<span style="color:#e6db74">&#34;data/hilbert-16.parquet&#34;</span>, compression<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;zstd&#34;</span>)
+</span></span></code></pre></div><p>On my local machine (iMac with a 8 CPU cores (16 hyper-threaded) and 40 GB of RAM), discovering the partitions took about 3min 40s.
+Rewriting the data to be shuffled took about 3min 25s. Recent versions of Dask include some nice <a href="https://docs.coiled.io/blog/shuffling-large-data-at-constant-memory.html">stability</a> and <a href="https://docs.coiled.io/blog/dask-dataframe-is-fast.html">performance</a> improvements, led by the folks at Coiled, which made this run without issue. I ran this locally, but it would be even faster (and scale to much larger datasets) with a cluster of machines and object-storage.</p>
+<p>Now that they&rsquo;re shuffled, we can plot the resulting spatial partitions:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>r <span style="color:#f92672">=</span> dask_geopandas<span style="color:#f92672">.</span>read_parquet(<span style="color:#e6db74">&#34;data/hilbert-16.parquet&#34;</span>)
+</span></span><span style="display:flex;"><span>ax <span style="color:#f92672">=</span> r<span style="color:#f92672">.</span>spatial_partitions<span style="color:#f92672">.</span>plot(edgecolor<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;black&#34;</span>, cmap<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;tab20&#34;</span>, alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">0.25</span>, figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">12</span>, <span style="color:#ae81ff">9</span>))
+</span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>set_axis_off()
+</span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>set(title<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Hilbert partitioning (level=16)&#34;</span>)
+</span></span></code></pre></div><p>The outline of the United States is visible, and the spatial partitions do a good (but not perfect) job of making mostly non-overlapping, spatially compact partitions.</p>
+<p>which gives</p>
+<p><img loading="lazy" src="/images/hilbert-16.png" alt="Hilbert partitioning"  />
+</p>
+<p>Here&rsquo;s a similar plot for <code>by=&quot;geohash&quot;</code></p>
+<p><img loading="lazy" src="/images/geohash.png" alt="Geohash partitioning"  />
+</p>
+<p>And for <code>by=&quot;morton&quot;</code></p>
+<p><img loading="lazy" src="/images/morton-16.png" alt="Morton partitioning"  />
+</p>
+<p>Each partition ends up with approximately 1,000,000 rows (our original chunk size). Here&rsquo;s a histogram of the count per partition:</p>
+<pre tabindex="0"><code>import seaborn as sns
+counts = [fragment.count_rows() for fragment in pyarrow.parquet.ParquetDataset(&#34;data/hilbert-16.parquet/&#34;).fragments]
+
+sns.displot(counts);
+</code></pre><p><img loading="lazy" src="/images/counts-per-partition.png" alt="Count per partition"  />
+</p>
+<p>The <a href="https://github.com/opengeospatial/geoparquet/discussions/251">discussion</a> also mentions KD trees as potentially better way of doing the partitioning. I&rsquo;ll look into that and will follow up if anything comes out of it.</p>
+]]></content:encoded></item><item><title>My 2024 Year in Books</title><link>https://tomaugspurger.net/posts/books-2024/</link><pubDate>Wed, 11 Dec 2024 08:00:00 -0600</pubDate><guid>https://tomaugspurger.net/posts/books-2024/</guid><description>&lt;p>Here&amp;rsquo;s another Year in Books (I missed last year, but here&amp;rsquo;s &lt;a href="books-2022.md">2022&lt;/a>).&lt;/p>
 &lt;p>Most of these came from recommendations by friends, &lt;a href="https://www.theincomparable.com/theincomparable/bookclub/">&lt;em>The Incomparable&lt;/em>&amp;rsquo;s Book
 Club&lt;/a> and (a new
 source), the &amp;ldquo;Books in the Box&amp;rdquo; episodes of &lt;a href="https://oxide.computer/podcasts/oxide-and-friends">Oxide and
@@ -944,114 +1050,6 @@ to run (which is why I wrote it in the first place).</p>
 <p>As for getting closer to an actual cause of the hang, a colleague suggested upgrading
 Python versions since there were some fixes in that area between 3.8 and 3.11. After
 about a week, there have been zero hangs on Python 3.11.</p>
-]]></content:encoded></item><item><title>Dask-GeoPandas Spatial Partitioning Performance</title><link>https://tomaugspurger.net/posts/dask-geopandas-partitions/</link><pubDate>Thu, 09 Feb 2023 08:10:59 -0600</pubDate><guid>https://tomaugspurger.net/posts/dask-geopandas-partitions/</guid><description>&lt;p>A college reached out yesterday about a performance issue they were hitting when
-working with the &lt;a href="https://planetarycomputer.microsoft.com/dataset/ms-buildings">Microsoft Building Footprints&lt;/a> dataset we host
-on the Planetary Computer. They wanted to get the building footprints for a
-small section of Turkey, but noticed that the performance was relatively slow
-and it seemed like a lot of data was being read.&lt;/p>
-&lt;p>This post details how we debugged what was going on, and the steps we took to
-fix it.&lt;/p></description><content:encoded><![CDATA[<p>A college reached out yesterday about a performance issue they were hitting when
-working with the <a href="https://planetarycomputer.microsoft.com/dataset/ms-buildings">Microsoft Building Footprints</a> dataset we host
-on the Planetary Computer. They wanted to get the building footprints for a
-small section of Turkey, but noticed that the performance was relatively slow
-and it seemed like a lot of data was being read.</p>
-<p>This post details how we debugged what was going on, and the steps we took to
-fix it.</p>
-<h2 id="the-problem">The problem</h2>
-<p>First, my college sent a <a href="https://matthewrocklin.com/minimal-bug-reports">minimal, complete, and verifiable example</a> of
-the problem. This let me very easily reproduce it. From his report, the first
-thing I suspected was an issue with the spatial partitioning. The files were
-<em>supposed</em> to be partitioned by <a href="https://learn.microsoft.com/en-us/bingmaps/articles/bing-maps-tile-system">quadkey</a>, so that all the building
-footprints in a single area are in the same partition. Then spatial queries will
-be very fast: you only need to load a small subset of the data.</p>
-<p>When I benchmarked things, it took about:</p>
-<ol>
-<li>16 seconds to read the metadata with <code>dask_geopandas.read_parquet</code></li>
-<li>60 seconds to read the data and clip it to the area of interest</li>
-</ol>
-<p>Looking at the spatial partitions of the data showed that it was clearly not
-spatially partitioned:</p>
-<p><img loading="lazy" src="/images/dask-geopandas-spatial-partitions-bad.png" alt="non-partitioned"  />
-</p>
-<p>It&rsquo;s clearer zoomed in, but the box is a bit fuzzy because it&rsquo;s actually
-a bunch of boxes with very slightly different extents.</p>
-<p>Turns out we dropped a few of the newer ms-buildings STAC items, which were
-spatially partitioned, during our last release. Oops.
-(Don&rsquo;t worry, we&rsquo;re working on a better system for this.)</p>
-<p>Once I got those items re-ingested, things did look better.</p>
-<p><img loading="lazy" src="/images/dask-geopandas-spatial-partitions-good.png" alt="partitioned"  />
-</p>
-<p>It wasn&rsquo;t all good news, though. Our timings went to</p>
-<ol>
-<li>56 seconds to read the metadata with <code>dask_geopandas.read_parquet</code> (ouch)</li>
-<li>0.5 seconds to read the data and clip it to the area of interest (yay!)</li>
-</ol>
-<p>The speedup from 60 seconds to 0.5 seconds is exactly why we want to spatially
-partition the data. When you&rsquo;re querying for a small area of interest,
-the spatially partitioned data means you can ignore most of the data and speed
-things up a lot. But what&rsquo;s going on with the slowdown for the first stage
-(reading metadata)?</p>
-<p>The spatially partitioned dataset also had many more partitions in the Parquet
-dataset, i.e. many more individual files in Blob Storage (a few hundred instead of 5-6).
-At the moment, <code>dask-geopandas</code> needs to open each individual file to read its spatial bounds. That was fine
-when we only had a few files, but when you have a few hundred the small amount of time it takes to read
-each file adds up. In this case, it added up to about 56 seconds of waiting just to read the metadata.</p>
-<h2 id="speeding-up-the-metadata-reading">Speeding up the metadata reading</h2>
-<p>To speed up the metadata reading, we use the tried-and-true method of parallelizing it
-with Dask (yes, we&rsquo;re using Dask to speed up Dask). Instead of doing a <code>dask_geopandas.read_parquet</code>
-on the client (which in turn executes some <code>pyarrow.parquet</code> stuff to read the fragments and get
-the metadata from each file) in serial, we&rsquo;ll run a bunch of <code>dask_geopandas.read_parquet</code>
-calls on the cluster in parallel (I&rsquo;m just using a <code>LocalCluster</code> in this example).</p>
-<p>The snippet below re-uses <code>dask_geopandas.read_parquet</code>, but applies it in
-parallel using <code>client.map</code>. We&rsquo;ll make a bunch of Dask DataFrames on the
-cluster (one per file) and then we use <code>client.gather</code> to bring back the Dask
-DataFrames (just the <em>metadata</em>, not the data!) to the client and concat them
-together into one big Dask DataFrame.</p>
-<p>There&rsquo;s a <a href="https://github.com/geopandas/dask-geopandas/issues/237">small bug</a> in dask-geopandas around serializing the spatial
-partitions on a Dask GeoDataFrame. Once <a href="https://github.com/geopandas/dask-geopandas/pull/238">my fix</a> is merged then this will
-be a bit cleaner: everything to do with <code>spatial_partitions</code> can be deleted
-and you&rsquo;re just left with reading the metadata on the cluster, bringing it
-back to the client, and concatenating at the end.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> distributed
-</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> dask_geopandas
-</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> dask.dataframe <span style="color:#66d9ef">as</span> dd
-</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> fsspec
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">read_parquet</span>(paths, storage_options):
-</span></span><span style="display:flex;"><span>    client <span style="color:#f92672">=</span> distributed<span style="color:#f92672">.</span>get_client()
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Read each partition&#39;s metadata on the cluster</span>
-</span></span><span style="display:flex;"><span>    df_futures <span style="color:#f92672">=</span> client<span style="color:#f92672">.</span>map(
-</span></span><span style="display:flex;"><span>        dask_geopandas<span style="color:#f92672">.</span>read_parquet, paths, storage_options<span style="color:#f92672">=</span>storage_options
-</span></span><span style="display:flex;"><span>    )
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># workaround https://github.com/geopandas/dask-geopandas/issues/237</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_spatial_partitions</span>(x):
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x<span style="color:#f92672">.</span>spatial_partitions
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    spatial_partitions_futures <span style="color:#f92672">=</span> client<span style="color:#f92672">.</span>map(get_spatial_partitions, df_futures)
-</span></span><span style="display:flex;"><span>    
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Pull back locally. This takes the most time, waiting for computation</span>
-</span></span><span style="display:flex;"><span>    dfs, spatial_partitions <span style="color:#f92672">=</span> client<span style="color:#f92672">.</span>gather([df_futures, spatial_partitions_futures])
-</span></span><span style="display:flex;"><span>    
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> df, sp <span style="color:#f92672">in</span> zip(dfs, spatial_partitions):
-</span></span><span style="display:flex;"><span>        df<span style="color:#f92672">.</span>spatial_partitions <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    full_country <span style="color:#f92672">=</span> dd<span style="color:#f92672">.</span>concat(dfs)
-</span></span><span style="display:flex;"><span>    full_country<span style="color:#f92672">.</span>spatial_partitions <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>concat(spatial_partitions, ignore_index<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> full_country
-</span></span></code></pre></div><p>We get the paths with something like</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> fs, token, [root] <span style="color:#f92672">=</span> fsspec<span style="color:#f92672">.</span>get_fs_token_paths(asset<span style="color:#f92672">.</span>href, storage_options<span style="color:#f92672">=</span>asset<span style="color:#f92672">.</span>extra_fields[<span style="color:#e6db74">&#34;table:storage_options&#34;</span>])
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># Get the raw paths (fast enough to do this locally. Could be done on the cluster too)</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> paths <span style="color:#f92672">=</span> [<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;az://</span><span style="color:#e6db74">{</span>p<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> fs<span style="color:#f92672">.</span>ls(root)]
-</span></span></code></pre></div><p>Note that there&rsquo;s an <a href="https://github.com/dask/dask/issues/5380">open issue</a> on Dask to do this kind of thing by default.</p>
-<p>Overall, we brought the metadata read time down the 30 seconds (which would be
-faster with more workers). Still not great, but an improvement. At some point
-we&rsquo;ll need to embrace a broader solution to this metadata access issue using
-something like <a href="https://iceberg.apache.org/">Apache Iceberg</a>.</p>
-<p>See <a href="https://notebooksharing.space/view/88055f29ae1c26b22f61a1ef5f673cf971f434f2e513933d8de2001d7f49162a#displayOptions=">this example notebook</a> for the full thing.</p>
 ]]></content:encoded></item><item><title>Planetary Computer Release: January 2023</title><link>https://tomaugspurger.net/posts/pc-january-2023/</link><pubDate>Thu, 09 Feb 2023 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/pc-january-2023/</guid><description>&lt;p>The Planetary Computer made its &lt;a href="https://planetarycomputer.microsoft.com/docs/overview/changelog/">January 2023 release&lt;/a> a couple weeks back.&lt;/p>
 &lt;p>The flagship new feature is a &lt;em>really&lt;/em> cool new ability to visualize the &lt;a href="https://planetarycomputer.microsoft.com/dataset/ms-buildings">Microsoft AI-detected Buildings Footprints&lt;/a> dataset. Here&amp;rsquo;s a little demo made by my teammate, Rob:&lt;/p>
 &lt;video controls style="height: 400px;">
