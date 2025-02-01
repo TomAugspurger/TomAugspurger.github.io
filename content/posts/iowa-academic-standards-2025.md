@@ -19,7 +19,7 @@ decided to do my own research (science in action, right?).
 ## The proposed changes
 
 I might have missed it, but I couldn't find anywhere with the *changes* in an
-easily viewable form. The documents are available as PDF ([2015
+easily viewable form. The documents are available as PDFs ([2015
 standards][2015], [2025 draft][2025]). The two PDFs aren't formatted the same,
 making it very challenging to visually "diff" the two.
 
