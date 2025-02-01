@@ -101,7 +101,7 @@ Rewriting the data to be shuffled took about 3min 25s. Recent versions of Dask i
 counts = [fragment.count_rows() for fragment in pyarrow.parquet.ParquetDataset(&#34;data/hilbert-16.parquet/&#34;).fragments]
 
 sns.displot(counts);
-</code></pre><p><img loading=lazy src=/images/counts-per-partition.png alt="Count per partition"></p><p>The <a href=https://github.com/opengeospatial/geoparquet/discussions/251>discussion</a> also mentions KD trees as potentially better way of doing the partitioning. I&rsquo;ll look into that and will follow up if anything comes out of it.</p></div><footer class=post-footer><ul class=post-tags></ul></footer></article></main><footer class=footer><span>&copy; 2024 <a href=https://tomaugspurger.net/>Tom's Blog</a></span>
+</code></pre><p><img loading=lazy src=/images/counts-per-partition.png alt="Count per partition"></p><p>The <a href=https://github.com/opengeospatial/geoparquet/discussions/251>discussion</a> also mentions KD trees as potentially better way of doing the partitioning. I&rsquo;ll look into that and will follow up if anything comes out of it.</p></div><footer class=post-footer><ul class=post-tags></ul></footer></article></main><footer class=footer><span>&copy; 2025 <a href=https://tomaugspurger.net/>Tom's Blog</a></span>
 <span>Powered by
 <a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
         <a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a></span></footer><a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg viewBox="0 0 12 6" fill="currentcolor"><path d="M12 6H0l6-6z"/></svg>

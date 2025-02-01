@@ -1,4 +1,129 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Wed, 18 Dec 2024 10:33:34 -0600</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Dask Geopandas Spatial Shuffle</title><link>https://tomaugspurger.net/posts/dask-geopandas-spatial-shuffle/</link><pubDate>Wed, 18 Dec 2024 10:33:34 -0600</pubDate><guid>https://tomaugspurger.net/posts/dask-geopandas-spatial-shuffle/</guid><description>&lt;p>Over at &lt;a href="https://github.com/opengeospatial/geoparquet/discussions/251">https://github.com/opengeospatial/geoparquet/discussions/251&lt;/a>, we&amp;rsquo;re
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 01 Feb 2025 12:00:00 -0600</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Iowa's Proposed State Science Standards</title><link>https://tomaugspurger.net/posts/iowa-academic-standards-2025/</link><pubDate>Sat, 01 Feb 2025 12:00:00 -0600</pubDate><guid>https://tomaugspurger.net/posts/iowa-academic-standards-2025/</guid><description>&lt;p>My local Department of Education has a &lt;a href="https://educate.iowa.gov/headline-story/2025-01-03/public-comment-period-opens-state-science-standards">public comment
+period&lt;/a>
+for some proposed changes to Iowa&amp;rsquo;s science education standards. If you live in
+Iowa, I&amp;rsquo;d encourage you to read the
+&lt;a href="https://educate.iowa.gov/media/10837/download?inline">proposal&lt;/a> (PDF) and share
+feedback through the &lt;a href="https://www.surveymonkey.com/r/GHS2RYC">survey&lt;/a>. If you,
+like me, get frustrated with how difficult it is to see what&amp;rsquo;s changed or link
+to a specific piece of text, read on.&lt;/p>
+&lt;p>I&amp;rsquo;d heard rumblings that there were some controversial changes around evolution
+and climate change. But rather than just believing what I read in a headline, I
+decided to do my own research (science in action, right?).&lt;/p></description><content:encoded><![CDATA[<p>My local Department of Education has a <a href="https://educate.iowa.gov/headline-story/2025-01-03/public-comment-period-opens-state-science-standards">public comment
+period</a>
+for some proposed changes to Iowa&rsquo;s science education standards. If you live in
+Iowa, I&rsquo;d encourage you to read the
+<a href="https://educate.iowa.gov/media/10837/download?inline">proposal</a> (PDF) and share
+feedback through the <a href="https://www.surveymonkey.com/r/GHS2RYC">survey</a>. If you,
+like me, get frustrated with how difficult it is to see what&rsquo;s changed or link
+to a specific piece of text, read on.</p>
+<p>I&rsquo;d heard rumblings that there were some controversial changes around evolution
+and climate change. But rather than just believing what I read in a headline, I
+decided to do my own research (science in action, right?).</p>
+<h2 id="the-proposed-changes">The proposed changes</h2>
+<p>I might have missed it, but I couldn&rsquo;t find anywhere with the <em>changes</em> in an
+easily viewable form. The documents are available as PDF (<a href="https://educate.iowa.gov/media/8214/download?inline=">2015
+standards</a>, <a href="https://educate.iowa.gov/media/10837/download?inline">2025 draft</a>). The two PDFs aren&rsquo;t formatted the same,
+making it very challenging to visually &ldquo;diff&rdquo; the two.</p>
+<p>The programmers in the room will know that comparing two pieces of text is a
+pretty well solved problem. So I present to you, <a href="https://educate.iowa.gov/media/10837/download?inline">the changes</a>:</p>
+<img width="1203" alt="Image" src="https://github.com/user-attachments/assets/1c8432de-df70-4568-b1c1-c79781c5f6c7" />
+<p>The 2015 text is in red. The 2025 text is in green. That link includes just the top-level standards, not the &ldquo;End of Grade Band Practice Clarification&rdquo;, &ldquo;Disciplinary Content Clarification&rdquo;, or &ldquo;End of Grade Band Conceptual Frame Clarification&rdquo;.</p>
+<p>The <a href="https://github.com/TomAugspurger/iowa-academic-standards/blob/main/generate_diff.py">Python
+script</a>
+I wrote to generate that diff took an hour or so to write and debug. If the
+standards had been in a format more accessible than a PDF it would have been
+minutes of work.</p>
+<p>I&rsquo;m somewhat sympathetic to the view that we should evaluate these new standards
+on their own terms, and not be biased by the previous language. But a quick
+glance at most of the changes shows you this <em>is</em> about language, and politics.
+It&rsquo;s nice to be able to skim a single webpage to see that they&rsquo;re just doing a
+Find and Replace for &ldquo;evolution&rdquo; and &ldquo;climate change&rdquo;.</p>
+<h2 id="some-thoughts">Some thoughts</h2>
+<p>I&rsquo;m mostly just disappointed. Disappointed in the people pushing this. Disappointed that they&rsquo;re trying to claim the <a href="https://educate.iowa.gov/headline-story/2025-01-03/public-comment-period-opens-state-science-standards">legitimacy of expertise</a></p>
+<blockquote>
+<p>The standards were reviewed by a team consisting of elementary and secondary educators, administrators, content specialists, families, representatives from Iowa institutions of higher education and community partners.</p>
+</blockquote>
+<p>and then saying they&rsquo;re <a href="https://www.thegazette.com/state-government/committee-members-we-didnt-recommend-science-standards-omitting-climate-change-evolution/">merely advisory</a></p>
+<blockquote>
+<p>The team serves in an advisory capacity to the department; it does not finalize the first proposed revised draft standards</p>
+</blockquote>
+<p>That&rsquo;s a key component of pseudoscience: wrapping yourself in the language and of science and claiming expertise.</p>
+<p>I&rsquo;m disappointed that they they&rsquo;re unwilling or unable to present the information in a easy to understand form.</p>
+<p>I&rsquo;m disappointed that they don&rsquo;t live up to the documents&rsquo;s own (well-put!) declaration on the importance of a good science education:</p>
+<blockquote>
+<p>By the end of 12th grade, every student should appreciate the wonders of science and have the knowledge necessary to engage in meaningful discussions about scientific and technological issues that affect society. They must become discerning consumers of scientific and technological information and products in their daily lives.</p>
+<p>Students’ science experiences should inspire and equip them for the reality that most careers require some level of scientific or technical expertise. This education is not just for those pursuing STEM fields; it’s essential for all students, regardless of their future education or career paths. Every Iowa student deserves an engaging, relevant, rigorous, and coherent pre-K–12 science education that prepares them for active citizenship, lifelong learning, and successful careers.</p>
+</blockquote>
+<hr>
+<p>The survey includes a few questions about your overall feedback to the standards
+including, confusingly, a question asking if you agree or disagree that the
+standards will improve student learning, and then a required question asking you
+to &ldquo;identify the reasons you believe that the recommended Iowa Science Standards
+will improve student learning&rdquo;. I never took a survey design course, but it sure
+seems like I put more care into the <a href="https://pandas.pydata.org/community/blog/2019-user-survey.html">pandas users
+surveys</a> than
+this.</p>
+<p>After answering the top-level questions about how great the new standards are,
+you have the option to provide specific feedback on each standard. Cheers to the
+people who actually go through each one and form an opinion. Mine focused on the
+ones that changed. I&rsquo;ve included my responses below (header links go to the
+diff). Some extra commentary in the footnotes.</p>
+<h3 id="hs-ls2-7httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6l145"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6L145">HS-LS2-7</a></h3>
+<p>A &ldquo;Solution&rdquo; is a solution to a problem. The proposed phrasing is awkward, and implies the need for &ldquo;a solution to biodiversity&rdquo;, i.e. that biodiversity is a problem that needs to be solved.</p>
+<p>The previous text, &ldquo;Design, evaluate, and refine a solution for reducing the impacts of human activities on the environment and biodiversity.&rdquo; was clearer<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>.</p>
+<h2 id="hs-ls4-1httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6r165"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R165">HS-LS4-1</a></h2>
+<p>The standard should make it clear that &ldquo;biological change over time&rdquo; refers specifically to &ldquo;biological evolution&rdquo;. Rephrase as</p>
+<p>&ldquo;Communicate scientific information that common ancestry and biological evolution are supported by multiple lines of empirical evidence.&rdquo;<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup></p>
+<h2 id="hs-ls4-2httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6r169"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R169">HS-LS4-2</a></h2>
+<p>The standard should make clear that &ldquo;biological change over time&rdquo; is &ldquo;evolution&rdquo;. As Thomas Jefferson probably didn&rsquo;t say, &ldquo;The most valuable of all talents is that of never using two words when one will do.&rdquo;<sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup></p>
+<h2 id="hs-ess2-3httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6r33"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R33">HS-ESS2-3</a></h2>
+<p>I think there&rsquo;s a typo somewhere in &ldquo;cycling of matter magma&rdquo;. Maybe &ldquo;matter&rdquo; was supposed to be replaced by &ldquo;magma&rdquo;?</p>
+<h2 id="hs-ess2-4httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6r37"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R37">HS-ESS2-4</a></h2>
+<p>The proposed standard seems to confuse stocks and flows, by saying that the flow of energy results into changes in climate <em>trends</em>. It&rsquo;d be clearer to remove &ldquo;trends&rdquo;. If I dump 100 GJ of energy into a system, do I change its trend? No, unless you&rsquo;re saying something about feedback effect and second derivatives (if so, make that clearer and focus on the feedback effects from global warming).</p>
+<p>I recommend changing this to &ldquo;Use a model to describe how variations in the flow of energy into and out of Earth&rsquo;s systems result in changes in climate trends.&rdquo;<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup></p>
+<h2 id="hs-ess2-7httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6r53"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R53">HS-ESS2-7</a></h2>
+<p>To make the interdependency between earth&rsquo;s systems and life on earth clearer, I recommend phrasing this as &ldquo;Construct an argument based on evidence about the simultaneous coevolution of Earth&rsquo;s systems and life on Earth.&rdquo;</p>
+<p>This also gives our students a chance to learn the jargon they&rsquo;ll hear, setting themselves up for success in the world.<sup id="fnref:5"><a href="#fn:5" class="footnote-ref" role="doc-noteref">5</a></sup></p>
+<h2 id="hs-ess3-1httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6r53"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R53">HS-ESS3-1</a></h2>
+<p>Phrasing this as &ldquo;climate trends&rdquo; narrows the standard to rule out abrupt changes in climate that aren&rsquo;t necessarily part of a longer trend. I recommend phrasing this as &ldquo;Construct an explanation based on evidence for how the availability of natural resources, occurrence of natural hazards, and changes in climate have influenced human civilizations.&rdquo;</p>
+<h2 id="hs-ess3-4httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6l67"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6L67">HS-ESS3-4</a></h2>
+<p>The proposed standard is unclear. It&rsquo;s again using &ldquo;solution&rdquo; without stating what is being solved. <em>What</em> impact is being reduced?</p>
+<p>Rephrase this as &ldquo;Evaluate or refine a technological solution that reduces impacts of human activities on natural systems.&rdquo;</p>
+<h1 id="hs-ess3-5httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6l71"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6L71">HS-ESS3-5</a></h1>
+<p>Replace &ldquo;climate trends&rdquo; with &ldquo;climate change&rdquo;. We should ensure our students are ready for the language used in the field.</p>
+<h2 id="hs-ess3-6httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6l75"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6L75">HS-ESS3-6</a></h2>
+<p>The standard should make it clear that human activity is the cause of the changes in the earth systems we&rsquo;re currently experiencing. Rephrase the standard as &ldquo;Use a computational representation to illustrate the relationships among Earth systems and how those relationships are being modified due to human activity.&rdquo;</p>
+<hr>
+<p>Again, if you&rsquo;re in Iowa, read the proposals, check the diff, and <a href="https://educate.iowa.gov/headline-story/2025-01-03/public-comment-period-opens-state-science-standards">leave feedback</a> before February 3rd.</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>This &ldquo;solution&rdquo; thing came up a couple times. The previous standard was
+phrased as there&rsquo;s a problem (typically something like human activity is
+changing the climate or environment): figure out the solution to the
+problem. For some reason, because everything America does is great or
+something, talking about human impacts on the environment is a taboo. And so
+now we get to &ldquo;refine a solution for increasing environmental
+sustainability&rdquo;. The new language is just sloppy, revealing the sloppy
+thinking behind it.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p>I tried being direct here.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3">
+<p>I tried appealing to emotion and shared history, with the (unfortunately, fake) Jefferson quote.&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:4">
+<p>More slopping language, coming from trying to tweak the existing standard
+(without knowing what they&rsquo;re talking about? Or not caring?)&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:5">
+<p>I guess evolution isn&rsquo;t allowed outside the life sciences either.&#160;<a href="#fnref:5" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+]]></content:encoded></item><item><title>Dask Geopandas Spatial Shuffle</title><link>https://tomaugspurger.net/posts/dask-geopandas-spatial-shuffle/</link><pubDate>Wed, 18 Dec 2024 10:33:34 -0600</pubDate><guid>https://tomaugspurger.net/posts/dask-geopandas-spatial-shuffle/</guid><description>&lt;p>Over at &lt;a href="https://github.com/opengeospatial/geoparquet/discussions/251">https://github.com/opengeospatial/geoparquet/discussions/251&lt;/a>, we&amp;rsquo;re
 having a nice discussion about how best to partition geoparquet files for
 serving over object storage. Thanks to geoparquet&amp;rsquo;s design, just being an
 extension of parquet, it immediately benefits from all the wisdom around how
