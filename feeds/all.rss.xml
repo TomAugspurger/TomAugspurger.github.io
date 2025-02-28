@@ -1,4 +1,36 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tom's Blog</title><link>https://tomaugspurger.net/</link><description>Recent content on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 01 Feb 2025 12:00:00 -0600</lastBuildDate><atom:link href="https://tomaugspurger.net/index.xml" rel="self" type="application/rss+xml"/><item><title>Iowa's Proposed State Science Standards</title><link>https://tomaugspurger.net/posts/iowa-academic-standards-2025/</link><pubDate>Sat, 01 Feb 2025 12:00:00 -0600</pubDate><guid>https://tomaugspurger.net/posts/iowa-academic-standards-2025/</guid><description>&lt;p>My local Department of Education has a &lt;a href="https://educate.iowa.gov/headline-story/2025-01-03/public-comment-period-opens-state-science-standards">public comment
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tom's Blog</title><link>https://tomaugspurger.net/</link><description>Recent content on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Fri, 28 Feb 2025 15:18:34 -0600</lastBuildDate><atom:link href="https://tomaugspurger.net/index.xml" rel="self" type="application/rss+xml"/><item><title>High Performance Remote Io</title><link>https://tomaugspurger.net/posts/high-performance-remote-io/</link><pubDate>Fri, 28 Feb 2025 15:18:34 -0600</pubDate><guid>https://tomaugspurger.net/posts/high-performance-remote-io/</guid><description>&lt;p>I have a new post up at the NVIDIA technical blog on &lt;a href="https://developer.nvidia.com/blog/high-performance-remote-io-with-nvidia-kvikio/">High-Performance Remote IO with NVIDIA KvikIO&lt;/a>.&lt;sup id="fnref:1">&lt;a href="#fn:1" class="footnote-ref" role="doc-noteref">1&lt;/a>&lt;/sup>&lt;/p>
+&lt;blockquote>
+&lt;p>In the RAPIDS context, NVIDIA KvikIO is notable because&lt;/p>
+&lt;ol>
+&lt;li>It automatically chunks large requests into multiple smaller ones and makes those requests concurrently.&lt;/li>
+&lt;li>It can read efficiently into host or device memory, especially if GPU Direct Storage is enabled.&lt;/li>
+&lt;li>It’s fast.&lt;/li>
+&lt;/ol>
+&lt;/blockquote>
+&lt;p>This is mostly general-purpose advice on getting good performance out of cloud
+object stores (I guess I can&amp;rsquo;t get away from them), but has some specifics for
+people using NVIDIA GPUs.&lt;/p></description><content:encoded><![CDATA[<p>I have a new post up at the NVIDIA technical blog on <a href="https://developer.nvidia.com/blog/high-performance-remote-io-with-nvidia-kvikio/">High-Performance Remote IO with NVIDIA KvikIO</a>.<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></p>
+<blockquote>
+<p>In the RAPIDS context, NVIDIA KvikIO is notable because</p>
+<ol>
+<li>It automatically chunks large requests into multiple smaller ones and makes those requests concurrently.</li>
+<li>It can read efficiently into host or device memory, especially if GPU Direct Storage is enabled.</li>
+<li>It’s fast.</li>
+</ol>
+</blockquote>
+<p>This is mostly general-purpose advice on getting good performance out of cloud
+object stores (I guess I can&rsquo;t get away from them), but has some specifics for
+people using NVIDIA GPUs.</p>
+<p>As part of preparing this, I got to write some C++. Not a fan!</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>Did I mention I work at NVIDIA now? It&rsquo;s been a bit of a rush and I haven&rsquo;t had a chance to blog about it.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+]]></content:encoded></item><item><title>Iowa's Proposed State Science Standards</title><link>https://tomaugspurger.net/posts/iowa-academic-standards-2025/</link><pubDate>Sat, 01 Feb 2025 12:00:00 -0600</pubDate><guid>https://tomaugspurger.net/posts/iowa-academic-standards-2025/</guid><description>&lt;p>My local Department of Education has a &lt;a href="https://educate.iowa.gov/headline-story/2025-01-03/public-comment-period-opens-state-science-standards">public comment
 period&lt;/a>
 for some proposed changes to Iowa&amp;rsquo;s science education standards. If you live in
 Iowa, I&amp;rsquo;d encourage you to read the
