@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Fri, 28 Feb 2025 15:18:34 -0600</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>High Performance Remote IO</title><link>https://tomaugspurger.net/posts/high-performance-remote-io/</link><pubDate>Fri, 28 Feb 2025 15:18:34 -0600</pubDate><guid>https://tomaugspurger.net/posts/high-performance-remote-io/</guid><description>&lt;p>I have a new post up at the NVIDIA technical blog on &lt;a href="https://developer.nvidia.com/blog/high-performance-remote-io-with-nvidia-kvikio/">High-Performance Remote IO with NVIDIA KvikIO&lt;/a>.&lt;sup id="fnref:1">&lt;a href="#fn:1" class="footnote-ref" role="doc-noteref">1&lt;/a>&lt;/sup>&lt;/p>
+&lt;p>This is mostly general-purpose advice on getting good performance out of cloud
+object stores (I guess I can&amp;rsquo;t get away from them), but has some specifics for
+people using NVIDIA GPUs.&lt;/p>
 &lt;blockquote>
 &lt;p>In the RAPIDS context, NVIDIA KvikIO is notable because&lt;/p>
 &lt;ol>
@@ -7,9 +10,10 @@
 &lt;li>It’s fast.&lt;/li>
 &lt;/ol>
 &lt;/blockquote>
-&lt;p>This is mostly general-purpose advice on getting good performance out of cloud
-object stores (I guess I can&amp;rsquo;t get away from them), but has some specifics for
-people using NVIDIA GPUs.&lt;/p></description><content:encoded><![CDATA[<p>I have a new post up at the NVIDIA technical blog on <a href="https://developer.nvidia.com/blog/high-performance-remote-io-with-nvidia-kvikio/">High-Performance Remote IO with NVIDIA KvikIO</a>.<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></p>
+&lt;p>As part of preparing this, I got to write some C++. Not a fan!&lt;/p></description><content:encoded><![CDATA[<p>I have a new post up at the NVIDIA technical blog on <a href="https://developer.nvidia.com/blog/high-performance-remote-io-with-nvidia-kvikio/">High-Performance Remote IO with NVIDIA KvikIO</a>.<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></p>
+<p>This is mostly general-purpose advice on getting good performance out of cloud
+object stores (I guess I can&rsquo;t get away from them), but has some specifics for
+people using NVIDIA GPUs.</p>
 <blockquote>
 <p>In the RAPIDS context, NVIDIA KvikIO is notable because</p>
 <ol>
@@ -18,9 +22,6 @@ people using NVIDIA GPUs.&lt;/p></description><content:encoded><![CDATA[<p>I hav
 <li>It’s fast.</li>
 </ol>
 </blockquote>
-<p>This is mostly general-purpose advice on getting good performance out of cloud
-object stores (I guess I can&rsquo;t get away from them), but has some specifics for
-people using NVIDIA GPUs.</p>
 <p>As part of preparing this, I got to write some C++. Not a fan!</p>
 <div class="footnotes" role="doc-endnotes">
 <hr>
