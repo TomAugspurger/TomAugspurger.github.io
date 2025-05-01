@@ -18814,6 +18814,7 @@ The <a href="http://www.nber.org/data/cps_basic.html">CPS website</a> has links 
 ]]></content:encoded></item><item><title>About</title><link>https://tomaugspurger.net/about/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/about/</guid><description>&lt;p>Hi, I&amp;rsquo;m Tom. I&amp;rsquo;m a programmer living in Des Moines, IA.&lt;/p>
 &lt;h2 id="talks">Talks&lt;/h2>
 &lt;ul>
+&lt;li>GPU-Accelerated Cloud-Native Geospatial | (video waiting for upload) | &lt;a href="https://tomaugspurger.net/assets/gpu-accelerated-cng.pdf">slides&lt;/a>&lt;/li>
 &lt;li>Pandas: &lt;code>.head() to .tail()&lt;/code> | &lt;a href="https://www.youtube.com/watch?v=7vuO9QXDN50">video&lt;/a> | &lt;a href="https://github.com/tomaugspurger/pydata-chi-h2t">materials&lt;/a>&lt;/li>
 &lt;li>Mind the Gap! Bridging the scikit-learn - pandas dtype divide | &lt;a href="https://www.youtube.com/watch?v=KLPtEBokqQ0">video&lt;/a> | &lt;a href="https://github.com/tomaugspurger/mtg">materials&lt;/a>&lt;/li>
 &lt;li>Pandas: &lt;code>.head() to .tail()&lt;/code> | &lt;a href="https://www.youtube.com/watch?v=otCriSKVV_8">video&lt;/a> | &lt;a href="https://github.com/tomaugspurger/pydataSeattle">materials&lt;/a>&lt;/li>
@@ -18844,6 +18845,7 @@ The <a href="http://www.nber.org/data/cps_basic.html">CPS website</a> has links 
 at &lt;a href="mailto:tom.w.augspurger@gmail.com">tom.w.augspurger@gmail.com&lt;/a>.&lt;/p></description><content:encoded><![CDATA[<p>Hi, I&rsquo;m Tom. I&rsquo;m a programmer living in Des Moines, IA.</p>
 <h2 id="talks">Talks</h2>
 <ul>
+<li>GPU-Accelerated Cloud-Native Geospatial | (video waiting for upload) | <a href="/assets/gpu-accelerated-cng.pdf">slides</a></li>
 <li>Pandas: <code>.head() to .tail()</code> | <a href="https://www.youtube.com/watch?v=7vuO9QXDN50">video</a> | <a href="https://github.com/tomaugspurger/pydata-chi-h2t">materials</a></li>
 <li>Mind the Gap! Bridging the scikit-learn - pandas dtype divide | <a href="https://www.youtube.com/watch?v=KLPtEBokqQ0">video</a> | <a href="https://github.com/tomaugspurger/mtg">materials</a></li>
 <li>Pandas: <code>.head() to .tail()</code> | <a href="https://www.youtube.com/watch?v=otCriSKVV_8">video</a> | <a href="https://github.com/tomaugspurger/pydataSeattle">materials</a></li>
