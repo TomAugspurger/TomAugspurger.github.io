@@ -1,7 +1,6 @@
 ---
 title: "Cloud Native Geospatial Conference (2025)"
-date: 2025-05-02T07:29:01-06:00
-draft: true
+date: 2025-05-04T11:00:00-06:00
 ---
 
 On Thursday, I presented a talk, *GPU Accelerated Cloud-Native Geospatial*, at the
