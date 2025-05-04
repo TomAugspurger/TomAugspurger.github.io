@@ -1,4 +1,149 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sun, 04 May 2025 11:00:00 -0600</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>High Performance Remote IO</title><link>https://tomaugspurger.net/posts/high-performance-remote-io/</link><pubDate>Fri, 28 Feb 2025 15:18:34 -0600</pubDate><guid>https://tomaugspurger.net/posts/high-performance-remote-io/</guid><description>&lt;p>I have a new post up at the NVIDIA technical blog on &lt;a href="https://developer.nvidia.com/blog/high-performance-remote-io-with-nvidia-kvikio/">High-Performance Remote IO with NVIDIA KvikIO&lt;/a>.&lt;sup id="fnref:1">&lt;a href="#fn:1" class="footnote-ref" role="doc-noteref">1&lt;/a>&lt;/sup>&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sun, 04 May 2025 00:00:00 -0600</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Cloud Native Geospatial Conference (2025)</title><link>https://tomaugspurger.net/posts/cng-forum-2025/</link><pubDate>Sun, 04 May 2025 00:00:00 -0600</pubDate><guid>https://tomaugspurger.net/posts/cng-forum-2025/</guid><description>&lt;p>On Thursday, I presented a talk, &lt;em>GPU Accelerated Cloud-Native Geospatial&lt;/em>, at the
+inaugural Cloud-Native Geospatial Conference (&lt;a href="https://tomaugspurger.net/assets/gpu-accelerated-cng.pdf">slides&lt;/a> here). This post will
+give an overview of the talk and some background on the prep. But first I wanted
+to say a bit about the conference itself.&lt;/p>
+&lt;p>The organizers (Michelle Roby, Jed Sundell, and others from Radiant Earth) did a
+fantastic job putting on the event. I only have the smallest experience with
+helping run a conference, but I know it&amp;rsquo;s a ton of work. They did a great job
+hosting this first run of conference.&lt;/p></description><content:encoded><![CDATA[<p>On Thursday, I presented a talk, <em>GPU Accelerated Cloud-Native Geospatial</em>, at the
+inaugural Cloud-Native Geospatial Conference (<a href="https://tomaugspurger.net/assets/gpu-accelerated-cng.pdf">slides</a> here). This post will
+give an overview of the talk and some background on the prep. But first I wanted
+to say a bit about the conference itself.</p>
+<p>The organizers (Michelle Roby, Jed Sundell, and others from Radiant Earth) did a
+fantastic job putting on the event. I only have the smallest experience with
+helping run a conference, but I know it&rsquo;s a ton of work. They did a great job
+hosting this first run of conference.</p>
+<p>The conference was split into three tracks:</p>
+<ol>
+<li>On-ramp to Cloud-Native Geospatial (organized by <a href="https://www.linkedin.com/in/julia-wagemann/">Dr. Julia Wagemann</a> from
+thriveGEO)</li>
+<li>Cloud-Native Geospatial in Practice (organized by <a href="https://www.linkedin.com/in/abarciauskas/">Aimee Barciauskas</a> from
+Development Seed)</li>
+<li>Building Resilient Data <del>Infrastructure</del> Ecosystems (organized by <a href="https://www.linkedin.com/in/brianna-r-pag%C3%A1n-phd-8a49a46b/">Dr. Brianna
+Pagán</a>, also from Development Seed)</li>
+</ol>
+<p>Each of the track leaders did a great job programming their session. As tends to
+happen at these multi-track conferences, my only complaint is that there were
+too many interesting talks to choose from. Fortunately, the sessions were
+recorded and will be posted online. I spent most of my time bouncing between
+Cloud-Native Geospatial in Practice and On-ramp to Cloud-native Geospatial, but
+caught a couple talks from the Building Resilient Data Ecosystems track.</p>
+<p>My main goal at the conference was to listen to peoples&rsquo; use-cases, with the
+hope of identifying workloads that might benefit from GPU optimization. If <em>you</em>
+have a geospatial workload that you want to GPU-optimize, please <a href="mailto:toaugspurger@nvidia.com">contact
+me</a>.</p>
+<h2 id="my-talk">My Talk</h2>
+<p>I pitched this talk about two months into my tenure at NVIDIA, which is to say
+about two months into my really using GPUs. In some ways, this made things
+awkward: here I am, by no means a CUDA expert, in front of a room telling people
+how they ought to be doing things. On the other hand, it&rsquo;s a strength. I&rsquo;m
+clearly not subject to the curse of expertise when it comes to GPUs, so I can
+empathize with what ended up being my intended audience: people who are new to
+GPUs and wondering if and where they can be useful for achieving their goals.</p>
+<p>While preparing, I had some high hopes for doing deep-dives on a few geospatial
+workloads (e.g. Radiometric Terrain Correction for SAR data, pytorch / torchgeo
+/ xbatcher dataloaders and preprocessing). But between the short talk duration,
+running out of prep time, and my general newness to GPUs, the talk ended up
+being fairly introductory and high-level. I think that&rsquo;s OK.</p>
+<h3 id="gpus-are-fast">GPUs are Fast</h3>
+<p>This was a fun little demo of a &ldquo;quadratic means&rdquo; example I took from the
+<a href="https://discourse.pangeo.io/">Pangeo forum</a>. The hope was to get the room excited and impressed at just how
+fast GPUs can be. In it, we optimized the runtime of the computation from about
+3 seconds on the CPU to about 20 ms on the GPU (via a one-line change to use
+<a href="https://cupy.dev/">CuPy</a>).</p>
+<p>For fun, we optimized it even further to just 4.5 ms by writing a hand-optimized
+CUDA to use some shared memory tricks and avoid repeated memory accesses.</p>
+<p>You can see the full demo at <a href="https://github.com/TomAugspurger/gpu-cng-2025">https://github.com/TomAugspurger/gpu-cng-2025</a>. I
+wish now that I had included more geospatial-focused demos. But the talk was
+only 15-20 minutes and already packed.</p>
+<h3 id="getting-started-with-gpu-programming">Getting Started with GPU programming</h3>
+<p>There is a <em>ton</em> of software written for NVIDIA chips. Before joining NVIDIA, I
+didn&rsquo;t appreciate just how complex these chips are. NVIDIA, especially via
+RAPIDS, offers a bunch of relatively easy ways to get started.</p>
+<p>This slide from Jacob Tomlinson&rsquo;s PyData Global
+<a href="https://global2024.pydata.org/cfp/talk/BUC3GV/">talk</a> showcases the various
+&ldquo;swim lanes&rdquo; when it comes to programming NVIDIA chips from Python:</p>
+<p><img loading="lazy" src="https://github.com/user-attachments/assets/0b0aeda2-6cdc-4946-9b99-3dce73776f0f" alt="The &ldquo;Swim Lanes&rdquo; for getting started with GPUs. From easiest to use (zero code change) to maximum performance (C&#43;&#43; CUDA kernels)"  />
+</p>
+<p>This built nicely off the demo, where we saw two of those swim lanes in action.</p>
+<p>The other part lowering the barrier of entry is the cloud. Being programmable, a
+GPU is just an API call away (assuming you&rsquo;re already set up on one of the
+clouds providing GPUs).</p>
+<h3 id="the-io-problem">The I/O Problem</h3>
+<p>From there, we took a <em>very</em> high level overview of some geospatial workloads.
+Each loads some data (which we assumed came from Blob Storage), computed some
+result, and stored that result. For example, a cloud-free mosaic from some
+Sentinel-2 imagery:</p>
+<p><img loading="lazy" src="https://ai4edatasetspublicassets.blob.core.windows.net/assets/notebook-output/tutorials-cloudless-mosaic-sentinel2.ipynb/9.png" alt="Cloudless mosaic"  />
+</p>
+<p>I&rsquo;m realizing now that I should have included a vector data example, perhaps
+loading an Overture Maps geoparquet file and doing a geospatial join.</p>
+<p>Anyway, the point was to introduce some high-level concepts that we can use to
+identify workloads amenable to GPU acceleration. First, we looked at a workloads
+through time, which differ in how I/O vs. compute intensive they are.</p>
+<p>For example, an I/O-bound workload:</p>
+<img src="/assets/cng-forum-2025-iobound.svg"/>
+<p>Contrast that with a (mostly) CPU-bound workload:</p>
+<img src="/assets/cng-forum-2025-compute.svg"/>
+<p>Trying to GPU-accelerate the I/O-bound workload will only bring disappointment: even if you manage to speed up the compute portion, it&rsquo;s such a small portion of the overall runtime to not make a meaningful difference.</p>
+<p>But GPU-accelerating the compute-bound workload, on the other hand, can lead to
+to a nice speedup:</p>
+<img src="/assets/cng-forum-2025-compute-optimized.svg"/>
+<p>A few things are worth emphasizing:</p>
+<ol>
+<li>You need to profile your workload to understand where time is being spent.</li>
+<li>You might be able to turn an I/O bound problem into a compute bound problem
+by optimizing it (choosing a better file format, placing your compute next to
+the storage, choosing a faster library for I/O, parallelization, etc.)</li>
+<li>I&rsquo;m implying that &ldquo;I/O&rdquo; is just sitting around waiting on the network. In
+reality, some of I/O will be spent doing &ldquo;compute&rdquo; things (like parsing and
+decompressing bytes.) And those portions of I/O can be GPU accelerated.</li>
+<li>I glossed over the &ldquo;memory barrier&rdquo; at this point in the talk, but returned
+to it later. There are again libraries (like
+<a href="https://docs.rapids.ai/api/kvikio/stable/">KvikIO</a>) that can help with this.</li>
+</ol>
+<h3 id="pipelining">Pipelining</h3>
+<p><em>Some</em> (most?) problems can be broken into smaller units of work and,
+potentially, parallelized. By breaking the larger problem into smaller pieces,
+we have the opportunity to optimize the throughput of our workload through pipelining.</p>
+<p>Pipelining lets us overlap various parts of the workload that are using
+different parts of the system. For example I/O, which is mostly exercising the
+network, can be pipelined with computation, which is mostly exercising the GPU.
+First, we look at some poor pipelining:</p>
+<img src="/assets/cng-forum-2025-pipeline-bad.svg"/>
+<p>The workload serially reads data, computes the result, and writes the output.
+This is inefficient: when you&rsquo;re reading or writing data the GPU is idle
+(indeed, the CPU is mostly idle too, since it&rsquo;s waiting for bytes to move over
+the network). And when you&rsquo;re computing the result, the CPU (and network) are
+idle. This manifests as low utilization of the GPU, CPU, and network.</p>
+<p>This second image shows good pipelining:</p>
+<img src="/assets/cng-forum-2025-pipeline-good.svg"/>
+<p>We&rsquo;ve set up our program to read, compute, and write batches in parallel. We achieve high utilization of the GPU, CPU, and network.</p>
+<p>This general concept can apply to CPU-only systems, especially multi-core
+systems. But the pain of low resource utilization is more pronounced with GPUs,
+which tend to be more expensive.</p>
+<p>Now, this is a massively oversimplified example where the batches of work happen
+to be nicely sized and the workload doesn&rsquo;t require an coordination across
+batches. But, with effort, the technique can be applied to a wide range of
+problems.</p>
+<h3 id="memory-bandwidth">Memory Bandwidth</h3>
+<p>This section was pressed for time, but I really wanted to at least touch on one
+of the first things you&rsquo;ll hit when doing data analysis on the GPU: moving data
+from host to device memory is relatively slow.</p>
+<p>In the talk, I mostly just emphasized the benefits of leaving data on the GPU.
+The memory hierarchy diagram from the <a href="https://github.com/Dao-AILab/flash-attention">Flash
+Attention</a> paper gave a nice
+visual representation of the tradeoff between bandwidth and size the different
+tiers give (I&rsquo;d briefly mentioned the SRAM tier during the demo, since our most
+optimized version used SRAM).</p>
+<p>But as I mentioned in the talk, <em>most</em> people won&rsquo;t be interacting with the memory
+hierarchy beyond minimizing transfers between the host and device.</p>
+<h2 id="reach-out">Reach Out</h2>
+<p>As I mentioned earlier my main goal attending the conference was to hear what
+the missing pieces of the GPU-accelerated geospatial landscape are (and to catch
+up with the wonderful members of this community). <a href="mailto:toaugspurger@nvidia.com">Reach
+out</a> with any feedback you might have.</p>
+]]></content:encoded></item><item><title>High Performance Remote IO</title><link>https://tomaugspurger.net/posts/high-performance-remote-io/</link><pubDate>Fri, 28 Feb 2025 15:18:34 -0600</pubDate><guid>https://tomaugspurger.net/posts/high-performance-remote-io/</guid><description>&lt;p>I have a new post up at the NVIDIA technical blog on &lt;a href="https://developer.nvidia.com/blog/high-performance-remote-io-with-nvidia-kvikio/">High-Performance Remote IO with NVIDIA KvikIO&lt;/a>.&lt;sup id="fnref:1">&lt;a href="#fn:1" class="footnote-ref" role="doc-noteref">1&lt;/a>&lt;/sup>&lt;/p>
 &lt;p>This is mostly general-purpose advice on getting good performance out of cloud
 object stores (I guess I can&amp;rsquo;t get away from them), but has some specifics for
 people using NVIDIA GPUs.&lt;/p>
