@@ -6,7 +6,7 @@ Hi, I'm Tom. I'm a programmer living in Des Moines, IA.
 
 ## Talks
 
-- GPU-Accelerated Cloud-Native Geospatial | (video waiting for upload) | [slides](/assets/gpu-accelerated-cng.pdf)
+- GPU-Accelerated Cloud-Native Geospatial | [video](https://youtu.be/BFFHXNBj7nA) | [slides](/assets/gpu-accelerated-cng.pdf)
 - Pandas: `.head() to .tail()` | [video](https://www.youtube.com/watch?v=7vuO9QXDN50) | [materials](https://github.com/tomaugspurger/pydata-chi-h2t)
 - Mind the Gap! Bridging the scikit-learn - pandas dtype divide | [video](https://www.youtube.com/watch?v=KLPtEBokqQ0) | [materials](https://github.com/tomaugspurger/mtg)
 - Pandas: `.head() to .tail()` | [video](https://www.youtube.com/watch?v=otCriSKVV_8) | [materials](https://github.com/tomaugspurger/pydataSeattle)

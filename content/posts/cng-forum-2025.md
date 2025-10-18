@@ -3,6 +3,8 @@ title: "Cloud Native Geospatial Conference (2025)"
 date: 2025-05-04T00:00:00-06:00
 ---
 
+*You can watch a video version of this talk at https://youtu.be/BFFHXNBj7nA*
+
 On Thursday, I presented a talk, *GPU Accelerated Cloud-Native Geospatial*, at the
 inaugural Cloud-Native Geospatial Conference ([slides] here). This post will
 give an overview of the talk and some background on the prep. But first I wanted
