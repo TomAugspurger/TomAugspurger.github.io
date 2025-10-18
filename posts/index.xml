@@ -1,11 +1,13 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sun, 04 May 2025 00:00:00 -0600</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Cloud Native Geospatial Conference (2025)</title><link>https://tomaugspurger.net/posts/cng-forum-2025/</link><pubDate>Sun, 04 May 2025 00:00:00 -0600</pubDate><guid>https://tomaugspurger.net/posts/cng-forum-2025/</guid><description>&lt;p>On Thursday, I presented a talk, &lt;em>GPU Accelerated Cloud-Native Geospatial&lt;/em>, at the
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sun, 04 May 2025 00:00:00 -0600</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Cloud Native Geospatial Conference (2025)</title><link>https://tomaugspurger.net/posts/cng-forum-2025/</link><pubDate>Sun, 04 May 2025 00:00:00 -0600</pubDate><guid>https://tomaugspurger.net/posts/cng-forum-2025/</guid><description>&lt;p>&lt;em>You can watch a video version of this talk at &lt;a href="https://youtu.be/BFFHXNBj7nA">https://youtu.be/BFFHXNBj7nA&lt;/a>&lt;/em>&lt;/p>
+&lt;p>On Thursday, I presented a talk, &lt;em>GPU Accelerated Cloud-Native Geospatial&lt;/em>, at the
 inaugural Cloud-Native Geospatial Conference (&lt;a href="https://tomaugspurger.net/assets/gpu-accelerated-cng.pdf">slides&lt;/a> here). This post will
 give an overview of the talk and some background on the prep. But first I wanted
 to say a bit about the conference itself.&lt;/p>
 &lt;p>The organizers (Michelle Roby, Jed Sundell, and others from Radiant Earth) did a
 fantastic job putting on the event. I only have the smallest experience with
 helping run a conference, but I know it&amp;rsquo;s a ton of work. They did a great job
-hosting this first run of conference.&lt;/p></description><content:encoded><![CDATA[<p>On Thursday, I presented a talk, <em>GPU Accelerated Cloud-Native Geospatial</em>, at the
+hosting this first run of conference.&lt;/p></description><content:encoded><![CDATA[<p><em>You can watch a video version of this talk at <a href="https://youtu.be/BFFHXNBj7nA">https://youtu.be/BFFHXNBj7nA</a></em></p>
+<p>On Thursday, I presented a talk, <em>GPU Accelerated Cloud-Native Geospatial</em>, at the
 inaugural Cloud-Native Geospatial Conference (<a href="https://tomaugspurger.net/assets/gpu-accelerated-cng.pdf">slides</a> here). This post will
 give an overview of the talk and some background on the prep. But first I wanted
 to say a bit about the conference itself.</p>
