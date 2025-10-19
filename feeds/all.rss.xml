@@ -1,4 +1,99 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tom's Blog</title><link>https://tomaugspurger.net/</link><description>Recent content on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 18 Oct 2025 07:40:38 -0500</lastBuildDate><atom:link href="https://tomaugspurger.net/index.xml" rel="self" type="application/rss+xml"/><item><title>Cloud Native Geospatial Conference (2025)</title><link>https://tomaugspurger.net/posts/cng-forum-2025/</link><pubDate>Sun, 04 May 2025 00:00:00 -0600</pubDate><guid>https://tomaugspurger.net/posts/cng-forum-2025/</guid><description>&lt;p>&lt;em>You can watch a video version of this talk at &lt;a href="https://youtu.be/BFFHXNBj7nA">https://youtu.be/BFFHXNBj7nA&lt;/a>&lt;/em>&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tom's Blog</title><link>https://tomaugspurger.net/</link><description>Recent content on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 18 Oct 2025 07:40:38 -0500</lastBuildDate><atom:link href="https://tomaugspurger.net/index.xml" rel="self" type="application/rss+xml"/><item><title>Gone Sailing</title><link>https://tomaugspurger.net/posts/gone-sailing/</link><pubDate>Sat, 18 Oct 2025 07:40:38 -0500</pubDate><guid>https://tomaugspurger.net/posts/gone-sailing/</guid><description>&lt;p>Last weekend I had the chance to sail in the &lt;a href="https://saylorvilleyachtclub.wildapricot.org/2025-Corn-Coast-Regatta">2025 Corn Coast Regatta&lt;/a>. I had
+such a great time that I had to jot down my thoughts before they fade. This
+post is mostly for (future) me. We&amp;rsquo;ll return to our regularly scheduled
+programming in a future post. I have a post on Zarr performance cooking.&lt;/p>
+&lt;p>First, some context: in August I attended the &lt;a href="https://sycss.wildapricot.org">Saylorville Yatch Club Sailing
+School&lt;/a> Adult Small Boat class. This is a 3-day course that mixes some
+time in the classroom learning the theory and jargon (so much jargon!) with a
+bunch of time on the water. I had a bit of experience from sailing on summer
+weekends with my family growing up, but I wanted to learn more before going out
+on my own.&lt;/p></description><content:encoded><![CDATA[<p>Last weekend I had the chance to sail in the <a href="https://saylorvilleyachtclub.wildapricot.org/2025-Corn-Coast-Regatta">2025 Corn Coast Regatta</a>. I had
+such a great time that I had to jot down my thoughts before they fade. This
+post is mostly for (future) me. We&rsquo;ll return to our regularly scheduled
+programming in a future post. I have a post on Zarr performance cooking.</p>
+<p>First, some context: in August I attended the <a href="https://sycss.wildapricot.org">Saylorville Yatch Club Sailing
+School</a> Adult Small Boat class. This is a 3-day course that mixes some
+time in the classroom learning the theory and jargon (so much jargon!) with a
+bunch of time on the water. I had a bit of experience from sailing on summer
+weekends with my family growing up, but I wanted to learn more before going out
+on my own.</p>
+<p>We were thrown in on the deep end, thanks to how breezy Saturday and Sunday.
+Too breezy for sailors as green as us, as it turns out. At least we got to
+practice capsize recovery a bunch.</p>
+<figure>
+    <img src="/assets/p185.jpg" />
+    <figcaption>My classmates on day 3 of the sailing school.</figcaption>
+</figure>
+<p>Our instructor, Nick, was great. He&rsquo;s knowledgeable, passionate about sailing,
+and invested in our success. If you&rsquo;re near the area and at all interested in
+sailing, I&rsquo;d recommend taking the course (and other clubs offer their own
+courses).</p>
+<p>After the course, Nick was <em>extremely</em> generous. He invited us out for the
+Wednesday night beer can races the Yatch Club hosts, on his <a href="https://www.melges24.com">Melges
+24</a>. This was quite the step up from the <a href="https://precisionboatworks.com/boats/p185/index.php">Precision 185</a> we sailed
+during the class.</p>
+<p>I hadn&rsquo;t done any racing before and was immediately hooked. During the races, I
+was mostly just rail meat (&ldquo;hiking&rdquo; out on the lifelines to keep the boat from
+heeling over as we go upwind) and tried to not get in the way. But afterwards
+Nick was adamant about everyone getting to try the other jobs on the boat.
+Trimming the spinnaker (a very big sail that&rsquo;s exclusively used going downwind)
+was awesome. There aren&rsquo;t any winches on the Melges 24, so you directly feel
+the wind powering the boat when you&rsquo;re flying the spinnaker.</p>
+<p>Which brings us to last weekend. Nick was looking for some people to crew
+during the regatta, and we ended with Nick (driving), me (hiking upwind and
+flying the spin downwind), and a few other sailing school alumni on the boat.
+We started early on Saturday, rigging the special black carbon fiber sails Nick
+uses for regattas.</p>
+<figure>
+    <img src="/assets/sails.jpeg" />
+    <figcaption>The mainsail used for regattas.</figcaption>
+</figure>
+<p>After a quick captains&rsquo; meeting we launched the boat and got ready to sail.
+Saturday was a series of short-distance buoy races. We ended up getting four
+races in, and our boat took second in each race to a <a href="https://www.viper640.org">Viper 640</a> sailed by a
+very experienced and talented father / son crew<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>. A couple of races came down to
+the wire, and we might have won the third race if I hadn&rsquo;t messed up our last
+gybe by grabbing the spinnaker sheet on the wrong side of the block and fouling
+everything up. Oops.</p>
+<p>Sunday was the distance race. We started in about the middle of the lake,
+sailed a very wet 2 &ndash; 2.5 miles upwind (southeast) to the Saylorville Dam,
+followed by a <em>long</em> 4 &ndash; 5 mile downwind leg to the bridge on the north side
+of the lake, and finished with a ~2 mile leg to the end. The wind really picked
+up on Sunday, blowing ~15 kts with gusts up to 20&ndash;25 kts. As we neared the
+upwind mark, we had some discussions about whether or not to fly the spinnaker.
+That&rsquo;s a lot of wind for a crew as inexperienced as we were (we&rsquo;d only had one
+practice and the previous days&rsquo; races together). We took our time rounding the
+mark and eventually decided to set it. Nick took things easy on us, and overall
+things went well. We about went over twice (probably my fault; I was exhausted
+by the time we got 1/2 down the course) but our jib trimmer bailed us out both
+times just like we talked about in our pre-race talk. It sounds like even the
+Viper went over, so I don&rsquo;t feel too bad.</p>
+<figure>
+    <video controls>
+      <source src="/assets/trim.mp4" type="video/mp4" />
+    </video>
+    <figcaption>Trimming the spinnaker. The sheet (rope) I'm holding runs through a couple of blocks and is attached to the clew of the spinnaker, the big white sail up front.</figcaption>
+</figure>
+<p>Our team had really gelled by the end of the regatta. Crossing the finish line
+in first place was exhilarating. The official results aren&rsquo;t posted yet, but we
+think we got first even after adjusting for the <a href="https://en.wikipedia.org/wiki/Performance_Handicap_Racing_Fleet">PHRF</a> ratings.</p>
+<p>I haven&rsquo;t <em>yet</em> purchased (another) boat, but the Melges 15 and 19 both look
+fun (my poor old Honda CRV doesn&rsquo;t have the towing capacity for a 24, alas).
+Regardless of what boat I&rsquo;m on, I&rsquo;m looking forward to spending more time on
+the water.</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>After the race we were all chatting about boats we&rsquo;d sailed up. When I
+mentioned I&rsquo;d sailed a Nimble 30 that my dad and grandpa had built, Kim
+(the father crewing on the Viper) asked where they&rsquo;d built that. Turns out he
+had also built one, and had visited my dad and grandpa&rsquo;s while they were
+working on it. Small world!&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+]]></content:encoded></item><item><title>Cloud Native Geospatial Conference (2025)</title><link>https://tomaugspurger.net/posts/cng-forum-2025/</link><pubDate>Sun, 04 May 2025 00:00:00 -0600</pubDate><guid>https://tomaugspurger.net/posts/cng-forum-2025/</guid><description>&lt;p>&lt;em>You can watch a video version of this talk at &lt;a href="https://youtu.be/BFFHXNBj7nA">https://youtu.be/BFFHXNBj7nA&lt;/a>&lt;/em>&lt;/p>
 &lt;p>On Thursday, I presented a talk, &lt;em>GPU Accelerated Cloud-Native Geospatial&lt;/em>, at the
 inaugural Cloud-Native Geospatial Conference (&lt;a href="https://tomaugspurger.net/assets/gpu-accelerated-cng.pdf">slides&lt;/a> here). This post will
 give an overview of the talk and some background on the prep. But first I wanted
