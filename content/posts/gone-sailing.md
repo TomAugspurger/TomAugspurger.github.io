@@ -1,7 +1,6 @@
 ---
 title: "Gone Sailing"
 date: 2025-10-18T07:40:38-05:00
-draft: true
 ---
 
 Last weekend I had the chance to sail in the [2025 Corn Coast Regatta]. I had
@@ -19,6 +18,11 @@ on my own.
 We were thrown in on the deep end, thanks to how breezy Saturday and Sunday.
 Too breezy for sailors as green as us, as it turns out. At least we got to
 practice capsize recovery a bunch.
+
+<figure>
+    <img src="/assets/p185.jpg" />
+    <figcaption>My classmates on day 3 of the sailing school.</figcaption>
+</figure>
 
 Our instructor, Nick, was great. He's knowledgeable, passionate about sailing,
 and invested in our success. If you're near the area and at all interested in
@@ -44,6 +48,12 @@ flying the spin downwind), and a few other sailing school alumni on the boat.
 We started early on Saturday, rigging the special black carbon fiber sails Nick
 uses for regattas.
 
+<figure>
+    <img src="/assets/sails.jpeg" />
+    <figcaption>The mainsail used for regattas.</figcaption>
+</figure>
+
+
 After a quick captains' meeting we launched the boat and got ready to sail.
 Saturday was a series of short-distance buoy races. We ended up getting four
 races in, and our boat took second in each race to a [Viper 640] sailed by a
@@ -65,6 +75,14 @@ things went well. We about went over twice (probably my fault; I was exhausted
 by the time we got 1/2 down the course) but our jib trimmer bailed us out both
 times just like we talked about in our pre-race talk. It sounds like even the
 Viper went over, so I don't feel too bad.
+
+<figure>
+    <video controls>
+      <source src="/assets/trim.mp4" type="video/mp4" />
+    </video>
+    <figcaption>Trimming the spinnaker. The sheet (rope) I'm holding runs through a couple of blocks and is attached to the clew of the spinnaker, the big white sail up front.</figcaption>
+</figure>
+
 
 Our team had really gelled by the end of the regatta. Crossing the finish line
 in first place was exhilarating. The official results aren't posted yet, but we
