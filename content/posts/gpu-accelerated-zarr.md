@@ -53,7 +53,6 @@ but the key thing sharding provides is amortizing some constant costs (opening a
 file, checking it's length, etc.) over many chunks, which can be operated on in
 parallel (which is great news for GPUs).
 
-
 ## GPU Background for Zarr People
 
 GPUs are massively parallel processors: they excel most when you can apply the
@@ -77,9 +76,10 @@ how well we're doing.
 One technique to achieving good GPU utilization is to queue up work for the GPU
 to do. The GPU is a *device*, a *coprocessor*, onto which your host program
 offloads work. As much as possible, we'll have our Python program just do
-orchestration, leaving the heavy computation to the GPU.
+orchestration, leaving the heavy computation to the GPU. Doing this well
+requires your host program to keep up with (the very fast) GPU.
 
-In some sense, you want your Python program to be "ahead" of the GPU; if you
+In some sense, you want your Python program to be "ahead" of the GPU. if you
 wait to submit your next computation until some data is ready on the GPU, or
 some previous computation is completed, you'll inevitably have some time gap
 when your GPU is idle. Sometimes this is inevitable, but with a bit of care
@@ -95,12 +95,44 @@ This second program queues up plenty of work to do, and so achieves higher throu
 
 <img src="/assets/cng-forum-2025-pipeline-good.svg"/>
 
-That post talks about using multiple threads and queues to achieve pipelining.
-We'll use a single threaded program with multiple [CUDA Streams][streams] to
-achieve roughly the same outcome. This is a way to queue up multiple streams
-of GPU operations. The GPU will ensure that each operation within a stream
-is executed in the right order, but will happily switch between streams,
-depending on which are ready to execute.
+That post talks about using multiple threads and queues to achieve pipelining,
+which works well assuming you have the CPU cores to spare and when your pipeline
+is linear.
+
+For this post example, we'll use a single threaded program with multiple [CUDA
+Streams][streams] to achieve roughly the same outcome. This is a way to queue up
+multiple streams of GPU operations. The GPU will ensure that each operation
+within a stream is executed in the right order, but will happily switch between
+streams, depending on which are ready to execute. And it's a bit more flexible
+since you can express "branchy" pipelines (e.g. doing an operation between two
+arrays on different CUDA streams) *without* having to synchronize things on the
+host.
+
+We'll talk more about CUDA streams and GPU programming later on when we look at
+some code snippets.
+
+
+```python
+chunk_a = read_chunk(..., stream=stream_a)
+chunk_b = read_chunk(..., stream=stream_b)
+
+# just doing `add(chunk_a, chunk_b)` is invalid. We need to ensure that
+# 1. chunk_a is ready (on stream a)
+# 2. chunk_b is ready (on stream b)
+# 3. that the `+` operation happens on some stream.
+
+plus_stream = join_cuda_streams([stream_a, stream_b])
+
+result = add(chunk_a, chunk_b, stream=plus_stream)
+```
+
+If we used thread's we'd need to verify *on the host* that `chunk_a` and
+`chunk_b` are ready. That would require some complicated gymnastics to write,
+expensive stream synchronizations, and we'd inevitably have a delay between when
+the host sees that both chunks are ready and when the device can compute the
+final `result`.  With CUDA streams, the GPU is able to immediately start work on
+`add` as soon as all of the upstream requirements (`read_chunk` on `stream_a`
+and `read_chunk` on `stream_b`) are ready.
 
 # Speed of Light
 
@@ -113,14 +145,22 @@ of my disk? What's the clock cycle of my CPU?).
 
 Using Zarr in some workload involves (at least) three stages:
 
-1. Reading bytes from storage (locorage serviceal disk, or remote object storage). Your disk
-   (for local storage) or [NIC] / st (for remote storage)
+1. Reading bytes from storage (local disk or remote object storage). Your disk
+   (for local storage) or [NIC] / remote storage service (for remote storage)
    has some throughput, which you should aim to saturate.
 2. Decompressing bytes with the Codec Pipeline (we'll use Zstd compression).
    Different codecs have different throughput targets, and these can depend
    heavily on the data, chunk size, and hardware.
 3. Your actual computation. This should ideally be the bottleneck: it's the
    whole reason you're loading all this data after all.
+
+And if you are using a GPU, at some point you need to get the bytes from host to
+device memory[^gds]. Depending on your workload, you might want to decompress the data
+and then move it, or move it and then decompress with the GPU.
+
+Finally, you might need to store your result. If your computation reduces the
+data this might be negligible. But if you're outputting large n-dimensional
+arrays this can be as or more expensive than the reading.
 
 In this case, we don't really care about what the computation is; just something
 that uses the data and takes a bit of time. We'll do a bunch of matrix
@@ -129,18 +169,14 @@ well suited to GPUs.
 
 Notably, we *won't* do any kind computation that involves data from multiple
 shards. They're completely independent in this example, which makes
-parallelizing at the shard level much simpler..
-
-And if you are using a GPU, at some point you need to get the bytes from host to
-device memory. Depending on your workload, you might want to decompress the data
-and then move it, or move it and then decompress with the GPU.
+parallelizing at the shard level much simpler.
 
 ## Example Workload
 
 *This example workload has been fine-tuned to make the GPU look good, and I've
-done zero tuning / optimization of the CPU implementation.* Any comparisons with CPU
+done zero tuning / optimization of the CPU implementation. Any comparisons with CPU
 libraries are essentially bunk, but it's a natural question so I'll report them
-anyway.
+anyway.*
 
 This workload operates on a 1-D float32 array with the following properties:
 
@@ -388,7 +424,7 @@ The actual decompression takes about 25-45 ms, for a throughput of about roughly
 
 Again, we've pre-allocated the `out` ndarray, however *this is not always
 possible*.  Zarr allows chunking over arbitrary dimensions, but we've assumed
-that the chunks are contiguous slices of the output array[^1].
+that the chunks are contiguous slices of the output array[^contiguous].
 
 Anyway, all this is to say that decompression isn't our bottleneck. And this is
 despite decompression competing for GPU cores with the computation. The newer
@@ -459,7 +495,11 @@ either <a href="mailto:tom.w.augspurger@gmail.com">directly</a> or on the [Zarr 
 [zarr-shards]: https://github.com/TomAugspurger/cuda-streams-sample/blob/8898c89f5ee2e38d0617a31f61f23b146253c842/zarr_shards.py
 [report]: https://assets.tomaugspurger.net/zarr-shards.nsys-rep
 
-[^1]: Explaining that optimization in more detail. We need the chunks to be contiguous
+[^gds]: NVIDIA does have [GPU Direct Storage](https://docs.nvidia.com/gpudirect-storage/index.html)
+  which offers a way to read directly from storage to the device, bypassing the host
+  (OS and memory system) entirely. I haven't tried using that yet.
+
+[^contiguous]: Explaining that optimization in more detail. We need the chunks to be contiguous
     in the shard. Consider this shard, with the letters indicating the chunks:
     ```plain
     | a a a a |
