@@ -1,14 +1,15 @@
 ---
 title: "GPU-Accelerated Zarr"
-date: 2025-11-24T15:34:55-06:00
-draft: true
+date: 2025-12-11T08:00:00-06:00
 ---
 
 This post gives detailed background to my PyData Global talk, "GPU-Accelerated
-Zarr". It deliberately gets into the weeds, but I will try to provide some
-background for people who are new to Zarr, GPUs, or both.
+Zarr" ([slides], and I'll share the video when it's up in a couple months). It
+deliberately gets into the weeds, but I will try to provide some background for
+people who are new to Zarr, GPUs, or both.
 
-The first takeaway is that zarr-python [natively supports][zarr-python-gpu] NVIDIA GPUs. With a one-line `zarr.config.enable_gpu()` you can configure zarr
+The first takeaway is that zarr-python [natively supports][zarr-python-gpu]
+NVIDIA GPUs. With a one-line `zarr.config.enable_gpu()` you can configure zarr
 to return CuPy arrays, which reside on your GPU:
 
 ```python
@@ -19,11 +20,11 @@ to return CuPy arrays, which reside on your GPU:
 cupy.ndarray
 ```
 
-The second takeaway, and the main focus of this post, is that we're still
-leaving performance on the table. It depends a bit on your workload, but I'd
-claim that  Zarr's data loading pipeline *shouldn't* ever be the bottleneck.
-Achieving sufficient throughput today requires some care to ensure that the
-system's resources are used efficiently, but I'm hopeful that we can improve the
+The second takeaway, and the main focus of this post, is that that simple
+one-liner leaves performance on the table. It depends a bit on your workload,
+but I'd claim that  Zarr's data loading pipeline *shouldn't* ever be the
+bottleneck. Achieving maximum throughput today requires some care to ensure that
+the system's resources are used efficiently. I'm hopeful that we can improve the
 libraries to do the right thing in more situations.
 
 This post pairs nicely with Earthmover's [I/O-Maxing Tensors in the
@@ -51,7 +52,7 @@ with dimensions `(x, y, time)`.
 
 Zarr is commonly used in many domains including microscopy, genomics, remote
 sensing, and climate / weather modeling. It works well with both local file
-systems and remote cloud object storage. High-level libraries like xarray
+systems and remote cloud object storage. High-level libraries like [xarray]
 can use zarr as a storage format:
 
 ```python
@@ -68,7 +69,10 @@ can use zarr as a storage format:
 
 ![Plot showing the sea level change between the two dates.](https://tutorial.xarray.dev/_images/de44ed3784cdeb9939192b1251435c6642fe29e96039bcb6194aa92ebab2f13a.png)
 
-This diagram shows the structure of a Zarr store:
+xarray knows how to translate the high-level slicing like `time="2015-01-16"` to
+the lower level slicing of a Zarr array, and Zarr knows how to translate
+positional slices in the large n-dimensional array to files / objects in
+storage. This diagram shows the structure of a Zarr store:
 
 ![Zarr store hierarchy.](https://zarr-specs.readthedocs.io/en/latest/_images/terminology-hierarchy.excalidraw.png)
 
@@ -79,7 +83,8 @@ read fewer bytes, even if you have to spend time decompressing them).
 
 Zarr's [sharding codec][shard spec] is especially important for GPUs. This makes
 it possible to store many *chunks* in the same file (a file on disk, or an
-object in object storage). We call the collection of chunks a shard.
+object in object storage). We call the collection of chunks a shard, and the
+shard is what's actually written to disk.
 
 ![](https://zarr-specs.readthedocs.io/en/latest/_images/sharding.png)
 
@@ -92,24 +97,34 @@ parallel (which is great news for GPUs).
 For now, just note that we'll be dealing with various levels of Zarr's hierarchy:
 
 - Arrays: the logical n-dimensional array
-- Shards: the file on disk / object in object storage
+- Shards: the file on disk / object in object storage, which contains many chunks concatenated together
 - Chunks: the smallest unit we can read (since it must be decompressed to interpret the bytes correctly)
 
 ## GPU Background for Zarr People
 
 GPUs are massively parallel processors: they excel when you can apply the same
 problem to a big batch of data. This works well for video games, ML / AI
-workloads, and data science applications.
+workloads, and data science / data analysis applications.
+
+(NVIDIA) GPUs execute "kernels", which are essentially functions that run on GPU
+data. Today, we won't be discussing how to author a compute kernel. We'll be
+using existing kernels (from libraries like [nvcomp][nvcomp-python], [CuPy], and
+[CCCL]). Instead, we'll be worried about higher-level things like memory
+allocations, data movement, and concurrency
 
 Many (though [not all][grace-hopper]) GPU architectures have dedicated GPU
-memory.  This is just for the GPU and is separate from the regular main memory
-of your machine (you'll hear the term "device" to refer to GPUs, and "host" to
-refer to the host operating system / machine, where your program is running).
+memory.  This is separate from the regular main memory of your machine (you'll
+hear the term "device" to refer to GPUs, and "host" to refer to the host
+operating system / machine, where your program is running).
 
 While device memory tends to be relatively fast compared to host memory (for
-example, it might have >3.3 TB/s from memory to the GPU's compute cores), it's
-often smaller than host memory and moving data between host and device memory is
-relatively slow (perhaps just 128 GB/s over PCIe).
+example, it might have >3.3 TB/s from the GPU's memory to its compute cores),
+it's moving data between host and device memory is relatively slow (perhaps just
+128 GB/s over PCIe). It also tends to be relatively small (an [NVIDIA
+H100][H100] has 80-94GB of GPU memory; newer generations have more, but still
+GPU memory is precious when processing large datasets).  All this means we need
+to be careful with memory, both how we allocate and deallocate memory and how we
+move data between the host and device.
 
 In GPU programming, keeping the GPU busy is necessary (but not sufficient!) to
 achieve good performance.  We'll use GPU utilization, the percent of time (over
@@ -168,9 +183,10 @@ of running things concurrently where possible.
 
 One subtle point here: these APIs are typically *non-blocking* in your host
 Python (or C/C++/whatever) program. `read_chunk` makes some CUDA API calls
-internally to kick off the host to device transfer, but it doesn't wait for it
-to complete. This is good, since we want our host program to be ahead of the
-GPU; we want to go to the next line and feed the GPU more work to do.
+internally to kick off the host to device transfer, but it doesn't wait for that
+transfer to complete.  This is good, since we want our host program to be well
+ahead of the GPU; we want to go to the next line and feed the GPU more work to
+do.
 
 If we actually poked the memory address where the data's supposed to be it might
 be junk. We just don't know. If we *really* need to wait for some data /
@@ -259,7 +275,7 @@ anyway.*
 The top level summary will compare three implementations:
 
 1. zarr-python: Uses vanilla zarr-python for I/O and decoding, and NumPy for the computation.
-2. zarr-python GPU: Uses zarr-python's [built-in GPU support][zarr-python-gpu] to return CuPy arrays, so the GPU is used for computation.
+2. zarr-python GPU: Uses zarr-python's [built-in GPU support][zarr-python-gpu] to return CuPy arrays, so the GPU is used for computation. At the moment, this still uses Numcodecs to decompress the data, which runs on the CPU. After decompression, the data is moved to the GPU for the matrix multiplication.
 3. Custom GPU: My custom implementation of I/O and decoding with CuPy for the computation.
 
 | Implementation | Duration (ms) |
@@ -270,17 +286,13 @@ The top level summary will compare three implementations:
 
 You can find the code for these in my [CUDA Stream Samples][zarr-shards] repository.
 
-So, we get ~6x speed by using CuPy to do the computation (turns out GPUs are
-fast a matrix multiplication). But by carefully optimizing the I/O pipeline, we
-get another 7x speedup. Overall, the custom implementation is about 40x faster
-than a vanilla Zarr / NumPy implementation.
-
-Again: I spent zero time optimizing the Zarr / NumPy and Zarr / CuPy
-implementations. So your takeaway shouldn't be that "GPUs are fast". At most,
-you should conclude that GPUs *can* be fast (and that we have a bit of work
-to do in zarr-python to close the gap between Zarr's I/O implementation and
-my custom one. Follow https://github.com/zarr-developers/zarr-python/issues/2904
-if you're interested).
+Please don't take the absolute numbers, or even the relative numbers too
+seriously.  I've spent *zero* time optimizing the Zarr/NumPy and Zarr/CuPy
+implementations. The important thing to take away here is that we have plenty of
+room for improvement. My Custom I/O pipeline just gradually removed bottlenecks
+as they came up, some of which apply to zarr-python's CPU implementation as
+well.  Follow https://github.com/zarr-developers/zarr-python/issues/2904 if
+you're interested in developments.
 
 The remainder of the post will describe, in some detail, what makes the custom
 implementation so fast.
@@ -301,13 +313,18 @@ We'll use a few techniques to get good performance in our pipeline:
 
 1. No (large) memory allocations on the critical path.
 
-This applies to both host and device memory allocations. We'll
-achieve this by preallocating all the arrays we need to process the shard.
-Whether or not this should be considered cheating or not is a bit debatable and
-a bit workload dependent. I'd argue that the most advanced, performance
-sensitive workloads will process large amounts of data and so can preallocate a
-pool of buffers and reuse them across their unit of parallelization (shards in
-our case).
+This applies to both host and device memory allocations. We'll achieve this by
+preallocating all the arrays we need to process the shard.  Whether or not this
+should be considered cheating or not is a bit debatable and a bit workload
+dependent. I'd argue that the most advanced, performance-sensitive workloads
+will process large amounts of data and so can preallocate a pool of buffers and
+reuse them across their unit of parallelization (shards in our case).
+
+Regardless, if we're doing large memory allocations after we've started
+processing a shard (either host or device allocations for the final array or for
+intermediates) then these allocations can quickly become the bottleneck.
+Pre-allocation (and reuse across shrads) is an important optimization if it's
+available.
 
 2. Use pinned (page-locked) memory for host buffers
 
@@ -327,7 +344,8 @@ done.
 Throughout this, we'll use [nvtx] to annotate certain ranges of code. This will
 make reading the [Nsight Systems][nsight] report easier.
 
-Here's a screenshot of an nsys profile, with a few important bits highlighted:
+Here's a screenshot of an nsys profile, with a few important bits highlighted
+(open the file for a full-sized screenshot):
 
 ![](https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/nsys-overview.png)
 
@@ -346,9 +364,9 @@ Here's a screenshot of an nsys profile, with a few important bits highlighted:
 You can download the full nsight report [here][report] and open it locally with NVIDIA
 Nsight Systems.
 
-This table summarizes roughly we spend our time on the GPU per shard (very rough,
-and there's some variation across shards, especially as we start overlapping
-operations with CUDA streams).
+This table summarizes roughly where we spend our time on the GPU per shard (very
+rough, and there's some variation across shards, especially as we start
+overlapping operations with CUDA streams).
 
 | Stage    | Duration (ms) | Raw Throughput (GB/s) | Effective Throughput (GB/s) |
 | -------- | ------------- | --------------------- | --------------------------- |
@@ -386,7 +404,8 @@ Note that we use `readinto` to read the data from disk directly into the
 pre-allocated host buffer: we don't want any (large) memory allocations on the
 critical path. Also, we're using [pinned memory][pinned] (AKA page-locked
 memory) for the host buffers. This prevents the operating system from paging the
-buffers, which lets the GPU directly access that memory when copying it.
+buffers, which lets the GPU directly access that memory when copying it, no
+intermediate buffers required.
 
 And it's worth emphasizing: this I/O is happening on the host Python program,
 and it is blocking.  As we'll see later, time spent doing stuff in Python is
@@ -406,11 +425,11 @@ This screenshot shows the profile for the second shard:
 
 ![](https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/read-disk-subsequent.png)
 
-Note now that the GPU is busy with some other operations (decoding the chunks
-from the first shard in this case, which are directly above the `read::decode`
-happening on the host at that time). This is partly why I didn't bother with
-parallelizing the disk I/O: only one thing can be the bottleneck, and right now
-we're able to load data from disk quickly enough.
+Now the GPU is busy with some other operations (decoding the chunks from the
+first shard in this case, which are directly above the `read::decode` happening
+on the host at that time). This is partly why I didn't bother with parallelizing
+the disk I/O: only one thing can be the bottleneck, and right now we're able to
+load data from disk quickly enough.
 
 ### Transfer bytes
 
@@ -442,15 +461,23 @@ to do something) and device.
 I've added the orange lines connecting the fast `cudaMemcpyAsync` on the host to
 the (not quite as fast) `Memcpy HtoD` (host to device) running on the device.
 
+And if you look closely, you'll see that just above that `Memcpy HtoD` in teal,
+we're executing a compute kernel (in light-blue). We'll get to that in a bit,
+but this show that we're overlapping Host-to-Device transfers with compute
+kernels.
+
 ### Decode bytes
 
 At this point we have (or will have, eventually) the Zstd compressed bytes in
 GPU memory.  You might think that "decompressing a stream of bytes" doesn't mesh
 well with "GPUs as massively parallel processors". And you'd be (partially)
 right! We can't really parallelize decoding *within* a single chunk, but we can
-decode all the chunks in a shard in parallel.
+decode all the chunks in a shard in parallel. My colleague Akshay has a
+[nice overview](https://github.com/zarr-developers/zarr-python/issues/1398#issuecomment-1563275350)
+of how the GPU can be used to decode *many* buffers in parallel.
 
-The [nvCOMP][nvCOMP] library implements a bunch of GPU accelerated compression
+*I* have no idea how to implement a Zstd decompressor, but fortunately we don't have to.
+The [nvCOMP][nvCOMP] library implements a bunch of GPU-accelerated compression
 and decompression routines, including Zstd. It provides C, C++, and Python APIs.
 A quick note: this example is using a [custom wrapper][nvcomp_minimal] around
 nvcomp's C API. This works around a couple issues with nvcomp's [Python
@@ -532,15 +559,28 @@ But I think that's enough for now.
 
 # Summary
 
-One takeaway here is that GPUs are fast, which, sure. A slightly more accurate
-take is that GPUs can be *extremely* fast, but achieving that takes some care.
-I'm hopeful that we can optimize the codec pipeline and memory handling in
-zarr-python to close the gap between what it provides (3.4s) and my custom,
-hand-optimized implementation (0.5s). But doing that in a general purpose
-library will require even more thought and care than my hacky implementation.
+One takeaway here is that GPUs are fast, which, sure. A slightly more
+interesting take is that GPUs *can* be *extremely* fast, but achieving that
+takes some care.
 
-If you've made it this far, congrats. Reach out if you have any feedback,
-either <a href="mailto:tom.w.augspurger@gmail.com">directly</a> or on the [Zarr discussions][discussions] board.
+In this workload my [custom pipeline][zarr-shards] achieved high throughput by
+
+1. Being *very* careful with memory allocations and data movement.
+2. Using pinned host memory to speed up the one host to device transfer per shard
+3. Use nvcomp and Zarr shards to parallelize decoding many chunks on the GPU
+4. Use CUDA streams to express our workloads' shard-level parallelism, so that
+   we can overlap host I/O, host-to-device copies, kernel launches and kernel
+   execution.
+
+I'm hopeful that we can optimize the codec pipeline and memory
+handling in zarr-python to close the gap between what it provides and my
+custom, hand-optimized implementation (0.5s). But doing that in a general
+purpose library will require even more thought and care than my hacky
+implementation.
+
+If you've made it this far, congrats. Reach out if you have any feedback, either
+<a href="mailto:tom.w.augspurger@gmail.com">directly</a> or on the [Zarr
+discussions][discussions] board.
 
 [shard spec]: https://zarr-specs.readthedocs.io/en/latest/v3/codecs/sharding-indexed/index.html
 [nvCOMP]: https://docs.nvidia.com/cuda/nvcomp/index.html
@@ -603,3 +643,7 @@ either <a href="mailto:tom.w.augspurger@gmail.com">directly</a> or on the [Zarr 
     That's not necessarily a deal-killer: you'll just need a temporary buffer for the
     decompressed output and an extra memcpy per chunk into the output shard.
 
+[H100]: https://www.nvidia.com/en-us/data-center/h100/
+[slides]: https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/GPU%20Acceleterated%20Zarr.pdf
+[CuPy]: https://cupy.dev/
+[CCCL]: https://nvidia.github.io/cccl/
