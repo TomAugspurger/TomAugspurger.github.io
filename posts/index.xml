@@ -308,7 +308,7 @@ reuse them across their unit of parallelization (shards in our case).</p>
 <p>Regardless, if we&rsquo;re doing large memory allocations after we&rsquo;ve started
 processing a shard (either host or device allocations for the final array or for
 intermediates) then these allocations can quickly become the bottleneck.
-Pre-allocation (and reuse across shrads) is an important optimization if it&rsquo;s
+Pre-allocation (and reuse across shards) is an important optimization if it&rsquo;s
 available.</p>
 <ol start="2">
 <li>Use pinned (page-locked) memory for host buffers</li>
@@ -511,7 +511,7 @@ which improves the decompression throughput even more.</p>
 slow on the GPU as the version with compression, though I didn&rsquo;t investigate it
 deeply.</p>
 <h3 id="computation">Computation</h3>
-<p>This is example is primarily focused on the data loading portion of a Zarr
+<p>This example is primarily focused on the data loading portion of a Zarr
 workload, so the computation is secondary. I just threw in a bunch of matrix
 multiplications / reductions (which GPUs tend to do quickly).</p>
 <p>But while the specific computation is unimportant, there are some
@@ -530,7 +530,7 @@ multiplication from the previous shard:</p>
 <p>But I think that&rsquo;s enough for now.</p>
 <h1 id="summary">Summary</h1>
 <p>One takeaway here is that GPUs are fast, which, sure. A slightly more
-interesting take is that GPUs <em>can</em> be <em>extremely</em> fast, but achieving that
+interesting takeaway is that GPUs <em>can</em> be <em>extremely</em> fast, but achieving that
 takes some care.</p>
 <p>In this workload my <a href="https://github.com/TomAugspurger/cuda-streams-sample/blob/8898c89f5ee2e38d0617a31f61f23b146253c842/zarr_shards.py">custom pipeline</a> achieved high throughput by</p>
 <ol>
