@@ -323,7 +323,7 @@ reuse them across their unit of parallelization (shards in our case).
 Regardless, if we're doing large memory allocations after we've started
 processing a shard (either host or device allocations for the final array or for
 intermediates) then these allocations can quickly become the bottleneck.
-Pre-allocation (and reuse across shrads) is an important optimization if it's
+Pre-allocation (and reuse across shards) is an important optimization if it's
 available.
 
 2. Use pinned (page-locked) memory for host buffers
@@ -535,7 +535,7 @@ deeply.
 
 ### Computation
 
-This is example is primarily focused on the data loading portion of a Zarr
+This example is primarily focused on the data loading portion of a Zarr
 workload, so the computation is secondary. I just threw in a bunch of matrix
 multiplications / reductions (which GPUs tend to do quickly).
 
@@ -560,7 +560,7 @@ But I think that's enough for now.
 # Summary
 
 One takeaway here is that GPUs are fast, which, sure. A slightly more
-interesting take is that GPUs *can* be *extremely* fast, but achieving that
+interesting takeaway is that GPUs *can* be *extremely* fast, but achieving that
 takes some care.
 
 In this workload my [custom pipeline][zarr-shards] achieved high throughput by
