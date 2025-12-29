@@ -56,7 +56,7 @@ characters moving through it than anything else.
 
 ## *The Hunt for Red October*, by Tom Clancy
 
-<a href="https://www.goodreads.com/book/show/19691.The_Hunt_for_Red_October"><img src="https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1281995542i/19691.jpg" width="200px"/>
+<a href="https://www.goodreads.com/book/show/19691.The_Hunt_for_Red_October"><img src="https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1281995542i/19691.jpg" width="200px"/></a>
 
 This is probably a sign that I'm entering middle age, but yeah this was a fun
 read. I think I picked this up after Bobby Chesney and Steve Vladek were
