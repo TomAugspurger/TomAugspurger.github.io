@@ -1,7 +1,6 @@
 ---
 title: "My 2025 Year in Books"
-date: 2025-12-27T15:00:24-06:00
-draft: true
+date: 2025-12-28T15:00:24-06:00
 ---
 
 It's time for another review for books I read this year (previously: [2024](books-2024.md), [2022](books-2022.md)). According to my [GoodReads](https://www.goodreads.com/user/year_in_books/2025/82176424), I read 27 books this year.
