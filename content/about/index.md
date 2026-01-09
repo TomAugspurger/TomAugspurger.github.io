@@ -6,6 +6,7 @@ Hi, I'm Tom. I'm a programmer living in Des Moines, IA.
 
 ## Talks
 
+- GPU-Accelerated Zarr | [video](https://youtu.be/dYt_fabaK60) | [slides](https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/GPU%20Acceleterated%20Zarr.pdf)
 - GPU-Accelerated Cloud-Native Geospatial | [video](https://youtu.be/BFFHXNBj7nA) | [slides](/assets/gpu-accelerated-cng.pdf)
 - Pandas: `.head() to .tail()` | [video](https://www.youtube.com/watch?v=7vuO9QXDN50) | [materials](https://github.com/tomaugspurger/pydata-chi-h2t)
 - Mind the Gap! Bridging the scikit-learn - pandas dtype divide | [video](https://www.youtube.com/watch?v=KLPtEBokqQ0) | [materials](https://github.com/tomaugspurger/mtg)
