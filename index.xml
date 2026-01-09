@@ -60,13 +60,24 @@ He managed to avoid the &ldquo;noble savage&rdquo; trope entirely. And for the m
 <li><em>Cloud Cuckoo Land</em> by Anthony Doerr. This was a re-read for me, after I recommended it to some friends. I felt bad for accidentally recommending a <em>600 page book</em> (the downside of e-readers: you don&rsquo;t appreciate how long a book is). I just love the characters, the story, the message, everything.</li>
 </ol>
 ]]></content:encoded></item><item><title>GPU-Accelerated Zarr</title><link>https://tomaugspurger.net/posts/gpu-accelerated-zarr/</link><pubDate>Thu, 11 Dec 2025 08:00:00 -0600</pubDate><guid>https://tomaugspurger.net/posts/gpu-accelerated-zarr/</guid><description>&lt;p>This post gives detailed background to my PyData Global talk, &amp;ldquo;GPU-Accelerated
-Zarr&amp;rdquo; (&lt;a href="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/GPU%20Acceleterated%20Zarr.pdf">slides&lt;/a>, and I&amp;rsquo;ll share the video when it&amp;rsquo;s up in a couple months). It
+Zarr&amp;rdquo; (&lt;a href="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/GPU%20Acceleterated%20Zarr.pdf">slides&lt;/a>, &lt;a href="https://youtu.be/dYt_fabaK60">video&lt;/a>). It
 deliberately gets into the weeds, but I will try to provide some background for
 people who are new to Zarr, GPUs, or both.&lt;/p>
 &lt;p>The first takeaway is that zarr-python &lt;a href="https://zarr.readthedocs.io/en/stable/user-guide/gpu/">natively supports&lt;/a>
 NVIDIA GPUs. With a one-line &lt;code>zarr.config.enable_gpu()&lt;/code> you can configure zarr
-to return CuPy arrays, which reside on your GPU:&lt;/p></description><content:encoded><![CDATA[<p>This post gives detailed background to my PyData Global talk, &ldquo;GPU-Accelerated
-Zarr&rdquo; (<a href="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/GPU%20Acceleterated%20Zarr.pdf">slides</a>, and I&rsquo;ll share the video when it&rsquo;s up in a couple months). It
+to return CuPy arrays, which reside on your GPU:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">&amp;gt;&amp;gt;&amp;gt;&lt;/span> &lt;span style="color:#f92672">import&lt;/span> zarr
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">&amp;gt;&amp;gt;&amp;gt;&lt;/span> zarr&lt;span style="color:#f92672">.&lt;/span>config&lt;span style="color:#f92672">.&lt;/span>enable_gpu()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">&amp;gt;&amp;gt;&amp;gt;&lt;/span> z &lt;span style="color:#f92672">=&lt;/span> zarr&lt;span style="color:#f92672">.&lt;/span>open_array(&lt;span style="color:#e6db74">&amp;#34;path/to/store.zarr&amp;#34;&lt;/span>, mode&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;r&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">&amp;gt;&amp;gt;&amp;gt;&lt;/span> type(z[:])
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cupy&lt;span style="color:#f92672">.&lt;/span>ndarray
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The second takeaway, and the main focus of this post, is that that simple
+one-liner leaves performance on the table. It depends a bit on your workload,
+but I&amp;rsquo;d claim that Zarr&amp;rsquo;s data loading pipeline &lt;em>shouldn&amp;rsquo;t&lt;/em> ever be the
+bottleneck. Achieving maximum throughput today requires some care to ensure that
+the system&amp;rsquo;s resources are used efficiently. I&amp;rsquo;m hopeful that we can improve the
+libraries to do the right thing in more situations.&lt;/p></description><content:encoded><![CDATA[<p>This post gives detailed background to my PyData Global talk, &ldquo;GPU-Accelerated
+Zarr&rdquo; (<a href="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/GPU%20Acceleterated%20Zarr.pdf">slides</a>, <a href="https://youtu.be/dYt_fabaK60">video</a>). It
 deliberately gets into the weeds, but I will try to provide some background for
 people who are new to Zarr, GPUs, or both.</p>
 <p>The first takeaway is that zarr-python <a href="https://zarr.readthedocs.io/en/stable/user-guide/gpu/">natively supports</a>
@@ -19703,6 +19714,7 @@ The <a href="http://www.nber.org/data/cps_basic.html">CPS website</a> has links 
 ]]></content:encoded></item><item><title>About</title><link>https://tomaugspurger.net/about/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/about/</guid><description>&lt;p>Hi, I&amp;rsquo;m Tom. I&amp;rsquo;m a programmer living in Des Moines, IA.&lt;/p>
 &lt;h2 id="talks">Talks&lt;/h2>
 &lt;ul>
+&lt;li>GPU-Accelerated Zarr | &lt;a href="https://youtu.be/dYt_fabaK60">video&lt;/a> | &lt;a href="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/GPU%20Acceleterated%20Zarr.pdf">slides&lt;/a>&lt;/li>
 &lt;li>GPU-Accelerated Cloud-Native Geospatial | &lt;a href="https://youtu.be/BFFHXNBj7nA">video&lt;/a> | &lt;a href="https://tomaugspurger.net/assets/gpu-accelerated-cng.pdf">slides&lt;/a>&lt;/li>
 &lt;li>Pandas: &lt;code>.head() to .tail()&lt;/code> | &lt;a href="https://www.youtube.com/watch?v=7vuO9QXDN50">video&lt;/a> | &lt;a href="https://github.com/tomaugspurger/pydata-chi-h2t">materials&lt;/a>&lt;/li>
 &lt;li>Mind the Gap! Bridging the scikit-learn - pandas dtype divide | &lt;a href="https://www.youtube.com/watch?v=KLPtEBokqQ0">video&lt;/a> | &lt;a href="https://github.com/tomaugspurger/mtg">materials&lt;/a>&lt;/li>
@@ -19734,6 +19746,7 @@ The <a href="http://www.nber.org/data/cps_basic.html">CPS website</a> has links 
 at &lt;a href="mailto:tom.w.augspurger@gmail.com">tom.w.augspurger@gmail.com&lt;/a>.&lt;/p></description><content:encoded><![CDATA[<p>Hi, I&rsquo;m Tom. I&rsquo;m a programmer living in Des Moines, IA.</p>
 <h2 id="talks">Talks</h2>
 <ul>
+<li>GPU-Accelerated Zarr | <a href="https://youtu.be/dYt_fabaK60">video</a> | <a href="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/GPU%20Acceleterated%20Zarr.pdf">slides</a></li>
 <li>GPU-Accelerated Cloud-Native Geospatial | <a href="https://youtu.be/BFFHXNBj7nA">video</a> | <a href="/assets/gpu-accelerated-cng.pdf">slides</a></li>
 <li>Pandas: <code>.head() to .tail()</code> | <a href="https://www.youtube.com/watch?v=7vuO9QXDN50">video</a> | <a href="https://github.com/tomaugspurger/pydata-chi-h2t">materials</a></li>
 <li>Mind the Gap! Bridging the scikit-learn - pandas dtype divide | <a href="https://www.youtube.com/watch?v=KLPtEBokqQ0">video</a> | <a href="https://github.com/tomaugspurger/mtg">materials</a></li>

@@ -89,7 +89,7 @@ pandas operation releases the GIL, you&rsquo;ll be able to get nice speedups wit
 the cost of serialization. But again, there isn&rsquo;t a silver bullet here, and the
 best type of parallelism will depend on your particular problem.</p><h2 id=where-to-parallelize>Where to Parallelize<a hidden class=anchor aria-hidden=true href=#where-to-parallelize>#</a></h2><p>In a typical machine-learning workflow, there are typically ample opportunities for
 parallelism.</p><ol><li>Over Hyper-parameters (one fit per combination of parameters)</li><li>Over Cross-validation folds (one fit per fold)</li><li>Within an algorithm (for some algorithms)</li></ol><p>Scikit-learn already uses parallelism in many places, anywhere you see an
-<code>n_jobs</code> keyword.</p></div><footer class=post-footer><ul class=post-tags></ul></footer></article></main><footer class=footer><span>&copy; 2025 <a href=https://tomaugspurger.net/>Tom's Blog</a></span>
+<code>n_jobs</code> keyword.</p></div><footer class=post-footer><ul class=post-tags></ul></footer></article></main><footer class=footer><span>&copy; 2026 <a href=https://tomaugspurger.net/>Tom's Blog</a></span>
 <span>Powered by
 <a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
         <a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a></span></footer><a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg viewBox="0 0 12 6" fill="currentcolor"><path d="M12 6H0l6-6z"/></svg>
