@@ -4,7 +4,7 @@ date: 2025-12-11T08:00:00-06:00
 ---
 
 This post gives detailed background to my PyData Global talk, "GPU-Accelerated
-Zarr" ([slides], and I'll share the video when it's up in a couple months). It
+Zarr" ([slides], [video](https://youtu.be/dYt_fabaK60)). It
 deliberately gets into the weeds, but I will try to provide some background for
 people who are new to Zarr, GPUs, or both.
 
