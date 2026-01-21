@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sun, 28 Dec 2025 15:00:24 -0600</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>My 2025 Year in Books</title><link>https://tomaugspurger.net/posts/books-2025/</link><pubDate>Sun, 28 Dec 2025 15:00:24 -0600</pubDate><guid>https://tomaugspurger.net/posts/books-2025/</guid><description>&lt;p>It&amp;rsquo;s time for another review for books I read this year (previously: &lt;a href="books-2024.md">2024&lt;/a>, &lt;a href="books-2022.md">2022&lt;/a>). According to my &lt;a href="https://www.goodreads.com/user/year_in_books/2025/82176424">GoodReads&lt;/a>, I read 27 books this year.
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Posts on Tom's Blog</title><link>https://tomaugspurger.net/posts/</link><description>Recent content in Posts on Tom's Blog</description><generator>Hugo -- 0.147.0</generator><language>en-us</language><lastBuildDate>Sun, 28 Dec 2025 15:00:24 -0600</lastBuildDate><atom:link href="https://tomaugspurger.net/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>My 2025 Year in Books</title><link>https://tomaugspurger.net/posts/books-2025/</link><pubDate>Sun, 28 Dec 2025 15:00:24 -0600</pubDate><guid>https://tomaugspurger.net/posts/books-2025/</guid><description>&lt;p>It&amp;rsquo;s time for another review for books I read this year (previously: &lt;a href="books-2024.md">2024&lt;/a>, &lt;a href="books-2022.md">2022&lt;/a>). According to my &lt;a href="https://www.goodreads.com/user/year_in_books/2025/82176424">GoodReads&lt;/a>, I read 27 books this year.
 Here are some highlights:&lt;/p>
 &lt;h2 id="the-demon-haunted-world">The Demon-Haunted World&lt;/h2>
 &lt;p>&lt;a href="https://www.goodreads.com/book/show/17349.The_Demon_Haunted_World">&lt;img src="https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1553691804i/17349.jpg" width="200px"/>&lt;/a>&lt;/p>
@@ -110,8 +110,7 @@ in a columnar format like Apache Parquet, you&rsquo;re working with data that fi
 things like <a href="https://xarray.dev/">xarray</a>&rsquo;s data model: everything is an n-dimensional array with
 metadata. For example, 3-d array measuring forecasts for a temperature field
 with dimensions <code>(x, y, time)</code>.</p>
-<p><img loading="lazy" src="https://docs.xarray.dev/en/latest/_images/dataset-diagram.png" alt="xarray dataset diagram"  />
-</p>
+<p><img alt="xarray dataset diagram" loading="lazy" src="https://docs.xarray.dev/en/latest/_images/dataset-diagram.png"></p>
 <p>Zarr is commonly used in many domains including microscopy, genomics, remote
 sensing, and climate / weather modeling. It works well with both local file
 systems and remote cloud object storage. High-level libraries like <a href="https://xarray.dev/">xarray</a>
@@ -125,14 +124,12 @@ can use zarr as a storage format:</p>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> zos_2100dec <span style="color:#f92672">=</span> ds<span style="color:#f92672">.</span>zos<span style="color:#f92672">.</span>sel(time<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;2100-12-16&#34;</span>)
 </span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> sealevelchange <span style="color:#f92672">=</span> zos_2100dec <span style="color:#f92672">-</span> zos_2015jan
 </span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> sealevelchange<span style="color:#f92672">.</span>plot<span style="color:#f92672">.</span>imshow()
-</span></span></code></pre></div><p><img loading="lazy" src="https://tutorial.xarray.dev/_images/de44ed3784cdeb9939192b1251435c6642fe29e96039bcb6194aa92ebab2f13a.png" alt="Plot showing the sea level change between the two dates."  />
-</p>
+</span></span></code></pre></div><p><img alt="Plot showing the sea level change between the two dates." loading="lazy" src="https://tutorial.xarray.dev/_images/de44ed3784cdeb9939192b1251435c6642fe29e96039bcb6194aa92ebab2f13a.png"></p>
 <p>xarray knows how to translate the high-level slicing like <code>time=&quot;2015-01-16&quot;</code> to
 the lower level slicing of a Zarr array, and Zarr knows how to translate
 positional slices in the large n-dimensional array to files / objects in
 storage. This diagram shows the structure of a Zarr store:</p>
-<p><img loading="lazy" src="https://zarr-specs.readthedocs.io/en/latest/_images/terminology-hierarchy.excalidraw.png" alt="Zarr store hierarchy."  />
-</p>
+<p><img alt="Zarr store hierarchy." loading="lazy" src="https://zarr-specs.readthedocs.io/en/latest/_images/terminology-hierarchy.excalidraw.png"></p>
 <p>The large logical array is split into one or more <em>chunks</em> along one or more
 dimensions. The chunks are then compressed and stored to disk, which lowers
 storage costs and can improve read and write performance (it might be faster to
@@ -141,8 +138,7 @@ read fewer bytes, even if you have to spend time decompressing them).</p>
 it possible to store many <em>chunks</em> in the same file (a file on disk, or an
 object in object storage). We call the collection of chunks a shard, and the
 shard is what&rsquo;s actually written to disk.</p>
-<p><img loading="lazy" src="https://zarr-specs.readthedocs.io/en/latest/_images/sharding.png" alt=""  />
-</p>
+<p><img loading="lazy" src="https://zarr-specs.readthedocs.io/en/latest/_images/sharding.png"></p>
 <p>Multiple chunks are (independently) compressed, concatenated, and stored into
 the same file / object. We&rsquo;ll discuss this more when we talk about performance,
 but the key thing sharding provides is amortizing some constant costs (opening a
@@ -279,30 +275,30 @@ parallelizing at the shard level much simpler.</p>
 <table>
   <thead>
       <tr>
-          <th style="text-align: left">Level</th>
-          <th style="text-align: left">Shape</th>
-          <th style="text-align: left">Size (MB)</th>
-          <th style="text-align: left">Count per parent</th>
+          <th>Level</th>
+          <th>Shape</th>
+          <th>Size (MB)</th>
+          <th>Count per parent</th>
       </tr>
   </thead>
   <tbody>
       <tr>
-          <td style="text-align: left">Chunk</td>
-          <td style="text-align: left"><code>(256_000,)</code></td>
-          <td style="text-align: left">1.024</td>
-          <td style="text-align: left">400 chunks / shard</td>
+          <td>Chunk</td>
+          <td><code>(256_000,)</code></td>
+          <td>1.024</td>
+          <td>400 chunks / shard</td>
       </tr>
       <tr>
-          <td style="text-align: left">Shard</td>
-          <td style="text-align: left"><code>(102_400_000,)</code></td>
-          <td style="text-align: left">409.6</td>
-          <td style="text-align: left">8 shards / array</td>
+          <td>Shard</td>
+          <td><code>(102_400_000,)</code></td>
+          <td>409.6</td>
+          <td>8 shards / array</td>
       </tr>
       <tr>
-          <td style="text-align: left">Array</td>
-          <td style="text-align: left"><code>(819_200_000,)</code></td>
-          <td style="text-align: left">3,276.8</td>
-          <td style="text-align: left">-</td>
+          <td>Array</td>
+          <td><code>(819_200_000,)</code></td>
+          <td>3,276.8</td>
+          <td>-</td>
       </tr>
   </tbody>
 </table>
@@ -329,22 +325,22 @@ anyway.</em></p>
 <table>
   <thead>
       <tr>
-          <th style="text-align: left">Implementation</th>
-          <th style="text-align: left">Duration (ms)</th>
+          <th>Implementation</th>
+          <th>Duration (ms)</th>
       </tr>
   </thead>
   <tbody>
       <tr>
-          <td style="text-align: left">Zarr / NumPy</td>
-          <td style="text-align: left">19,892</td>
+          <td>Zarr / NumPy</td>
+          <td>19,892</td>
       </tr>
       <tr>
-          <td style="text-align: left">Zarr / CuPy</td>
-          <td style="text-align: left">3,407</td>
+          <td>Zarr / CuPy</td>
+          <td>3,407</td>
       </tr>
       <tr>
-          <td style="text-align: left">Custom / CuPy</td>
-          <td style="text-align: left">478</td>
+          <td>Custom / CuPy</td>
+          <td>478</td>
       </tr>
   </tbody>
 </table>
@@ -400,22 +396,19 @@ done.</p>
 make reading the <a href="https://developer.nvidia.com/nsight-systems">Nsight Systems</a> report easier.</p>
 <p>Here&rsquo;s a screenshot of an nsys profile, with a few important bits highlighted
 (open the file for a full-sized screenshot):</p>
-<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/nsys-overview.png" alt=""  />
-</p>
+<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/nsys-overview.png"></p>
 <ul>
 <li>Under Processes &gt; Threads &gt; python, you see the traces for our <em>host</em> program,
 in this case a Python program. This will include our <a href="https://nvtx.readthedocs.io/en/latest/">nvtx</a> annotations
 (<code>read::disk</code>, <code>read::transfer</code>, <code>read::decode</code>, etc.) and calls to the CUDA API (e.g. <code>cudaMemcpyAsync</code>). These calls measure the time spent by the CPU / host program, not the GPU.</li>
 </ul>
-<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/nsys-gpu-detail-python.png" alt=""  />
-</p>
+<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/nsys-gpu-detail-python.png"></p>
 <ul>
 <li>Under Processes &gt; CUDA HW, you&rsquo;ll see the corresponding traces for GPU operations. This shows
 CUDA kernels (functions that run on the GPU) in light blue and memory operations (like host
 to device transfers) in teal.</li>
 </ul>
-<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/nsys-gpu-detail-cuda.png" alt=""  />
-</p>
+<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/nsys-gpu-detail-cuda.png"></p>
 <p>You can download the full nsight report <a href="https://assets.tomaugspurger.net/zarr-shards.nsys-rep">here</a> and open it locally with NVIDIA
 Nsight Systems.</p>
 <p>This table summarizes roughly where we spend our time on the GPU per shard (very
@@ -424,36 +417,36 @@ overlapping operations with CUDA streams).</p>
 <table>
   <thead>
       <tr>
-          <th style="text-align: left">Stage</th>
-          <th style="text-align: left">Duration (ms)</th>
-          <th style="text-align: left">Raw Throughput (GB/s)</th>
-          <th style="text-align: left">Effective Throughput (GB/s)</th>
+          <th>Stage</th>
+          <th>Duration (ms)</th>
+          <th>Raw Throughput (GB/s)</th>
+          <th>Effective Throughput (GB/s)</th>
       </tr>
   </thead>
   <tbody>
       <tr>
-          <td style="text-align: left">Read</td>
-          <td style="text-align: left">13.6</td>
-          <td style="text-align: left">5.7</td>
-          <td style="text-align: left">30.1</td>
+          <td>Read</td>
+          <td>13.6</td>
+          <td>5.7</td>
+          <td>30.1</td>
       </tr>
       <tr>
-          <td style="text-align: left">Transfer</td>
-          <td style="text-align: left">1.5</td>
-          <td style="text-align: left">51.7</td>
-          <td style="text-align: left">273</td>
+          <td>Transfer</td>
+          <td>1.5</td>
+          <td>51.7</td>
+          <td>273</td>
       </tr>
       <tr>
-          <td style="text-align: left">Decode</td>
-          <td style="text-align: left">45</td>
-          <td style="text-align: left">1.7</td>
-          <td style="text-align: left">9.1</td>
+          <td>Decode</td>
+          <td>45</td>
+          <td>1.7</td>
+          <td>9.1</td>
       </tr>
       <tr>
-          <td style="text-align: left">Compute</td>
-          <td style="text-align: left">150</td>
-          <td style="text-align: left">2.7</td>
-          <td style="text-align: left">2.7</td>
+          <td>Compute</td>
+          <td>150</td>
+          <td>2.7</td>
+          <td>2.7</td>
       </tr>
   </tbody>
 </table>
@@ -486,15 +479,13 @@ and it is blocking.  As we&rsquo;ll see later, time spent doing stuff in Python 
 time <em>not</em> spent scheduling work on the GPU. We&rsquo;ll need to ensure that the GPU
 is fed sufficient work, so let&rsquo;s keep our eye on this section.</p>
 <p>The profile report for this section is pretty boring:</p>
-<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/read-disk-initial.png" alt=""  />
-</p>
+<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/read-disk-initial.png"></p>
 <p>Note what the GPU is doing right now: nothing! There aren&rsquo;t any CUDA HW
 annotations visible above the initial <code>read::disk</code>. At least for the very first
 shard we read, the GPU is necessarily idle. But as we&rsquo;ll discuss shortly,
 subsequent shards are able to overlap disk I/O with CUDA operations.</p>
 <p>This screenshot shows the profile for the second shard:</p>
-<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/read-disk-subsequent.png" alt=""  />
-</p>
+<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/read-disk-subsequent.png"></p>
 <p>Now the GPU is busy with some other operations (decoding the chunks from the
 first shard in this case, which are directly above the <code>read::decode</code> happening
 on the host at that time). This is partly why I didn&rsquo;t bother with parallelizing
@@ -518,8 +509,7 @@ throughput of about 52 GB/s (this is still compressed data, so the effective
 throughput is even higher). Here&rsquo;s the same profile I showed earlier, but now
 you&rsquo;ll understand the context around what happens on the host (the CUDA API call
 to do something) and device.</p>
-<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/read-transfer-host-and-device.png" alt=""  />
-</p>
+<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/read-transfer-host-and-device.png"></p>
 <p>I&rsquo;ve added the orange lines connecting the fast <code>cudaMemcpyAsync</code> on the host to
 the (not quite as fast) <code>Memcpy HtoD</code> (host to device) running on the device.</p>
 <p>And if you look closely, you&rsquo;ll see that just above that <code>Memcpy HtoD</code> in teal,
@@ -594,11 +584,9 @@ host to the device for the computation (and moving the result back to the host).
 compute, so that the GPU isn&rsquo;t sitting around waiting for data. Note how the
 teal Host to Device Copy is running at the same time as the matrix
 multiplication from the previous shard:</p>
-<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/overlapping-hto2-and-compute.png" alt=""  />
-</p>
+<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/overlapping-hto2-and-compute.png"></p>
 <p>And at this point, you can start analyzing GPU metrics if you still need to squeeze additional performance out of your pipeline.</p>
-<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/GPU-metrics.png" alt=""  />
-</p>
+<p><img loading="lazy" src="https://assets.tomaugspurger.net/tomaugspurger/posts/gpu-accelerated-zarr/GPU-metrics.png"></p>
 <p>But I think that&rsquo;s enough for now.</p>
 <h1 id="summary">Summary</h1>
 <p>One takeaway here is that GPUs are fast, which, sure. A slightly more
@@ -818,8 +806,7 @@ RAPIDS, offers a bunch of relatively easy ways to get started.</p>
 <p>This slide from Jacob Tomlinson&rsquo;s PyData Global
 <a href="https://global2024.pydata.org/cfp/talk/BUC3GV/">talk</a> showcases the various
 &ldquo;swim lanes&rdquo; when it comes to programming NVIDIA chips from Python:</p>
-<p><img loading="lazy" src="https://github.com/user-attachments/assets/0b0aeda2-6cdc-4946-9b99-3dce73776f0f" alt="The &ldquo;Swim Lanes&rdquo; for getting started with GPUs. From easiest to use (zero code change) to maximum performance (C&#43;&#43; CUDA kernels)"  />
-</p>
+<p><img alt="The &ldquo;Swim Lanes&rdquo; for getting started with GPUs. From easiest to use (zero code change) to maximum performance (C++ CUDA kernels)" loading="lazy" src="https://github.com/user-attachments/assets/0b0aeda2-6cdc-4946-9b99-3dce73776f0f"></p>
 <p>This built nicely off the demo, where we saw two of those swim lanes in action.</p>
 <p>The other part lowering the barrier of entry is the cloud. Being programmable, a
 GPU is just an API call away (assuming you&rsquo;re already set up on one of the
@@ -829,8 +816,7 @@ clouds providing GPUs).</p>
 Each loads some data (which we assumed came from Blob Storage), computed some
 result, and stored that result. For example, a cloud-free mosaic from some
 Sentinel-2 imagery:</p>
-<p><img loading="lazy" src="https://ai4edatasetspublicassets.blob.core.windows.net/assets/notebook-output/tutorials-cloudless-mosaic-sentinel2.ipynb/9.png" alt="Cloudless mosaic"  />
-</p>
+<p><img alt="Cloudless mosaic" loading="lazy" src="https://ai4edatasetspublicassets.blob.core.windows.net/assets/notebook-output/tutorials-cloudless-mosaic-sentinel2.ipynb/9.png"></p>
 <p>I&rsquo;m realizing now that I should have included a vector data example, perhaps
 loading an Overture Maps geoparquet file and doing a geospatial join.</p>
 <p>Anyway, the point was to introduce some high-level concepts that we can use to
@@ -908,8 +894,7 @@ people using NVIDIA GPUs.&lt;/p>
 &lt;li>It automatically chunks large requests into multiple smaller ones and makes those requests concurrently.&lt;/li>
 &lt;li>It can read efficiently into host or device memory, especially if GPU Direct Storage is enabled.&lt;/li>
 &lt;li>It’s fast.&lt;/li>
-&lt;/ol>
-&lt;/blockquote>
+&lt;/ol>&lt;/blockquote>
 &lt;p>As part of preparing this, I got to write some C++. Not a fan!&lt;/p></description><content:encoded><![CDATA[<p>I have a new post up at the NVIDIA technical blog on <a href="https://developer.nvidia.com/blog/high-performance-remote-io-with-nvidia-kvikio/">High-Performance Remote IO with NVIDIA KvikIO</a>.<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></p>
 <p>This is mostly general-purpose advice on getting good performance out of cloud
 object stores (I guess I can&rsquo;t get away from them), but has some specifics for
@@ -920,8 +905,7 @@ people using NVIDIA GPUs.</p>
 <li>It automatically chunks large requests into multiple smaller ones and makes those requests concurrently.</li>
 <li>It can read efficiently into host or device memory, especially if GPU Direct Storage is enabled.</li>
 <li>It’s fast.</li>
-</ol>
-</blockquote>
+</ol></blockquote>
 <p>As part of preparing this, I got to write some C++. Not a fan!</p>
 <div class="footnotes" role="doc-endnotes">
 <hr>
@@ -974,19 +958,16 @@ Find and Replace for &ldquo;evolution&rdquo; and &ldquo;climate change&rdquo;.</
 <h2 id="some-thoughts">Some thoughts</h2>
 <p>I&rsquo;m mostly just disappointed. Disappointed in the people pushing this. Disappointed that they&rsquo;re trying to claim the <a href="https://educate.iowa.gov/headline-story/2025-01-03/public-comment-period-opens-state-science-standards">legitimacy of expertise</a></p>
 <blockquote>
-<p>The standards were reviewed by a team consisting of elementary and secondary educators, administrators, content specialists, families, representatives from Iowa institutions of higher education and community partners.</p>
-</blockquote>
+<p>The standards were reviewed by a team consisting of elementary and secondary educators, administrators, content specialists, families, representatives from Iowa institutions of higher education and community partners.</p></blockquote>
 <p>and then saying they&rsquo;re <a href="https://www.thegazette.com/state-government/committee-members-we-didnt-recommend-science-standards-omitting-climate-change-evolution/">merely advisory</a></p>
 <blockquote>
-<p>The team serves in an advisory capacity to the department; it does not finalize the first proposed revised draft standards</p>
-</blockquote>
+<p>The team serves in an advisory capacity to the department; it does not finalize the first proposed revised draft standards</p></blockquote>
 <p>That&rsquo;s a key component of pseudoscience: wrapping yourself in the language and of science and claiming expertise.</p>
 <p>I&rsquo;m disappointed that they they&rsquo;re unwilling or unable to present the information in a easy to understand form.</p>
 <p>I&rsquo;m disappointed that they don&rsquo;t live up to the documents&rsquo;s own (well-put!) declaration on the importance of a good science education:</p>
 <blockquote>
 <p>By the end of 12th grade, every student should appreciate the wonders of science and have the knowledge necessary to engage in meaningful discussions about scientific and technological issues that affect society. They must become discerning consumers of scientific and technological information and products in their daily lives.</p>
-<p>Students’ science experiences should inspire and equip them for the reality that most careers require some level of scientific or technical expertise. This education is not just for those pursuing STEM fields; it’s essential for all students, regardless of their future education or career paths. Every Iowa student deserves an engaging, relevant, rigorous, and coherent pre-K–12 science education that prepares them for active citizenship, lifelong learning, and successful careers.</p>
-</blockquote>
+<p>Students’ science experiences should inspire and equip them for the reality that most careers require some level of scientific or technical expertise. This education is not just for those pursuing STEM fields; it’s essential for all students, regardless of their future education or career paths. Every Iowa student deserves an engaging, relevant, rigorous, and coherent pre-K–12 science education that prepares them for active citizenship, lifelong learning, and successful careers.</p></blockquote>
 <hr>
 <p>The survey includes a few questions about your overall feedback to the standards
 including, confusingly, a question asking if you agree or disagree that the
@@ -1001,30 +982,30 @@ you have the option to provide specific feedback on each standard. Cheers to the
 people who actually go through each one and form an opinion. Mine focused on the
 ones that changed. I&rsquo;ve included my responses below (header links go to the
 diff). Some extra commentary in the footnotes.</p>
-<h3 id="hs-ls2-7httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6l145"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6L145">HS-LS2-7</a></h3>
+<h3 id="hs-ls2-7"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6L145">HS-LS2-7</a></h3>
 <p>A &ldquo;Solution&rdquo; is a solution to a problem. The proposed phrasing is awkward, and implies the need for &ldquo;a solution to biodiversity&rdquo;, i.e. that biodiversity is a problem that needs to be solved.</p>
 <p>The previous text, &ldquo;Design, evaluate, and refine a solution for reducing the impacts of human activities on the environment and biodiversity.&rdquo; was clearer<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>.</p>
-<h2 id="hs-ls4-1httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6r165"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R165">HS-LS4-1</a></h2>
+<h2 id="hs-ls4-1"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R165">HS-LS4-1</a></h2>
 <p>The standard should make it clear that &ldquo;biological change over time&rdquo; refers specifically to &ldquo;biological evolution&rdquo;. Rephrase as</p>
 <p>&ldquo;Communicate scientific information that common ancestry and biological evolution are supported by multiple lines of empirical evidence.&rdquo;<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup></p>
-<h2 id="hs-ls4-2httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6r169"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R169">HS-LS4-2</a></h2>
+<h2 id="hs-ls4-2"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R169">HS-LS4-2</a></h2>
 <p>The standard should make clear that &ldquo;biological change over time&rdquo; is &ldquo;evolution&rdquo;. As Thomas Jefferson probably didn&rsquo;t say, &ldquo;The most valuable of all talents is that of never using two words when one will do.&rdquo;<sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup></p>
-<h2 id="hs-ess2-3httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6r33"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R33">HS-ESS2-3</a></h2>
+<h2 id="hs-ess2-3"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R33">HS-ESS2-3</a></h2>
 <p>I think there&rsquo;s a typo somewhere in &ldquo;cycling of matter magma&rdquo;. Maybe &ldquo;matter&rdquo; was supposed to be replaced by &ldquo;magma&rdquo;?</p>
-<h2 id="hs-ess2-4httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6r37"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R37">HS-ESS2-4</a></h2>
+<h2 id="hs-ess2-4"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R37">HS-ESS2-4</a></h2>
 <p>The proposed standard seems to confuse stocks and flows, by saying that the flow of energy results into changes in climate <em>trends</em>. It&rsquo;d be clearer to remove &ldquo;trends&rdquo;. If I dump 100 GJ of energy into a system, do I change its trend? No, unless you&rsquo;re saying something about feedback effect and second derivatives (if so, make that clearer and focus on the feedback effects from global warming).</p>
 <p>I recommend changing this to &ldquo;Use a model to describe how variations in the flow of energy into and out of Earth&rsquo;s systems result in changes in climate trends.&rdquo;<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup></p>
-<h2 id="hs-ess2-7httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6r53"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R53">HS-ESS2-7</a></h2>
+<h2 id="hs-ess2-7"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R53">HS-ESS2-7</a></h2>
 <p>To make the interdependency between earth&rsquo;s systems and life on earth clearer, I recommend phrasing this as &ldquo;Construct an argument based on evidence about the simultaneous coevolution of Earth&rsquo;s systems and life on Earth.&rdquo;</p>
 <p>This also gives our students a chance to learn the jargon they&rsquo;ll hear, setting themselves up for success in the world.<sup id="fnref:5"><a href="#fn:5" class="footnote-ref" role="doc-noteref">5</a></sup></p>
-<h2 id="hs-ess3-1httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6r53"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R53">HS-ESS3-1</a></h2>
+<h2 id="hs-ess3-1"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6R53">HS-ESS3-1</a></h2>
 <p>Phrasing this as &ldquo;climate trends&rdquo; narrows the standard to rule out abrupt changes in climate that aren&rsquo;t necessarily part of a longer trend. I recommend phrasing this as &ldquo;Construct an explanation based on evidence for how the availability of natural resources, occurrence of natural hazards, and changes in climate have influenced human civilizations.&rdquo;</p>
-<h2 id="hs-ess3-4httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6l67"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6L67">HS-ESS3-4</a></h2>
+<h2 id="hs-ess3-4"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6L67">HS-ESS3-4</a></h2>
 <p>The proposed standard is unclear. It&rsquo;s again using &ldquo;solution&rdquo; without stating what is being solved. <em>What</em> impact is being reduced?</p>
 <p>Rephrase this as &ldquo;Evaluate or refine a technological solution that reduces impacts of human activities on natural systems.&rdquo;</p>
-<h1 id="hs-ess3-5httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6l71"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6L71">HS-ESS3-5</a></h1>
+<h1 id="hs-ess3-5"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6L71">HS-ESS3-5</a></h1>
 <p>Replace &ldquo;climate trends&rdquo; with &ldquo;climate change&rdquo;. We should ensure our students are ready for the language used in the field.</p>
-<h2 id="hs-ess3-6httpsgithubcomtomaugspurgeriowa-academic-standardscommit5a6d402a41effe236c3d4a527926a25161e388acdiff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6l75"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6L75">HS-ESS3-6</a></h2>
+<h2 id="hs-ess3-6"><a href="https://github.com/TomAugspurger/iowa-academic-standards/commit/5a6d402a41effe236c3d4a527926a25161e388ac#diff-9fd48d75baf44f67bf3ec13822909c8bba9da8d59e9e67c383a141d6bada4dd6L75">HS-ESS3-6</a></h2>
 <p>The standard should make it clear that human activity is the cause of the changes in the earth systems we&rsquo;re currently experiencing. Rephrase the standard as &ldquo;Use a computational representation to illustrate the relationships among Earth systems and how those relationships are being modified due to human activity.&rdquo;</p>
 <hr>
 <p>Again, if you&rsquo;re in Iowa, read the proposals, check the diff, and <a href="https://educate.iowa.gov/headline-story/2025-01-03/public-comment-period-opens-state-science-standards">leave feedback</a> before February 3rd.</p>
@@ -1146,21 +1127,17 @@ Rewriting the data to be shuffled took about 3min 25s. Recent versions of Dask i
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>set(title<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Hilbert partitioning (level=16)&#34;</span>)
 </span></span></code></pre></div><p>The outline of the United States is visible, and the spatial partitions do a good (but not perfect) job of making mostly non-overlapping, spatially compact partitions.</p>
 <p>which gives</p>
-<p><img loading="lazy" src="/images/hilbert-16.png" alt="Hilbert partitioning"  />
-</p>
+<p><img alt="Hilbert partitioning" loading="lazy" src="/images/hilbert-16.png"></p>
 <p>Here&rsquo;s a similar plot for <code>by=&quot;geohash&quot;</code></p>
-<p><img loading="lazy" src="/images/geohash.png" alt="Geohash partitioning"  />
-</p>
+<p><img alt="Geohash partitioning" loading="lazy" src="/images/geohash.png"></p>
 <p>And for <code>by=&quot;morton&quot;</code></p>
-<p><img loading="lazy" src="/images/morton-16.png" alt="Morton partitioning"  />
-</p>
+<p><img alt="Morton partitioning" loading="lazy" src="/images/morton-16.png"></p>
 <p>Each partition ends up with approximately 1,000,000 rows (our original chunk size). Here&rsquo;s a histogram of the count per partition:</p>
 <pre tabindex="0"><code>import seaborn as sns
 counts = [fragment.count_rows() for fragment in pyarrow.parquet.ParquetDataset(&#34;data/hilbert-16.parquet/&#34;).fragments]
 
 sns.displot(counts);
-</code></pre><p><img loading="lazy" src="/images/counts-per-partition.png" alt="Count per partition"  />
-</p>
+</code></pre><p><img alt="Count per partition" loading="lazy" src="/images/counts-per-partition.png"></p>
 <p>The <a href="https://github.com/opengeospatial/geoparquet/discussions/251">discussion</a> also mentions KD trees as potentially better way of doing the partitioning. I&rsquo;ll look into that and will follow up if anything comes out of it.</p>
 ]]></content:encoded></item><item><title>My 2024 Year in Books</title><link>https://tomaugspurger.net/posts/books-2024/</link><pubDate>Wed, 11 Dec 2024 08:00:00 -0600</pubDate><guid>https://tomaugspurger.net/posts/books-2024/</guid><description>&lt;p>Here&amp;rsquo;s another Year in Books (I missed last year, but here&amp;rsquo;s &lt;a href="books-2022.md">2022&lt;/a>).&lt;/p>
 &lt;p>Most of these came from recommendations by friends, &lt;a href="https://www.theincomparable.com/theincomparable/bookclub/">&lt;em>The Incomparable&lt;/em>&amp;rsquo;s Book
@@ -1551,13 +1528,11 @@ these libraries work and how type annotations can be used at runtime in Python.<
 ]]></content:encoded></item><item><title>stac-geoparquet</title><link>https://tomaugspurger.net/posts/stac-geoparquet/</link><pubDate>Thu, 29 Aug 2024 20:00:00 -0500</pubDate><guid>https://tomaugspurger.net/posts/stac-geoparquet/</guid><description>&lt;p>I wrote up a quick &lt;a href="https://cloudnativegeo.org/blog/2024/08/introduction-to-stac-geoparquet/">introduction to stac-geoparquet&lt;/a> on the Cloud Native Geo blog with &lt;a href="https://kylebarron.dev/">Kyle Barron&lt;/a> and &lt;a href="https://beta.source.coop/cholmes">Chris Holmes&lt;/a>.&lt;/p>
 &lt;p>The key takeaway:&lt;/p>
 &lt;blockquote>
-&lt;p>STAC GeoParquet offers a very convenient and high-performance way to distribute large STAC collections, provided the items in that collection are pretty homogenous&lt;/p>
-&lt;/blockquote>
+&lt;p>STAC GeoParquet offers a very convenient and high-performance way to distribute large STAC collections, provided the items in that collection are pretty homogenous&lt;/p>&lt;/blockquote>
 &lt;p>Check out the project at &lt;a href="http://github.com/stac-utils/stac-geoparquet">http://github.com/stac-utils/stac-geoparquet&lt;/a>.&lt;/p></description><content:encoded><![CDATA[<p>I wrote up a quick <a href="https://cloudnativegeo.org/blog/2024/08/introduction-to-stac-geoparquet/">introduction to stac-geoparquet</a> on the Cloud Native Geo blog with <a href="https://kylebarron.dev/">Kyle Barron</a> and <a href="https://beta.source.coop/cholmes">Chris Holmes</a>.</p>
 <p>The key takeaway:</p>
 <blockquote>
-<p>STAC GeoParquet offers a very convenient and high-performance way to distribute large STAC collections, provided the items in that collection are pretty homogenous</p>
-</blockquote>
+<p>STAC GeoParquet offers a very convenient and high-performance way to distribute large STAC collections, provided the items in that collection are pretty homogenous</p></blockquote>
 <p>Check out the project at <a href="http://github.com/stac-utils/stac-geoparquet">http://github.com/stac-utils/stac-geoparquet</a>.</p>
 ]]></content:encoded></item><item><title>What's Next? (2024 edition)</title><link>https://tomaugspurger.net/posts/leaving-microsoft/</link><pubDate>Mon, 12 Aug 2024 07:00:00 -0500</pubDate><guid>https://tomaugspurger.net/posts/leaving-microsoft/</guid><description>&lt;p>I have, as they say, some personal news to share. On Monday I (along with some &lt;em>very&lt;/em> talented teammates, see &lt;a href="#whats-next">below&lt;/a> if you&amp;rsquo;re hiring) was laid off from Microsoft as part of a reorganization. Like my &lt;a href="https://tomaugspurger.net/posts/whats-next">Moving to Microsoft&lt;/a> post, I wanted to jot down some of the things I got to work on.&lt;/p>
 &lt;p>For those of you wondering, the &lt;a href="https://planetarycomputer.microsoft.com">Planetary Computer&lt;/a> project &lt;em>does&lt;/em> continue, just without me.&lt;/p>
@@ -1931,16 +1906,13 @@ A large chunk of that complexity does come from the data itself, and I gather th
 hoepfully we can take it on some day.</p>
 ]]></content:encoded></item><item><title>Jupyter, STAC, and Tool Building</title><link>https://tomaugspurger.net/posts/jupyter-stac-browser/</link><pubDate>Sat, 15 Apr 2023 08:00:00 -0500</pubDate><guid>https://tomaugspurger.net/posts/jupyter-stac-browser/</guid><description>&lt;p>Over in Planetary Computer land, we&amp;rsquo;re &lt;a href="https://github.com/microsoft/planetary-computer-tasks/pull/167">working on&lt;/a> bringing &lt;a href="https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-5p">Sentinel-5P&lt;/a> into our STAC catalog.&lt;/p>
 &lt;p>STAC items require a &lt;code>geometry&lt;/code> property, a GeoJSON object that describes the footprint of the assets. Thanks to the satellites&amp;rsquo; orbit and the (spatial) size of the assets, we started with some&amp;hellip;interesting&amp;hellip; footprints:&lt;/p>
-&lt;p>&lt;img loading="lazy" src="https://user-images.githubusercontent.com/58314/231868547-21c786b9-dc88-4830-a07f-7aa3c1fdebc6.png" alt="" />
-&lt;/p>
+&lt;p>&lt;img loading="lazy" src="https://user-images.githubusercontent.com/58314/231868547-21c786b9-dc88-4830-a07f-7aa3c1fdebc6.png">&lt;/p>
 &lt;p>That initial footprint, shown in orange, would render the STAC collection essentially useless for spatial searches. The assets don&amp;rsquo;t actually cover (most of) the southern hemisphere.&lt;/p></description><content:encoded><![CDATA[<p>Over in Planetary Computer land, we&rsquo;re <a href="https://github.com/microsoft/planetary-computer-tasks/pull/167">working on</a> bringing <a href="https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-5p">Sentinel-5P</a> into our STAC catalog.</p>
 <p>STAC items require a <code>geometry</code> property, a GeoJSON object that describes the footprint of the assets. Thanks to the satellites&rsquo; orbit and the (spatial) size of the assets, we started with some&hellip;interesting&hellip; footprints:</p>
-<p><img loading="lazy" src="https://user-images.githubusercontent.com/58314/231868547-21c786b9-dc88-4830-a07f-7aa3c1fdebc6.png" alt=""  />
-</p>
+<p><img loading="lazy" src="https://user-images.githubusercontent.com/58314/231868547-21c786b9-dc88-4830-a07f-7aa3c1fdebc6.png"></p>
 <p>That initial footprint, shown in orange, would render the STAC collection essentially useless for spatial searches. The assets don&rsquo;t actually cover (most of) the southern hemisphere.</p>
 <p><a href="https://fosstodon.org/@gadomski">Pete Gadomski</a> did some really great work to understand the problem and fix it (hopefully once and for all). As the satellite crosses the antimeridian, a pole, or both, naive approaches to generating a footprint fails. It takes some more <a href="https://github.com/gadomski/antimeridian/blob/main/src/antimeridian/_implementation.py">complicated logic</a> to generate a good geometry. That&rsquo;s now available as <a href="https://pypi.org/project/antimeridian">antimeridian</a> on PyPI. It produces much more sensible footprints:</p>
-<p><img loading="lazy" src="https://user-images.githubusercontent.com/58314/231868768-5439edcd-5e5a-40a9-b3f9-12947a081b85.png" alt=""  />
-</p>
+<p><img loading="lazy" src="https://user-images.githubusercontent.com/58314/231868768-5439edcd-5e5a-40a9-b3f9-12947a081b85.png"></p>
 <h2 id="building-tools">Building Tools</h2>
 <p>The real reason I wanted to write this post was to talk about tool building. This is a common theme of the <a href="https://oxide.computer/podcasts/oxide-and-friends">Oxide and Friends</a> podcast, but I think spending time building these kinds of small, focused tools almost always pays off.</p>
 <p>Pete had a handful of <a href="https://github.com/gadomski/antimeridian/tree/main/tests/data/input">pathologic test cases</a> in the antimeridian test suite, but I wanted a way to quickly examine hundreds of footprints that I got back from our test STAC catalog. There are probably already tools for this, but I was able to put one together in Jupyter in about 10 minutes by building on <a href="https://ipywidgets.readthedocs.io/en/latest/#">Jupyter Widgets</a> and <a href="https://ipyleaflet.readthedocs.io/en/latest/index.html">ipyleaflet</a>.</p>
@@ -2162,8 +2134,7 @@ in the next release and I&rsquo;ll be blogging more about it then.</p>
 <p>But what if I told you that you could read <em>all</em> the metadata in a single HTTP request? Well, that&rsquo;s possible with these NetCDF files. Not because of anything special about how the metadata is written, just that these files are relatively small. They&rsquo;re only about 100-300 KB in total. So we can read all the metadata (and data) in a single HTTP call.</p>
 <p>That gets to a point made by Paul Ramsey in his <a href="http://blog.cleverelephant.ca/2022/04/coshp.html">Cloud Optimized Shape File</a> article:</p>
 <blockquote>
-<p>One of the quiet secrets of the “cloud optimized” geospatial world is that, while all the attention is placed on the formats, the actual really really hard part is writing the clients that can efficiently make use of the carefully organized bytes.</p>
-</blockquote>
+<p>One of the quiet secrets of the “cloud optimized” geospatial world is that, while all the attention is placed on the formats, the actual really really hard part is writing the clients that can efficiently make use of the carefully organized bytes.</p></blockquote>
 <p>So yes, the file formats do (often) matter. And yes, we need clients that can make efficient use of those carefully organized bytes. <em>But</em> when the files are this small, it doesn&rsquo;t really matter how the bytes or organized. You&rsquo;re still making a single HTTP call, whether you want all the data or just some of it.</p>
 <p>This was a fun conversation amongst the team. We like to say we host &ldquo;cloud-optimized data&rdquo; on the Planetary Computer, and we do. But what really matters is the user experience. It&rsquo;s all about the cloud-optimized <em>vibes</em>.</p>
 <h2 id="build-with-users-not-just-with-users-in-mind">Build with users, not just with users in mind</h2>
@@ -2175,14 +2146,12 @@ in the next release and I&rsquo;ll be blogging more about it then.</p>
 <p>Over at the <a href="https://www.coiled.io/blog/reducing-dask-memory-usage">Coiled Blog</a>, Gabe Joseph has a nice post summarizing a huge amount of effort addressing a problem that&rsquo;s been vexing demanding Dask users for years. The main symptom of the problem was unexpectedly high memory usage on workers, leading to crashing workers (which in turn caused even more network communication, and so more memory usage, and more crashing workers). This is actually a problem I worked on a bit back in 2019, and I made very little progress.</p>
 <p>A common source of this problem was having many (mostly) independent &ldquo;chains&rdquo; of computation. Dask would start on too many of the &ldquo;root&rdquo; tasks simultaneously, before finishing up some of the chains. The root tasks are typically memory increasing (e.g. load data from file system) while the later tasks are typically memory decreasing (take the mean of a large array).</p>
 <p>In <code>dask/distributed</code>, Dask actually has two places where it determines which order to run things in. First, there&rsquo;s a &ldquo;static&rdquo; ordering (implemented in <code>dask/order.py</code>, which has some truly great docstrings, check out <a href="https://github.com/dask/dask/blob/main/dask/order.py">the source</a>.) Dask was actually doing really well here. Consider this task graph from <a href="https://github.com/dask/distributed/issues/2602#issuecomment-496634172">the issue</a>:</p>
-<p><img loading="lazy" src="https://user-images.githubusercontent.com/1312546/58502338-f2599c00-814b-11e9-989a-5bfd2c3785a8.png" alt=""  />
-</p>
+<p><img loading="lazy" src="https://user-images.githubusercontent.com/1312546/58502338-f2599c00-814b-11e9-989a-5bfd2c3785a8.png"></p>
 <p>The &ldquo;root&rdquo; tasks are on the left (marked 0, 3, 11, 14). Dask&rsquo;s typical depth-first algorithm works well here: we execute the first two root tasks (0 and 3) to finish up the first &ldquo;chain&rdquo; of computation (the box <code>(0, 0)</code> on the right) before moving onto the other two root nodes, 11 and 14.</p>
 <p>The second time Dask (specifically, the distributed scheduler) considers what order to run things is at runtime. It gets this &ldquo;static&rdquo; ordering from <code>dask.order</code> which says what order you <em>should</em> run things in, but the distributed runtime has <em>way</em> more information available to it that it can use to influence its scheduling decisions. In this case, the distributed scheduler looked around and saw that it had some idle cores. It thought &ldquo;hey, I have a bunch of these root tasks ready to run&rdquo;, and scheduled those. Those tend to increase memory usage, leading to our memory problems.</p>
 <p>The solution was a queue. From <a href="https://www.coiled.io/blog/reducing-dask-memory-usage">Gabe&rsquo;s blog post</a>:</p>
 <blockquote>
-<p>We&rsquo;re calling this mode of scheduling <a href="https://distributed.dask.org/en/stable/scheduling-policies.html#queuing">&ldquo;queuing&rdquo;</a>, or &ldquo;root task withholding&rdquo;. The scheduler puts data-loading tasks in an internal queue, and only drips one out to a worker once it&rsquo;s finished its current work and there&rsquo;s nothing more useful to run instead that utilizes the work it just completed.</p>
-</blockquote>
+<p>We&rsquo;re calling this mode of scheduling <a href="https://distributed.dask.org/en/stable/scheduling-policies.html#queuing">&ldquo;queuing&rdquo;</a>, or &ldquo;root task withholding&rdquo;. The scheduler puts data-loading tasks in an internal queue, and only drips one out to a worker once it&rsquo;s finished its current work and there&rsquo;s nothing more useful to run instead that utilizes the work it just completed.</p></blockquote>
 <h2 id="queue-for-data-pipelines">Queue for Data Pipelines</h2>
 <p><a href="http://planetarycomputer.microsoft.com/">At work</a>, we&rsquo;re taking on more responsibility for the data pipeline responsible for getting various datasets to Azure Blob Storage. I&rsquo;m dipping my toes into the whole &ldquo;event-driven&rdquo; architecture thing, and have become <em>paranoid</em> about dropping work. The <a href="https://learn.microsoft.com/en-us/azure/architecture/">Azure Architecture Center</a> has a bunch of useful articles here. <a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/competing-consumers">This article</a> gives some names to some of the concepts I was bumbling through (e.g. &ldquo;at least once processing&rdquo;).</p>
 <p>In our case, we&rsquo;re using <a href="https://learn.microsoft.com/en-us/azure/storage/queues/storage-queues-introduction">Azure Queue Storage</a> as a simple way to <em>reliably</em> parallelize work across some machines. We somehow discover some assets to be copied (perhaps by querying an API on a schedule, or by listening to some events on a webhook), store those as messages on the queue.</p>
@@ -2268,8 +2237,7 @@ I&rsquo;ll highlight some of the projects I worked on while at Anaconda. If you 
 <li>More companies should support open-source like Anaconda does: offer positions to the maintainers of open-source projects and see what they can do. Anaconda <a href="https://www.anaconda.com/blog/sustaining-the-open-source-ds-ml-ecosystem-with-the-anaconda-dividend-program">recently announced</a> a program that makes it easier for more companies to support open-source.</li>
 </ol>
 <h3 id="pandas">pandas</h3>
-<p><img loading="lazy" src="https://pandas.pydata.org/static/img/pandas.svg" alt=""  />
-</p>
+<p><img loading="lazy" src="https://pandas.pydata.org/static/img/pandas.svg"></p>
 <p>If I had a primary responsibility at Anaconda, it was stewarding the pandas project. When I joined Anaconda in 2017, pandas was around the 0.20 release, and didn&rsquo;t have much in the way of paid maintenace. By joining Anaconda I was fulfilling a dream: getting paid to work on open-source software. During my time at Anaconda, I was the pandas release manager for a handful of pandas releases, including pandas 1.0.</p>
 <p>I think the most important <em>code</em> to come out of my work on pandas is the <a href="https://pandas.pydata.org/pandas-docs/stable/development/extending.html">extension array interface</a>. My post on the <a href="https://www.anaconda.com/blog/cyberpandas-extending-pandas-with-richer-types">Anaconda Blog</a> tells the full story, but this is a great example of a for-profit company (Anaconda) bringing together a funding source and an open-source project to accomplish something great for the community. As an existing member of the pandas community, I was able to leverage some trust that I&rsquo;d built up over the years to propose a major change to the library. And thanks to Anaconda, we had the funding to realisitically pull (some of) it off. The work is still ongoing, but we&rsquo;re gradually solving some of pandas&rsquo; longest-standing pain points (like the lack of an integer dtype with missing values).</p>
 <p>But even more important that the code is probably pandas winning its first-ever funding through the <a href="https://chanzuckerberg.com/eoss/">CZI EOSS program</a>. Thanks to Anaconda, I was able to dedicate the time to writing the proposal. This work funded</p>
@@ -2339,8 +2307,7 @@ you can use a tool to organize and run benchmarks.</p>
 <p>airspeed velocity (<code>asv</code>) is a tool for benchmarking Python packages over
 their lifetime. Runtime, memory consumption and even custom-computed values
 may be tracked. The results are displayed in an interactive web frontend that
-requires only a basic static webserver to host.</p>
-</blockquote>
+requires only a basic static webserver to host.</p></blockquote>
 <p><code>asv</code> provides a structured way to write benchmarks. For example, pandas <code>Series.isin</code>
 <a href="https://github.com/pandas-dev/pandas/blob/d1b1236f0d8402d1df6ad7cd916d07ba45706269/asv_bench/benchmarks/series_methods.py">benchmark</a> looks roughly like</p>
 <pre tabindex="0"><code>class IsIn:
@@ -2357,8 +2324,7 @@ the <code>asv</code> CLI, benchmarks can be run for a specific commit with
 <code>asv continuous &lt;GIT RANGE&gt;</code>. Finally, <code>asv</code> will collect performance over time
 and can visualize the output. You can see pandas&rsquo; at
 <a href="https://pandas.pydata.org/speed/pandas/">https://pandas.pydata.org/speed/pandas/</a>.</p>
-<p><img loading="lazy" src="/images/asv-overview.png" alt="pandas&rsquo; asv overview"  />
-</p>
+<p><img alt="pandas&rsquo; asv overview" loading="lazy" src="/images/asv-overview.png"></p>
 <h2 id="detecting-regressions">Detecting Regressions</h2>
 <p><code>asv</code> is designed to be run continuously over a project&rsquo;s lifetime. In theory, a
 pull request could be accompanied with an <code>asv</code> report demonstrating that the
@@ -2372,8 +2338,7 @@ regression).</p>
 issue</a>, where a slowdown was
 reported. User reports are often along the lines of</p>
 <blockquote>
-<p><code>DataFrame.memory_usage</code> is 100x slower in pandas 1.0 compared to 0.25</p>
-</blockquote>
+<p><code>DataFrame.memory_usage</code> is 100x slower in pandas 1.0 compared to 0.25</p></blockquote>
 <p>In this case, <code>DataFrame.memory_usage</code> was slower with <code>object</code>-dtypes and
 <code>deep=True</code>.</p>
 <pre tabindex="0"><code>v1.0.3: memory_usage(deep=True) took 26.4566secs
@@ -2392,8 +2357,7 @@ locally. I&rsquo;ll first activate environments for both the old and new version
 use <a href="https://conda.io/en/latest/"><code>conda</code></a> for this, one environment per version
 of pandas, but <code>venv</code> works as well assuming the error isn&rsquo;t specific to a
 version of Python). Then I ensure that I can reproduce the slowdown.</p>
-<p><img loading="lazy" src="/images/performance-comparison.png" alt="Comparison of two benchmarks"  />
-</p>
+<p><img alt="Comparison of two benchmarks" loading="lazy" src="/images/performance-comparison.png"></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">import</span> pandas <span style="color:#66d9ef">as</span> pd
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>In [<span style="color:#ae81ff">2</span>]: df <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>DataFrame({<span style="color:#e6db74">&#34;A&#34;</span>: list(range(<span style="color:#ae81ff">10000</span>))}, dtype<span style="color:#f92672">=</span>object)
@@ -2419,16 +2383,14 @@ version of Python). Then I ensure that I can reproduce the slowdown.</p>
 Davis</a>, which measures performance at the
 function-level. For large enough slowdowns, the issue will jump out immediately
 with snakeviz.</p>
-<p><img loading="lazy" src="https://jiffyclub.github.io/snakeviz/img/icicle.png" alt="Snakeviz chart showing where time was spent"  />
-</p>
+<p><img alt="Snakeviz chart showing where time was spent" loading="lazy" src="https://jiffyclub.github.io/snakeviz/img/icicle.png"></p>
 <p>From the <a href="https://jiffyclub.github.io/snakeviz/#interpreting-results">snakeviz
 docs</a>, these charts
 show</p>
 <blockquote>
 <p>the fraction of time spent in a function is represented by the extent of a
 visualization element, either the width of a rectangle or the angular extent
-of an arc.</p>
-</blockquote>
+of an arc.</p></blockquote>
 <p>I prefer the &ldquo;sunburst&rdquo; / angular extent style, but either works.</p>
 <p>In this case, I noticed that ~95% of the time was being spent in
 <code>pandas._libs.lib.memory_usage_of_object</code>, and most of that time was spent in
@@ -2511,8 +2473,7 @@ public CI providers. And even if we could finish it in time, we couldn&rsquo;t r
 trust the results. These benchmarks, at least as written, really do need
 dedicated hardware to be stable over time. Pandas has a machine in my basement,
 but maintaining that has been a time-consuming, challenging process.</p>
-<p><img loading="lazy" src="/images/benchmark-server.png" alt="Pandas&rsquo; benchmark server"  />
-</p>
+<p><img alt="Pandas&rsquo; benchmark server" loading="lazy" src="/images/benchmark-server.png"></p>
 <p>This is my current setup, which stuffs the benchmark server (the black Intel
 NUC) and a router next to my wife&rsquo;s art storage. We reached this solution after
 my 2 year old unplugged the old setup (on my office floor) one too many times.
@@ -2525,8 +2486,7 @@ The outputs are <code>rsync</code>ed over to the pandas webserver and served at
 see pandas&rsquo; at
 <a href="https://pandas.pydata.org/speed/pandas">https://pandas.pydata.org/speed/pandas/</a>.
 If this seems like a house of cards waiting to tumble, that&rsquo;s because it is.</p>
-<p><img loading="lazy" src="/images/performance-airflow.png" alt="pandas&rsquo; airflow server"  />
-</p>
+<p><img alt="pandas&rsquo; airflow server" loading="lazy" src="/images/performance-airflow.png"></p>
 <p>Pandas has applied for a NumFOCUS small development grant to improve our
 benchmark process. Ideally maintainers would be able to ask a bot <code>@asv-bot run -b memory_usage</code> which would kick off a process that pulled down the pull
 request and ran the requested benchmarks on a dedicated machine (that isn&rsquo;t
@@ -2699,8 +2659,7 @@ coordination point for many projects. We had maintainers from projects like
 NumPy, pandas, scikit-learn, Apache Arrow, cuDF, and others.</p>
 ]]></content:encoded></item><item><title>pandas + binder</title><link>https://tomaugspurger.net/posts/pandas-binder/</link><pubDate>Sun, 21 Jul 2019 00:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/pandas-binder/</guid><description>&lt;p>This post describes the start of a journey to get pandas&amp;rsquo; documentation running
 on Binder. The end result is this nice button:&lt;/p>
-&lt;p>&lt;a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb">&lt;img loading="lazy" src="https://mybinder.org/badge_logo.svg" alt="Binder" />
-&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb">&lt;img alt="Binder" loading="lazy" src="https://mybinder.org/badge_logo.svg">&lt;/a>&lt;/p>
 &lt;hr>
 &lt;p>For a while now I&amp;rsquo;ve been jealous of &lt;a href="https://github.com/dask/dask-examples">Dask&amp;rsquo;s examples
 repository&lt;/a>. That&amp;rsquo;s a repository containing a
@@ -2709,8 +2668,7 @@ together some tools to present a set of documentation that is both viewable
 as a static site at &lt;a href="https://examples.dask.org">examples.dask.org&lt;/a>, and as a executable notebooks
 on &lt;a href="https://mybinder.org/v2/gh/dask/dask-examples/master?urlpath=lab">mybinder&lt;/a>.&lt;/p></description><content:encoded><![CDATA[<p>This post describes the start of a journey to get pandas&rsquo; documentation running
 on Binder. The end result is this nice button:</p>
-<p><a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb"><img loading="lazy" src="https://mybinder.org/badge_logo.svg" alt="Binder"  />
-</a></p>
+<p><a href="https://mybinder.org/v2/gh/TomAugspurger/pandas-binder/master?filepath=build%2Fjupyter%2Fgetting_started%2F10min.ipynb"><img alt="Binder" loading="lazy" src="https://mybinder.org/badge_logo.svg"></a></p>
 <hr>
 <p>For a while now I&rsquo;ve been jealous of <a href="https://github.com/dask/dask-examples">Dask&rsquo;s examples
 repository</a>. That&rsquo;s a repository containing a
@@ -3680,8 +3638,7 @@ Name: occupation, Length: 100, dtype: int64
 <p>Those reading carefully will notice a problem with the statement &ldquo;A Dask DataFrame consists of many pandas DataFrames&rdquo;. Our initial problem was that we didn&rsquo;t have enough memory for those DataFrames! How can Dask be coordinating DataFrames if there isn&rsquo;t enough memory? This brings us to the second major difference: Dask DataFrames (and arrays) are lazy. Operations on them don&rsquo;t execute and produce the final result immediately. Rather, calling methods on them builds up a task graph.</p>
 <p>We can visualize task graphs using <code>graphviz</code>. For the blog, I&rsquo;ve trimmed down the example to be a subset of the entire graph.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>df<span style="color:#f92672">.</span>visualize(rankdir<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;LR&#39;</span>)
-</span></span></code></pre></div><p><img loading="lazy" src="/images/scalable-read-simple.svg" alt=""  />
-</p>
+</span></span></code></pre></div><p><img loading="lazy" src="/images/scalable-read-simple.svg"></p>
 <p><code>df</code> (the dask DataFrame consisting of many pandas DataFrames) has a task graph with 5 calls to a parquet reader (one for each file), each of which produces a DataFrame when called.</p>
 <p>Calling additional methods on <code>df</code> adds additional tasks to this graph. For example, our <code>most_common</code> Series has three additional calls</p>
 <ul>
@@ -3704,8 +3661,7 @@ Name: occupation, Length: 100, dtype: int64
 <!-- </div> -->
 <p>Which we can visualize.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>most_common<span style="color:#f92672">.</span>visualize(rankdir<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;LR&#39;</span>)
-</span></span></code></pre></div><p><img loading="lazy" src="/images/scalable-most-common.svg" alt=""  />
-</p>
+</span></span></code></pre></div><p><img loading="lazy" src="/images/scalable-most-common.svg"></p>
 <p>So <code>most_common</code> doesn&rsquo;t hold the actual answer yet. Instead, it holds a recipe for the answer; a list of all the steps to take to get the concrete result. One way to ask for the result is with the <code>compute</code> method.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>most_common<span style="color:#f92672">.</span>compute()
 </span></span></code></pre></div><!-- <div class="output"> -->
@@ -3726,8 +3682,7 @@ Name: occupation, Length: 100, dtype: int64
 <!-- </div> -->
 <p>At this point, the task graph is handed to a <a href="https://dask.pydata.org/en/latest/scheduling.html">scheduler</a>, which is responsible for executing a task graph. Schedulers can analyze a task graph and find sections that can run <em>in parallel</em>. (Dask includes several schedulers. See <a href="http://dask.pydata.org/en/latest/scheduling.html">the scheduling documentation</a> for how to choose, though Dask has good defaults.)</p>
 <p>So that&rsquo;s a high-level tour of how Dask works:</p>
-<p><img loading="lazy" src="http://dask.pydata.org/en/latest/_images/collections-schedulers.png" alt="collections, schedulers"  />
-</p>
+<p><img alt="collections, schedulers" loading="lazy" src="http://dask.pydata.org/en/latest/_images/collections-schedulers.png"></p>
 <ol>
 <li>Various collections collections like <code>dask.dataframe</code> and <code>dask.array</code>
 provide users familiar APIs for working with large datasets.</li>
@@ -3945,8 +3900,7 @@ a cluster), reusing libraries like NumPy and pandas to do the computations.</li>
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>legend([<span style="color:#e6db74">&#39;Average donation&#39;</span>])
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>set(xlabel<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Donation Amount&#34;</span>, title<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Average Dontation by Occupation&#34;</span>)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern-pandas-08_49_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern-pandas-08_49_0.png"></p>
 <p>Dask inherits all of pandas&rsquo; great time-series support. We can get the total amount donated per day using a <a href="https://pandas.pydata.org/pandas-docs/stable/timeseries.html#resampling"><code>resample</code></a>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>daily <span style="color:#f92672">=</span> (
 </span></span><span style="display:flex;"><span>    indiv[[<span style="color:#e6db74">&#39;transaction_dt&#39;</span>, <span style="color:#e6db74">&#39;transaction_amt&#39;</span>]]<span style="color:#f92672">.</span>dropna()
@@ -3977,8 +3931,7 @@ Notice that the seamless transition from <code>dask.dataframe</code> operations 
 </span></span><span style="display:flex;"><span>ax <span style="color:#f92672">=</span> subset<span style="color:#f92672">.</span>div(<span style="color:#ae81ff">1000</span>)<span style="color:#f92672">.</span>plot(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">12</span>, <span style="color:#ae81ff">6</span>))
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>set(ylim<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>, title<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Daily Donations&#34;</span>, ylabel<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;$ (thousands)&#34;</span>,)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine();
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern-pandas-08_54_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern-pandas-08_54_0.png"></p>
 <h2 id="joining">Joining</h2>
 <p>Like pandas, Dask supports joining together multiple datasets.</p>
 <p>Individual donations are made to <em>committees</em>. Committees are what make the actual expenditures (buying a TV ad).
@@ -4334,8 +4287,7 @@ Some committees are directly tied to a candidate (this are campaign committees).
 </span></span><span style="display:flex;"><span>)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>set(title<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Daily Donations (30-D Moving Average)&#34;</span>, xlabel<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Date&#34;</span>);
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern-pandas-08_64_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern-pandas-08_64_0.png"></p>
 <h2 id="try-it-out">Try It Out!</h2>
 <p>So that&rsquo;s a taste of Dask. Next time you hit a scaling problem with pandas (or NumPy, scikit-learn, or your custom code), feel free to</p>
 <pre tabindex="0"><code>pip install dask[complete]
@@ -4428,8 +4380,7 @@ scikit-learn itself</p>
 a shot and let me know how it turns out. For estimators whose predict is
 relatively expensive and not already parallelized, <code>ParallelPostFit</code> can give
 a nice <a href="http://dask-ml.readthedocs.io/en/latest/auto_examples/plot_parallel_postfit.html#sphx-glr-auto-examples-plot-parallel-postfit-py">performance boost</a>.</p>
-<p><img loading="lazy" src="/images/sphx_glr_plot_parallel_postfit_001.png" alt="parallel-post-fit"  />
-</p>
+<p><img alt="parallel-post-fit" loading="lazy" src="/images/sphx_glr_plot_parallel_postfit_001.png"></p>
 <p>Even if the underlying estimator&rsquo;s <code>predict</code> or <code>tranform</code> method is cheap or
 parallelized, <code>ParallelPostFit</code> does still help with distributed the work on all
 the machines in your cluster, or doing the operation out-of-core.</p>
@@ -4941,13 +4892,10 @@ serialization costs. I&rsquo;ll highlight his quote, which summarizes the
 situation:</p>
 <blockquote>
 <blockquote>
-<p>Your weakness is your strength, and your strength is your weakness</p>
-</blockquote>
-</blockquote>
+<p>Your weakness is your strength, and your strength is your weakness</p></blockquote></blockquote>
 <blockquote>
 <p>The strength of threads is shared state. The weakness of threads is shared
-state.</p>
-</blockquote>
+state.</p></blockquote>
 <p>Another wrinkle here is that when you move to a distributed cluster, you <em>have</em>
 to have multiple processes. And communication between processes becomes even
 more expensive since you&rsquo;ll have network overhead to worry about, in addition to
@@ -5110,8 +5058,7 @@ attributes like <code>pipe.steps[1][1].coef_</code>.</p>
 <p>One important point to stress here: when we get to the <code>BigSGDClassifier.fit</code>
 at the end of the pipeline, everything is done serially. We can see that by
 plotting the <code>Profiler</code> we captured up above:</p>
-<p><img loading="lazy" src="/images/sml-02-fit.png" alt="Training parallelism"  />
-</p>
+<p><img alt="Training parallelism" loading="lazy" src="/images/sml-02-fit.png"></p>
 <p>That graph shows the tasks (the rectangles) each worker (a core on my laptop)
 executed over time. Workers are along the vertical axis, and time is along the
 horizontal. Towards the start, when we&rsquo;re reading off disk, converting to
@@ -5122,8 +5069,7 @@ we get to the <code>BigSGDClassifier</code>, which is just a simple wrapper arou
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">with</span> rp, p:
 </span></span><span style="display:flex;"><span>    predictions <span style="color:#f92672">=</span> pipe<span style="color:#f92672">.</span>predict(X)
 </span></span><span style="display:flex;"><span>    predictions<span style="color:#f92672">.</span>to_dask_dataframe(columns<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;a&#39;</span>)<span style="color:#f92672">.</span>to_parquet(<span style="color:#e6db74">&#39;predictions.parq&#39;</span>)
-</span></span></code></pre></div><p><img loading="lazy" src="/images/sml-02-predict.png" alt="Predicting parallelism"  />
-</p>
+</span></span></code></pre></div><p><img alt="Predicting parallelism" loading="lazy" src="/images/sml-02-predict.png"></p>
 <p>That took about 40 seconds, from disk to prediction, and back to disk on 16 GB
 of data, using all 8 cores of my laptop.</p>
 <h2 id="how">How?</h2>
@@ -5232,8 +5178,7 @@ sample should be. The &ldquo;correct&rdquo; value depends on the complexity of y
 task, the complexity of your model, and the nature of your data. The best you
 can do here is think carefully about your problem and to plot the <a href="http://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html">learning
 curve</a>.</p>
-<p><img loading="lazy" src="http://scikit-learn.org/stable/_images/sphx_glr_plot_learning_curve_001.png" alt="scikit-learn"  />
-</p>
+<p><img alt="scikit-learn" loading="lazy" src="http://scikit-learn.org/stable/_images/sphx_glr_plot_learning_curve_001.png"></p>
 <div style="text-align: center"> <a
   href="http://scikit-learn.org/stable/_images/sphx_glr_plot_learning_curve_001.png"><i>source</i></a>
 </div>
@@ -5639,7 +5584,7 @@ page&lt;/a> to see an example of what stitch does,
 and the &lt;a href="https://github.com/pystitch/stitch">Github repo&lt;/a> for how to
 install. I&amp;rsquo;m using this post to explain why I wrote stitch, and some
 issues it tries to solve.&lt;/p>
-&lt;h2 id="why-knitrhttpyihuinameknitr--knitpyhttpsgithubcomjanschulzknitpy--stitch--rmarkdownhttprmarkdownrstudiocom">Why &lt;a href="http://yihui.name/knitr/">knitr&lt;/a> / &lt;a href="https://github.com/janschulz/knitpy">knitpy&lt;/a> / stitch / &lt;a href="http://rmarkdown.rstudio.com">RMarkdown&lt;/a>?&lt;/h2>
+&lt;h2 id="why-knitr--knitpy--stitch--rmarkdown">Why &lt;a href="http://yihui.name/knitr/">knitr&lt;/a> / &lt;a href="https://github.com/janschulz/knitpy">knitpy&lt;/a> / stitch / &lt;a href="http://rmarkdown.rstudio.com">RMarkdown&lt;/a>?&lt;/h2>
 &lt;p>Each of these tools or formats have the same high-level goal: produce
 reproducible, dynamic (to changes in the data) reports. They take some
 source document (typically markdown) that&amp;rsquo;s a mixture of text and code
@@ -5649,7 +5594,7 @@ page</a> to see an example of what stitch does,
 and the <a href="https://github.com/pystitch/stitch">Github repo</a> for how to
 install. I&rsquo;m using this post to explain why I wrote stitch, and some
 issues it tries to solve.</p>
-<h2 id="why-knitrhttpyihuinameknitr--knitpyhttpsgithubcomjanschulzknitpy--stitch--rmarkdownhttprmarkdownrstudiocom">Why <a href="http://yihui.name/knitr/">knitr</a> / <a href="https://github.com/janschulz/knitpy">knitpy</a> / stitch / <a href="http://rmarkdown.rstudio.com">RMarkdown</a>?</h2>
+<h2 id="why-knitr--knitpy--stitch--rmarkdown">Why <a href="http://yihui.name/knitr/">knitr</a> / <a href="https://github.com/janschulz/knitpy">knitpy</a> / stitch / <a href="http://rmarkdown.rstudio.com">RMarkdown</a>?</h2>
 <p>Each of these tools or formats have the same high-level goal: produce
 reproducible, dynamic (to changes in the data) reports. They take some
 source document (typically markdown) that&rsquo;s a mixture of text and code
@@ -6395,8 +6340,7 @@ The new points are filled with NaNs.</p>
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>tight_layout()
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#34;Close ($)&#34;</span>)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_7_timeseries_23_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_7_timeseries_23_0.png"></p>
 <p>Each of <code>.rolling</code>, <code>.expanding</code>, and <code>.ewm</code> return a deferred object, similar to a GroupBy.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>roll <span style="color:#f92672">=</span> gs<span style="color:#f92672">.</span>Close<span style="color:#f92672">.</span>rolling(<span style="color:#ae81ff">30</span>, center<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
 </span></span><span style="display:flex;"><span>roll
@@ -6409,8 +6353,7 @@ The new points are filled with NaNs.</p>
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>tight_layout()
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#34;Close ($)&#34;</span>)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_7_timeseries_26_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_7_timeseries_26_0.png"></p>
 <h2 id="grab-bag">Grab Bag</h2>
 <h3 id="offsets">Offsets</h3>
 <p>These are similar to <code>dateutil.relativedelta</code>, but works with arrays.</p>
@@ -6622,8 +6565,7 @@ Append an <code>'S'</code> to get the start.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>ax <span style="color:#f92672">=</span> y<span style="color:#f92672">.</span>plot()
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>set(ylabel<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Average Monthly Flights&#39;</span>)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_7_timeseries_41_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_7_timeseries_41_0.png"></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> statsmodels.formula.api <span style="color:#66d9ef">as</span> smf
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> statsmodels.tsa.api <span style="color:#66d9ef">as</span> smt
 </span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> statsmodels.api <span style="color:#66d9ef">as</span> sm
@@ -6796,16 +6738,14 @@ Afterwards, we&rsquo;ll use a second model, seasonal ARIMA, which handles those 
 Since our lagged values are highly correlated with each other, our regression suffers from <a href="https://en.wikipedia.org/wiki/Multicollinearity">multicollinearity</a>.
 That ruins our estimates of the slopes.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>heatmap(X<span style="color:#f92672">.</span>corr());
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_7_timeseries_48_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_7_timeseries_48_0.png"></p>
 <p>Second, we&rsquo;d intuitively expect the $\beta_i$s to gradually decline to zero.
 The immediately preceding period <em>should</em> be most important ($\beta_1$ is the largest coefficient in absolute value), followed by $\beta_2$, and $\beta_3$&hellip;
 Looking at the regression summary and the bar graph below, this isn&rsquo;t the case (the cause is related to multicollinearity).</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>ax <span style="color:#f92672">=</span> res_lagged<span style="color:#f92672">.</span>params<span style="color:#f92672">.</span>drop([<span style="color:#e6db74">&#39;Intercept&#39;</span>, <span style="color:#e6db74">&#39;trend&#39;</span>])<span style="color:#f92672">.</span>plot<span style="color:#f92672">.</span>bar(rot<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#39;Coefficeint&#39;</span>)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_7_timeseries_50_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_7_timeseries_50_0.png"></p>
 <p>Finally, our degrees of freedom drop since we lose two for each variable (one for estimating the coefficient, one for the lost observation as a result of the <code>shift</code>).
 At least in (macro)econometrics, each observation is precious and we&rsquo;re loath to throw them away, though sometimes that&rsquo;s unavoidable.</p>
 <h3 id="autocorrelation">Autocorrelation</h3>
@@ -6837,8 +6777,7 @@ In this case there&rsquo;s a correlation between one residual and the next: if t
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> ts_ax, acf_ax, pacf_ax
 </span></span></code></pre></div><p>Calling it on the residuals from the linear trend:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>tsplot(res_trend<span style="color:#f92672">.</span>resid, lags<span style="color:#f92672">=</span><span style="color:#ae81ff">36</span>);
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_7_timeseries_58_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_7_timeseries_58_0.png"></p>
 <p>The top subplot shows the time series of our residuals $e_t$, which should be white noise (but it isn&rsquo;t).
 The bottom shows the <a href="https://www.otexts.org/fpp/2/2#autocorrelation">autocorrelation</a> of the residuals as a correlogram.
 It measures the correlation between a value and it&rsquo;s lagged self, e.g. $corr(e_t, e_{t-1}), corr(e_t, e_{t-2}), \ldots$.
@@ -6854,14 +6793,12 @@ It&rsquo;s not likely that there&rsquo;s an actual causal relationship there.
 Rather, there could be a third variable that&rsquo;s driving both (wealth, say).
 <a href="http://wolfweb.unr.edu/homepage/zal/STAT758/Granger_Newbold_1974.pdf">Granger and Newbold (1974)</a> had some stern words for the econometrics literature on this.</p>
 <blockquote>
-<p>We find it very curious that whereas virtually every textbook on econometric methodology contains explicit warnings of the dangers of autocorrelated errors, this phenomenon crops up so frequently in well-respected applied work.</p>
-</blockquote>
+<p>We find it very curious that whereas virtually every textbook on econometric methodology contains explicit warnings of the dangers of autocorrelated errors, this phenomenon crops up so frequently in well-respected applied work.</p></blockquote>
 <p>(:fire:), but in that academic passive-aggressive way.</p>
 <p>The typical way to handle non-stationarity is to difference the non-stationary variable until is is stationary.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>y<span style="color:#f92672">.</span>to_frame(name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;y&#39;</span>)<span style="color:#f92672">.</span>assign(Δy<span style="color:#f92672">=</span><span style="color:#66d9ef">lambda</span> x: x<span style="color:#f92672">.</span>y<span style="color:#f92672">.</span>diff())<span style="color:#f92672">.</span>plot(subplots<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_7_timeseries_61_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_7_timeseries_61_0.png"></p>
 <p>Our original series actually doesn&rsquo;t look <em>that</em> bad.
 It doesn&rsquo;t look like nominal GDP say, where there&rsquo;s a clearly rising trend.
 But we have more rigorous methods for detecting whether a series is non-stationary than simply plotting and squinting at it.
@@ -6908,14 +6845,12 @@ It&rsquo;s not statistically significant at the 5% level, but who cares what sta
 </span></span><span style="display:flex;"><span>mod_stationary <span style="color:#f92672">=</span> smf<span style="color:#f92672">.</span>ols(<span style="color:#e6db74">&#39;Δy ~ LΔy&#39;</span>, data<span style="color:#f92672">=</span>data<span style="color:#f92672">.</span>dropna())
 </span></span><span style="display:flex;"><span>res_stationary <span style="color:#f92672">=</span> mod_stationary<span style="color:#f92672">.</span>fit()
 </span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>tsplot(res_stationary<span style="color:#f92672">.</span>resid, lags<span style="color:#f92672">=</span><span style="color:#ae81ff">24</span>);
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_7_timeseries_69_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_7_timeseries_69_0.png"></p>
 <p>So we&rsquo;ve taken care of multicolinearity, autocorelation, and stationarity, but we still aren&rsquo;t done.</p>
 <h2 id="seasonality">Seasonality</h2>
 <p>We have strong monthly seasonality:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>smt<span style="color:#f92672">.</span>seasonal_decompose(y)<span style="color:#f92672">.</span>plot();
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_7_timeseries_73_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_7_timeseries_73_0.png"></p>
 <p>There are a few ways to handle seasonality.
 We&rsquo;ll just rely on the <code>SARIMAX</code> method to do it for us.
 For now, recognize that it&rsquo;s a problem to be solved.</p>
@@ -6928,7 +6863,7 @@ It&rsquo;s a relatively simple yet flexible way of modeling univariate time seri
 It&rsquo;s made up of three components, and is typically written as $\mathrm{ARIMA}(p, d, q)$.</p>
 <p>ARIMA stands for AutoRegressive Integrated Moving Average, and it&rsquo;s a relatively simple way of modeling univariate time series.
 It&rsquo;s made up of three components, and is typically written as $\mathrm{ARIMA}(p, d, q)$.</p>
-<h3 id="autoregressivehttpswwwotextsorgfpp83"><a href="https://www.otexts.org/fpp/8/3">AutoRegressive</a></h3>
+<h3 id="autoregressive"><a href="https://www.otexts.org/fpp/8/3">AutoRegressive</a></h3>
 <p>The idea is to predict a variable by a linear combination of its lagged values (<em>auto</em>-regressive as in regressing a value on its past <em>self</em>).
 An AR(p), where $p$ represents the number of lagged values used, is written as</p>
 <p>$$y_t = c + \phi_1 y_{t-1} + \phi_2 y_{t-2} + \ldots + \phi_p y_{t-p} + e_t$$</p>
@@ -6938,7 +6873,7 @@ This looks a lot like a linear regression model with multiple predictors, but th
 <p>Integrated is like the opposite of differencing, and is the part that deals with stationarity.
 If you have to difference your dataset 1 time to get it stationary, then $d=1$.
 We&rsquo;ll introduce one bit of notation for differencing: $\Delta y_t = y_t - y_{t-1}$ for $d=1$.</p>
-<h3 id="moving-averagehttpswwwotextsorgfpp84"><a href="https://www.otexts.org/fpp/8/4">Moving Average</a></h3>
+<h3 id="moving-average"><a href="https://www.otexts.org/fpp/8/4">Moving Average</a></h3>
 <p>MA models look somewhat similar to the AR component, but it&rsquo;s dealing with different values.</p>
 <p>$$y_t = c + e_t + \theta_1 e_{t-1} + \theta_2 e_{t-2} + \ldots + \theta_q e_{t-q}$$</p>
 <p>$c$ again is a constant and $e_t$ again is white noise.
@@ -6955,8 +6890,7 @@ Fortunately, the model is pretty easy to use with statsmodels (using it <em>corr
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>mod <span style="color:#f92672">=</span> smt<span style="color:#f92672">.</span>SARIMAX(y, trend<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;c&#39;</span>, order<span style="color:#f92672">=</span>(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>))
 </span></span><span style="display:flex;"><span>res <span style="color:#f92672">=</span> mod<span style="color:#f92672">.</span>fit()
 </span></span><span style="display:flex;"><span>tsplot(res<span style="color:#f92672">.</span>resid[<span style="color:#ae81ff">2</span>:], lags<span style="color:#f92672">=</span><span style="color:#ae81ff">24</span>);
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_7_timeseries_81_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_7_timeseries_81_0.png"></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>res<span style="color:#f92672">.</span>summary()
 </span></span></code></pre></div><table class="simpletable">
 <caption>Statespace Model Results</caption>
@@ -7113,8 +7047,7 @@ We&rsquo;ll fit a seasonal ARIMA$(1,1,2)×(0, 1, 2)_{12}$.</p>
 </tr>
 </table>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>tsplot(res_seasonal<span style="color:#f92672">.</span>resid[<span style="color:#ae81ff">12</span>:], lags<span style="color:#f92672">=</span><span style="color:#ae81ff">24</span>);
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_7_timeseries_86_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_7_timeseries_86_0.png"></p>
 <p>Things look much better now.</p>
 <p>One thing I didn&rsquo;t really talk about is order selection. How to choose $p, d, q, P, D$ and $Q$.
 R&rsquo;s forecast package does have a handy <code>auto.arima</code> function that does this for you.
@@ -7137,8 +7070,7 @@ So the forecast for January 2014 has available all the data up through December 
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>set_ylabel(<span style="color:#e6db74">&#34;Monthly Flights&#34;</span>)
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>legend()
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_7_timeseries_91_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_7_timeseries_91_0.png"></p>
 <p>There are a few places where the observed series slips outside the 95% confidence interval.
 The series seems especially unstable before 2005.</p>
 <p>Alternatively, we can make <em>dynamic</em> forecasts as of some month (January 2013 in the example below).
@@ -7161,8 +7093,7 @@ Only instead of plugging in the <em>actual</em> values beyond January 2013, we p
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>legend()
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_7_timeseries_94_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_7_timeseries_94_0.png"></p>
 <h2 id="resources">Resources</h2>
 <p>This is a collection of links for those interested.</p>
 <h3 id="time-series-modeling-in-python">Time series modeling in Python</h3>
@@ -7245,7 +7176,7 @@ For some reason, plotting tools feel a bit more personal than other parts of thi
 Also, I&rsquo;m not at all an expert on visualization, just a consumer.
 For real advice, you should <a href="http://twitter.com/mbostock">listen</a> to the <a href="https://twitter.com/oceankidbilly">experts</a> in this <a href="https://twitter.com/arnicas">area</a>.
 Take this all with an extra grain or two of salt.</p>
-<h2 id="matplotlibhttpmatplotliborg"><a href="http://matplotlib.org/">Matplotlib</a></h2>
+<h2 id="matplotlib"><a href="http://matplotlib.org/">Matplotlib</a></h2>
 <p>Matplotlib is an amazing project, and is the foundation of pandas&rsquo; built-in plotting and Seaborn.
 It handles everything from the integration with various drawing backends, to several APIs handling drawing charts or adding and transforming individual glyphs (artists).
 I&rsquo;ve found knowing the <a href="http://matplotlib.org/api/pyplot_api.html">pyplot API</a> useful.
@@ -7254,15 +7185,15 @@ You&rsquo;re less likely to need things like <a href="http://matplotlib.org/user
 I think that complaint is valid, but misplaced.
 Matplotlib lets you control essentially anything on the figure.
 An overly-verbose API just means there&rsquo;s an opportunity for a higher-level, domain specific, package to exist (like seaborn for statistical graphics).</p>
-<h2 id="pandas-builtin-plottinghttppandaspydataorgpandas-docsversion0180visualizationhtml"><a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/visualization.html">Pandas&rsquo; builtin-plotting</a></h2>
+<h2 id="pandas"><a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/visualization.html">Pandas&rsquo; builtin-plotting</a></h2>
 <p><code>DataFrame</code> and <code>Series</code> have a <code>.plot</code> namespace, with various chart types available (<code>line</code>, <code>hist</code>, <code>scatter</code>, etc.).
 Pandas objects provide additional metadata that can be used to enhance plots (the Index for a better automatic x-axis then <code>range(n)</code> or Index names as axis labels for example).</p>
 <p>And since pandas had fewer backwards-compatibility constraints, it had a bit better default aesthetics.
 The <a href="http://matplotlib.org/style_changes.html">matplotlib 2.0 release</a> will level this, and pandas has <a href="https://github.com/pydata/pandas/issues/11783">deprecated its custom plotting styles</a>, in favor of matplotlib&rsquo;s (technically <a href="https://github.com/pydata/pandas/issues/11727">I just broke</a> it when fixing matplotlib 1.5 compatibility, so we deprecated it after the fact).</p>
 <p>At this point, I see pandas <code>DataFrame.plot</code> as a useful exploratory tool for quick throwaway plots.</p>
-<h2 id="seabornhttpsstanfordedumwaskomsoftwareseaborn"><a href="https://stanford.edu/~mwaskom/software/seaborn/">Seaborn</a></h2>
+<h2 id="seaborn"><a href="https://stanford.edu/~mwaskom/software/seaborn/">Seaborn</a></h2>
 <p><a href="https://stanford.edu/~mwaskom/software/seaborn/">Seaborn</a>, created by Michael Waskom, &ldquo;provides a high-level interface for drawing attractive statistical graphics.&rdquo; Seaborn gives a great API for quickly exploring different visual representations of your data. We&rsquo;ll be focusing on that today</p>
-<h2 id="bokehhttpbokehpydataorgenlatest"><a href="http://bokeh.pydata.org/en/latest/">Bokeh</a></h2>
+<h2 id="bokeh"><a href="http://bokeh.pydata.org/en/latest/">Bokeh</a></h2>
 <p><a href="http://bokeh.pydata.org/en/latest/">Bokeh</a> is a (still under heavy development) visualiztion library that targets the browser.</p>
 <p>Like matplotlib, Bokeh has a few APIs at various levels of abstraction.
 They have a glyph API, which I suppose is most similar to matplotlib&rsquo;s Artists API, for drawing single or arrays of glpyhs (circles, rectangles, polygons, etc.).
@@ -7430,13 +7361,12 @@ It&rsquo;s still young, and I&rsquo;ve hit <a href="http://stackoverflow.com/que
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>set(context<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;talk&#39;</span>, style<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;ticks&#39;</span>)
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">%</span>matplotlib inline
-</span></span></code></pre></div><h2 id="matplotlib">Matplotlib</h2>
+</span></span></code></pre></div><h2 id="matplotlib-1">Matplotlib</h2>
 <p>Since it&rsquo;s relatively new, I should point out that matplotlib 1.5 added support for plotting labeled data.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>fig, ax <span style="color:#f92672">=</span> plt<span style="color:#f92672">.</span>subplots()
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>scatter(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;carat&#39;</span>, y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;depth&#39;</span>, data<span style="color:#f92672">=</span>df, c<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;k&#39;</span>, alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">.15</span>);
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_6_visualization_13_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_6_visualization_13_0.png"></p>
 <p>This isn&rsquo;t limited to just <code>DataFrame</code>s.
 It supports anything that uses <code>__getitem__</code> (square-brackets) with string keys.
 Other than that, I don&rsquo;t have much to add to the <a href="http://matplotlib.org/">matplotlib documentation</a>.</p>
@@ -7444,8 +7374,7 @@ Other than that, I don&rsquo;t have much to add to the <a href="http://matplotli
 <p>The metadata in DataFrames gives a bit better defaults on plots.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>df<span style="color:#f92672">.</span>plot<span style="color:#f92672">.</span>scatter(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;carat&#39;</span>, y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;depth&#39;</span>, c<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;k&#39;</span>, alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">.15</span>)
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>tight_layout()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_6_visualization_17_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_6_visualization_17_0.png"></p>
 <p>We get axis labels from the column names.
 Nothing major, just nice.</p>
 <p>Pandas can be more convenient for plotting a bunch of columns with a shared x-axis (the index), say several timeseries.</p>
@@ -7459,44 +7388,36 @@ Nothing major, just nice.</p>
 </span></span></code></pre></div><pre><code>/Users/taugspurger/miniconda3/envs/modern-pandas/lib/python3.6/site-packages/ipykernel_launcher.py:3: DeprecationWarning: pandas.core.common.is_list_like is deprecated. import from the public API: pandas.api.types.is_list_like instead
   This is separate from the ipykernel package so we can avoid doing imports until
 </code></pre>
-<p><img loading="lazy" src="/images/modern_6_visualization_19_1.png" alt="png"  />
-</p>
-<h2 id="seaborn">Seaborn</h2>
+<p><img alt="png" loading="lazy" src="/images/modern_6_visualization_19_1.png"></p>
+<h2 id="seaborn-1">Seaborn</h2>
 <p>The rest of this post will focus on seaborn, and why I think it&rsquo;s especially great for exploratory analysis.</p>
 <p>I would encourage you to read Seaborn&rsquo;s <a href="https://stanford.edu/~mwaskom/software/seaborn/introduction.html#introduction">introductory notes</a>, which describe its design philosophy and attempted goals. Some highlights:</p>
 <blockquote>
-<p>Seaborn aims to make visualization a central part of exploring and understanding data.</p>
-</blockquote>
+<p>Seaborn aims to make visualization a central part of exploring and understanding data.</p></blockquote>
 <p>It does this through a consistent, understandable (to me anyway) API.</p>
 <blockquote>
-<p>The plotting functions try to do something useful when called with a minimal set of arguments, and they expose a number of customizable options through additional parameters.</p>
-</blockquote>
+<p>The plotting functions try to do something useful when called with a minimal set of arguments, and they expose a number of customizable options through additional parameters.</p></blockquote>
 <p>Which works great for exploratory analysis, with the option to turn that into something more polished if it looks promising.</p>
 <blockquote>
-<p>Some of the functions plot directly into a matplotlib axes object, while others operate on an entire figure and produce plots with several panels.</p>
-</blockquote>
+<p>Some of the functions plot directly into a matplotlib axes object, while others operate on an entire figure and produce plots with several panels.</p></blockquote>
 <p>The fact that seaborn is built on matplotlib means that if you are familiar with the pyplot API, your knowledge will still be useful.</p>
 <p>Most seaborn plotting functions (one per chart-type) take an <code>x</code>, <code>y</code>, <code>hue</code>, and <code>data</code> arguments (only some are required, depending on the plot type). If you&rsquo;re working with DataFrames, you&rsquo;ll pass in strings referring to column names, and the DataFrame for <code>data</code>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>countplot(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;cut&#39;</span>, data<span style="color:#f92672">=</span>df)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>tight_layout()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_6_visualization_22_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_6_visualization_22_0.png"></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>barplot(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;cut&#39;</span>, y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;price&#39;</span>, data<span style="color:#f92672">=</span>df)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>tight_layout()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_6_visualization_23_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_6_visualization_23_0.png"></p>
 <p>Bivariate relationships can easily be explored, either one at a time:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>jointplot(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;carat&#39;</span>, y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;price&#39;</span>, data<span style="color:#f92672">=</span>df, size<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>, alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">.25</span>,
 </span></span><span style="display:flex;"><span>              color<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;k&#39;</span>, marker<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;.&#39;</span>)
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>tight_layout()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_6_visualization_25_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_6_visualization_25_0.png"></p>
 <p>Or many at once</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>g <span style="color:#f92672">=</span> sns<span style="color:#f92672">.</span>pairplot(df, hue<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;cut&#39;</span>)
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_6_visualization_27_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_6_visualization_27_0.png"></p>
 <p><code>pairplot</code> is a convenience wrapper around <code>PairGrid</code>, and offers our first look at an important seaborn abstraction, the <code>Grid</code>. <em>Seaborn <code>Grid</code>s provide a link between a matplotlib <code>Figure</code> with multiple <code>axes</code> and features in your dataset.</em></p>
 <p>There are two main ways of interacting with grids. First, seaborn provides convenience-wrapper functions like <code>pairplot</code>, that have good defaults for common tasks. If you need more flexibility, you can work with the <code>Grid</code> directly by mapping plotting functions over each axes.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">core</span>(df, α<span style="color:#f92672">=</span><span style="color:#ae81ff">.05</span>):
@@ -7511,8 +7432,7 @@ Nothing major, just nice.</p>
 </span></span><span style="display:flex;"><span>   <span style="color:#f92672">.</span>map_diag(sns<span style="color:#f92672">.</span>kdeplot)
 </span></span><span style="display:flex;"><span>   <span style="color:#f92672">.</span>map_lower(plt<span style="color:#f92672">.</span>hexbin, cmap<span style="color:#f92672">=</span>cmap, gridsize<span style="color:#f92672">=</span><span style="color:#ae81ff">20</span>)
 </span></span><span style="display:flex;"><span>);
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_6_visualization_30_1.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_6_visualization_30_1.png"></p>
 <p>This last example shows the tight integration with matplotlib. <code>g.axes</code> is an array of <code>matplotlib.Axes</code> and <code>g.fig</code> is a <code>matplotlib.Figure</code>.
 This is a pretty common pattern when using seaborn: use a seaborn plotting method (or grid) to get a good start, and then adjust with matplotlib as needed.</p>
 <p>I <em>think</em> (not an expert on this at all) that one thing people like about the grammar of graphics is its flexibility.
@@ -7526,12 +7446,10 @@ You can create pretty complex charts suited to your needs.</p>
 </span></span><span style="display:flex;"><span>g <span style="color:#f92672">=</span> sns<span style="color:#f92672">.</span>PairGrid(agged, x_vars<span style="color:#f92672">=</span>agged<span style="color:#f92672">.</span>columns[<span style="color:#ae81ff">2</span>:], y_vars<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;cut&#39;</span>, <span style="color:#e6db74">&#39;color&#39;</span>],
 </span></span><span style="display:flex;"><span>                 size<span style="color:#f92672">=</span><span style="color:#ae81ff">5</span>, aspect<span style="color:#f92672">=</span><span style="color:#ae81ff">.65</span>)
 </span></span><span style="display:flex;"><span>g<span style="color:#f92672">.</span>map(sns<span style="color:#f92672">.</span>stripplot, orient<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;h&#34;</span>, size<span style="color:#f92672">=</span><span style="color:#ae81ff">10</span>, palette<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Blues_d&#39;</span>);
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_6_visualization_32_1.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_6_visualization_32_1.png"></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>g <span style="color:#f92672">=</span> sns<span style="color:#f92672">.</span>FacetGrid(df, col<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;color&#39;</span>, hue<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;color&#39;</span>, col_wrap<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>)
 </span></span><span style="display:flex;"><span>g<span style="color:#f92672">.</span>map(sns<span style="color:#f92672">.</span>regplot, <span style="color:#e6db74">&#39;carat&#39;</span>, <span style="color:#e6db74">&#39;price&#39;</span>);
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_6_visualization_33_1.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_6_visualization_33_1.png"></p>
 <p>Initially I had many more examples showing off seaborn, but I&rsquo;ll spare you.
 Seaborn&rsquo;s <a href="https://stanford.edu/~mwaskom/software/seaborn/">documentation</a> is thorough (and just beautiful to look at).</p>
 <p>We&rsquo;ll end with a nice scikit-learn integration for exploring the parameter-space on a GridSearch object.</p>
@@ -7713,8 +7631,7 @@ We can search this space by trying out a bunch of possible values for each param
 </span></span><span style="display:flex;"><span>               col<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;param_min_samples_split&#39;</span>,
 </span></span><span style="display:flex;"><span>               hue<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;param_min_samples_leaf&#39;</span>,
 </span></span><span style="display:flex;"><span>               data<span style="color:#f92672">=</span>scores);
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_6_visualization_39_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_6_visualization_39_0.png"></p>
 <p>Thanks for reading!
 I want to reiterate at the end that this is just <em>my</em> way of doing data visualization.
 Your needs might differ, meaning you might need different tools.
@@ -7735,8 +7652,7 @@ You can still use pandas to get it to the point where it&rsquo;s ready to be vis
 &lt;hr>
 &lt;h1 id="reshaping--tidy-data">Reshaping &amp;amp; Tidy Data&lt;/h1>
 &lt;blockquote>
-&lt;p>Structuring datasets to facilitate analysis &lt;a href="http://www.jstatsoft.org/v59/i10/paper">(Wickham 2014)&lt;/a>&lt;/p>
-&lt;/blockquote>
+&lt;p>Structuring datasets to facilitate analysis &lt;a href="http://www.jstatsoft.org/v59/i10/paper">(Wickham 2014)&lt;/a>&lt;/p>&lt;/blockquote>
 &lt;p>So, you&amp;rsquo;ve sat down to analyze a new dataset.
 What do you do first?&lt;/p>
 &lt;p>In episode 11 of &lt;a href="https://www.patreon.com/NSSDeviations?ty=h">Not So Standard Deviations&lt;/a>, Hilary and Roger discussed their typical approaches.
@@ -7758,8 +7674,7 @@ With a tidy dataset, it&amp;rsquo;s relatively easy to do all of those.&lt;/p></
 <hr>
 <h1 id="reshaping--tidy-data">Reshaping &amp; Tidy Data</h1>
 <blockquote>
-<p>Structuring datasets to facilitate analysis <a href="http://www.jstatsoft.org/v59/i10/paper">(Wickham 2014)</a></p>
-</blockquote>
+<p>Structuring datasets to facilitate analysis <a href="http://www.jstatsoft.org/v59/i10/paper">(Wickham 2014)</a></p></blockquote>
 <p>So, you&rsquo;ve sat down to analyze a new dataset.
 What do you do first?</p>
 <p>In episode 11 of <a href="https://www.patreon.com/NSSDeviations?ty=h">Not So Standard Deviations</a>, Hilary and Roger discussed their typical approaches.
@@ -7999,8 +7914,7 @@ Each month slips in an extra row of mostly NaNs, the column names aren&rsquo;t t
 </ul>
 <p>The Question:</p>
 <blockquote>
-<p><strong>How many days of rest did each team get between each game?</strong></p>
-</blockquote>
+<p><strong>How many days of rest did each team get between each game?</strong></p></blockquote>
 <p>Whether or not your dataset is tidy depends on your question. Given our question, what is an observation?</p>
 <p>In this case, an observation is a <code>(team, game)</code> pair, which we don&rsquo;t have yet. Rather, we have two observations per row, one for home and one for away. We&rsquo;ll fix that with <code>pd.melt</code>.</p>
 <p><code>pd.melt</code> works by taking observations that are spread across columns (<code>away_team</code>, <code>home_team</code>), and melting them down into one column with multiple rows. However, we don&rsquo;t want to lose the metadata (like <code>game_id</code> and <code>date</code>) that is shared between the observations. By including those columns as <code>id_vars</code>, the values will be repeated as many times as needed to stay with their observations.</p>
@@ -8267,8 +8181,7 @@ So really, we have two tidy datasets, <code>tidy</code> for answering team-level
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>set(style<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;ticks&#39;</span>, context<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;paper&#39;</span>)
 </span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>g <span style="color:#f92672">=</span> sns<span style="color:#f92672">.</span>FacetGrid(tidy, col<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;team&#39;</span>, col_wrap<span style="color:#f92672">=</span><span style="color:#ae81ff">6</span>, hue<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;team&#39;</span>, size<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>)
 </span></span><span style="display:flex;"><span>g<span style="color:#f92672">.</span>map(sns<span style="color:#f92672">.</span>barplot, <span style="color:#e6db74">&#39;variable&#39;</span>, <span style="color:#e6db74">&#39;rest&#39;</span>);
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_5_tidy_17_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_5_tidy_17_0.png"></p>
 <p>An example of a game-level statistic is the distribution of rest differences in games:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>df[<span style="color:#e6db74">&#39;home_win&#39;</span>] <span style="color:#f92672">=</span> df[<span style="color:#e6db74">&#39;home_points&#39;</span>] <span style="color:#f92672">&gt;</span> df[<span style="color:#e6db74">&#39;away_points&#39;</span>]
 </span></span><span style="display:flex;"><span>df[<span style="color:#e6db74">&#39;rest_spread&#39;</span>] <span style="color:#f92672">=</span> df[<span style="color:#e6db74">&#39;home_rest&#39;</span>] <span style="color:#f92672">-</span> df[<span style="color:#e6db74">&#39;away_rest&#39;</span>]
@@ -8386,15 +8299,13 @@ So really, we have two tidy datasets, <code>tidy</code> for answering team-level
 </span></span><span style="display:flex;"><span>)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>set(xlabel<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Difference in Rest (Home - Away)&#39;</span>, ylabel<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Games&#39;</span>);
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_5_tidy_20_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_5_tidy_20_0.png"></p>
 <p>Or the win percent by rest difference</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>fig, ax <span style="color:#f92672">=</span> plt<span style="color:#f92672">.</span>subplots(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">12</span>, <span style="color:#ae81ff">6</span>))
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>barplot(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;rest_spread&#39;</span>, y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;home_win&#39;</span>, data<span style="color:#f92672">=</span>df<span style="color:#f92672">.</span>query(<span style="color:#e6db74">&#39;-3 &lt;= rest_spread &lt;= 3&#39;</span>),
 </span></span><span style="display:flex;"><span>            color<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;#4c72b0&#39;</span>, ax<span style="color:#f92672">=</span>ax)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_5_tidy_22_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_5_tidy_22_0.png"></p>
 <h2 id="stack--unstack">Stack / Unstack</h2>
 <p>Pandas has two useful methods for quickly converting from wide to long format (<code>stack</code>) and long to wide (<code>unstack</code>).</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>rest <span style="color:#f92672">=</span> (tidy<span style="color:#f92672">.</span>groupby([<span style="color:#e6db74">&#39;date&#39;</span>, <span style="color:#e6db74">&#39;variable&#39;</span>])
@@ -8497,8 +8408,7 @@ Length: 320, dtype: float64
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>annotate(<span style="color:#e6db74">&#34;Home&#34;</span>, (rest<span style="color:#f92672">.</span>index[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">0</span>], <span style="color:#ae81ff">1.02</span>), color<span style="color:#f92672">=</span>g, size<span style="color:#f92672">=</span><span style="color:#ae81ff">14</span>)
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>annotate(<span style="color:#e6db74">&#34;Away&#34;</span>, (rest<span style="color:#f92672">.</span>index[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">0</span>], <span style="color:#ae81ff">0.82</span>), color<span style="color:#f92672">=</span>b, size<span style="color:#f92672">=</span><span style="color:#ae81ff">14</span>)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_5_tidy_30_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_5_tidy_30_0.png"></p>
 <p>The most conenient form will depend on exactly what you&rsquo;re doing.
 When interacting with databases you&rsquo;ll often deal with long form data.
 Pandas&rsquo; <code>DataFrame.plot</code> often expects wide-form data, while <code>seaborn</code> often expect long-form data. Regressions will expect wide-form data. Either way, it&rsquo;s good to be comfortable with <code>stack</code> and <code>unstack</code> (and MultiIndexes) to quickly move between the two.</p>
@@ -8601,15 +8511,13 @@ It&rsquo;d be better to use some kind of independent measure of team strength, b
 <p>Pause for visualiztion, because why not</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>g <span style="color:#f92672">=</span> sns<span style="color:#f92672">.</span>FacetGrid(wins<span style="color:#f92672">.</span>reset_index(), hue<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;team&#39;</span>, size<span style="color:#f92672">=</span><span style="color:#ae81ff">7</span>, aspect<span style="color:#f92672">=</span><span style="color:#ae81ff">.5</span>, palette<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;k&#39;</span>])
 </span></span><span style="display:flex;"><span>g<span style="color:#f92672">.</span>map(sns<span style="color:#f92672">.</span>pointplot, <span style="color:#e6db74">&#39;is_home&#39;</span>, <span style="color:#e6db74">&#39;win_pct&#39;</span>)<span style="color:#f92672">.</span>set(ylim<span style="color:#f92672">=</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>));
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_5_tidy_38_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_5_tidy_38_0.png"></p>
 <p>(It&rsquo;d be great if there was a library built on top of matplotlib that auto-labeled each point decently well. Apparently this is a difficult problem to do in general).</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>g <span style="color:#f92672">=</span> sns<span style="color:#f92672">.</span>FacetGrid(wins<span style="color:#f92672">.</span>reset_index(), col<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;team&#39;</span>, hue<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;team&#39;</span>, col_wrap<span style="color:#f92672">=</span><span style="color:#ae81ff">5</span>, size<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>)
 </span></span><span style="display:flex;"><span>g<span style="color:#f92672">.</span>map(sns<span style="color:#f92672">.</span>pointplot, <span style="color:#e6db74">&#39;is_home&#39;</span>, <span style="color:#e6db74">&#39;win_pct&#39;</span>)
 </span></span></code></pre></div><pre><code>&lt;seaborn.axisgrid.FacetGrid at 0x11a0fe588&gt;
 </code></pre>
-<p><img loading="lazy" src="/images/modern_5_tidy_40_1.png" alt="png"  />
-</p>
+<p><img alt="png" loading="lazy" src="/images/modern_5_tidy_40_1.png"></p>
 <p>Those two graphs show that most teams have a higher win-percent at home than away. So we can continue to investigate.
 Let&rsquo;s aggregate over home / away to get an overall win percent per team.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>win_percent <span style="color:#f92672">=</span> (
@@ -8632,8 +8540,7 @@ dtype: float64
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>tight_layout()
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#34;Win Percent&#34;</span>)
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_5_tidy_43_1.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_5_tidy_43_1.png"></p>
 <p>Is there a relationship between overall team strength and their home-court advantage?</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">5</span>))
 </span></span><span style="display:flex;"><span>(wins<span style="color:#f92672">.</span>win_pct
@@ -8644,8 +8551,7 @@ dtype: float64
 </span></span><span style="display:flex;"><span>)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>tight_layout()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_5_tidy_45_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_5_tidy_45_0.png"></p>
 <p>Let&rsquo;s get the team strength back into <code>df</code>.
 You could you <code>pd.merge</code>, but I prefer <code>.map</code> when joining a <code>Series</code>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>df <span style="color:#f92672">=</span> df<span style="color:#f92672">.</span>assign(away_strength<span style="color:#f92672">=</span>df[<span style="color:#e6db74">&#39;away_team&#39;</span>]<span style="color:#f92672">.</span>map(win_percent),
@@ -9467,8 +9373,7 @@ See <a href="https://github.com/akrherz/iem/blob/master/scripts/asos/iem_scraper
 </span></span><span style="display:flex;"><span>                  col<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;station&#39;</span>, hue<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;station&#39;</span>, col_wrap<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>, size<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>)
 </span></span><span style="display:flex;"><span>g<span style="color:#f92672">.</span>map(sns<span style="color:#f92672">.</span>regplot, <span style="color:#e6db74">&#39;sped&#39;</span>, <span style="color:#e6db74">&#39;gust_mph&#39;</span>)
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>savefig(<span style="color:#e6db74">&#39;../content/images/indexes_wind_gust_facet.svg&#39;</span>, transparent<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>);
-</span></span></code></pre></div><p><img loading="lazy" src="Indexes_files/Indexes_18_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="Indexes_files/Indexes_18_0.png"></p>
 <h1 id="set-operations">Set Operations</h1>
 <p>Indexes are set-like (technically <em>multi</em>sets, since you can have duplicates), so they support most python <code>set</code> operations. Indexes are immutable so you won&rsquo;t find any of the inplace <code>set</code> operations.
 One other difference is that since <code>Index</code>es are also array like, you can&rsquo;t use some infix operators like <code>-</code> for <code>difference</code>. If you have a numeric index it is unclear whether you intend to perform math operations or set operations.
@@ -10738,8 +10643,7 @@ To focus just on the merge, we&rsquo;ll aggregate hour weather data to be daily,
 </div>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>m<span style="color:#f92672">.</span>sample(n<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>)<span style="color:#f92672">.</span>pipe((sns<span style="color:#f92672">.</span>jointplot, <span style="color:#e6db74">&#39;data&#39;</span>), <span style="color:#e6db74">&#39;sped&#39;</span>, <span style="color:#e6db74">&#39;dep_delay&#39;</span>)
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>savefig(<span style="color:#e6db74">&#39;../content/images/indexes_sped_delay_join.svg&#39;</span>, transparent<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
-</span></span></code></pre></div><p><img loading="lazy" src="Indexes_files/Indexes_63_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="Indexes_files/Indexes_63_0.png"></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>m<span style="color:#f92672">.</span>groupby(<span style="color:#e6db74">&#39;skyc1&#39;</span>)<span style="color:#f92672">.</span>dep_delay<span style="color:#f92672">.</span>agg([<span style="color:#e6db74">&#39;mean&#39;</span>, <span style="color:#e6db74">&#39;count&#39;</span>])<span style="color:#f92672">.</span>sort_values(by<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;mean&#39;</span>)
 </span></span></code></pre></div><div>
 <table border="0" class="dataframe">
@@ -10888,8 +10792,7 @@ To focus just on the merge, we&rsquo;ll aggregate hour weather data to be daily,
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>set(xlabel<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Predicted&#39;</span>, ylabel<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Residual&#39;</span>)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>savefig(<span style="color:#e6db74">&#39;../content/images/indexes_resid_fit.png&#39;</span>, transparent<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
-</span></span></code></pre></div><p><img loading="lazy" src="Indexes_files/Indexes_67_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="Indexes_files/Indexes_67_0.png"></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>weather<span style="color:#f92672">.</span>head()
 </span></span></code></pre></div><div>
 <table border="0" class="dataframe">
@@ -11905,8 +11808,7 @@ And objectively the pandorable way is faster, as we&rsquo;ll test next.</p>
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>boxplot(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Method&#39;</span>, y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Time (s)&#39;</span>, data<span style="color:#f92672">=</span>timings)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
 </span></span><span style="display:flex;"><span>plt<span style="color:#f92672">.</span>tight_layout()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_4_performance_6_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_4_performance_6_0.png"></p>
 <h2 id="datatypes">Datatypes</h2>
 <p>The pandas type system essentially <a href="http://docs.scipy.org/doc/numpy/reference/arrays.scalars.html">NumPy&rsquo;s</a> with a few extensions (<code>categorical</code>, <code>datetime64</code> with timezone, <code>timedelta64</code>).
 An advantage of the DataFrame over a 2-dimensional NumPy array is that the DataFrame can have columns of various types within a single table.
@@ -12261,8 +12163,7 @@ If we just called <code>coord.reindex(idx)</code>, with no additional arguments,
 which makes sense since <code>coord.index</code> is just a regular one-level Index, while <code>idx</code> is a MultiIndex.
 We use the <code>level</code> keyword to handle the transition from the original single-level Index, to the two-leveled <code>idx</code>.</p>
 <blockquote>
-<p><code>level</code> : int or name</p>
-</blockquote>
+<p><code>level</code> : int or name</p></blockquote>
 <p>Broadcast across a level, matching Index values on the
 passed MultiIndex level</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>coord<span style="color:#f92672">.</span>reindex(idx, level<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;dest&#39;</span>)<span style="color:#f92672">.</span>head()
@@ -12853,8 +12754,7 @@ In general, you shouldn&rsquo;t do inplace operations.</p>
 <p>Second, I suspect people have a mental model of <code>inplace</code> operations happening, you know, inplace. That is, extra memory doesn&rsquo;t need to be allocated for the result. <a href="http://stackoverflow.com/a/22533110">But that might not actually be true</a>.
 Quoting Jeff Reback from that answer</p>
 <blockquote>
-<p>Their is <strong>no guarantee</strong> that an inplace operation is actually faster. Often they are actually the same operation that works on a copy, but the top-level reference is reassigned.</p>
-</blockquote>
+<p>Their is <strong>no guarantee</strong> that an inplace operation is actually faster. Often they are actually the same operation that works on a copy, but the top-level reference is reassigned.</p></blockquote>
 <p>That is, the pandas code might look something like this</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">dataframe_method</span>(self, inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>):
 </span></span><span style="display:flex;"><span>    data <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>copy()  <span style="color:#75715e"># regardless of inplace</span>
@@ -12887,8 +12787,7 @@ Let&rsquo;s do some exploratory analysis.</p>
 </span></span><span style="display:flex;"><span>   <span style="color:#f92672">.</span>plot()
 </span></span><span style="display:flex;"><span>)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_2_method_chaining_8_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_2_method_chaining_8_0.png"></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> statsmodels.api <span style="color:#66d9ef">as</span> sm
 </span></span></code></pre></div><pre><code>/Users/taugspurger/miniconda3/envs/modern-pandas/lib/python3.6/site-packages/statsmodels/compat/pandas.py:56: FutureWarning: The pandas.core.datetools module is deprecated and will be removed in a future version. Please use the pandas.tseries module instead.
   from pandas.core import datetools
@@ -12908,8 +12807,7 @@ Let&rsquo;s do some exploratory analysis.</p>
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>boxplot(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;turn&#39;</span>, y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;dep_delay&#39;</span>, data<span style="color:#f92672">=</span>flights, ax<span style="color:#f92672">=</span>ax)
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>set_ylim(<span style="color:#f92672">-</span><span style="color:#ae81ff">50</span>, <span style="color:#ae81ff">50</span>)
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_2_method_chaining_11_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_2_method_chaining_11_0.png"></p>
 <p>Doesn&rsquo;t really look like it. Maybe other planes are swapped in when one gets delayed,
 but we don&rsquo;t have data on <em>scheduled</em> flights per plane.</p>
 <p>Do flights later in the day have longer delays?</p>
@@ -12920,8 +12818,7 @@ but we don&rsquo;t have data on <em>scheduled</em> flights per plane.</p>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">.</span>query(<span style="color:#e6db74">&#39;5 &lt; dep_delay &lt; 600&#39;</span>)
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">.</span>pipe((sns<span style="color:#f92672">.</span>boxplot, <span style="color:#e6db74">&#39;data&#39;</span>), <span style="color:#e6db74">&#39;hour&#39;</span>, <span style="color:#e6db74">&#39;dep_delay&#39;</span>))
 </span></span><span style="display:flex;"><span>sns<span style="color:#f92672">.</span>despine()
-</span></span></code></pre></div><p><img loading="lazy" src="/images/modern_2_method_chaining_13_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="/images/modern_2_method_chaining_13_0.png"></p>
 <p>There could be something here. I didn&rsquo;t show it here since I filtered them out,
 but the vast majority of flights do leave on time.</p>
 <p>Thanks for reading!
@@ -13593,8 +13490,7 @@ was about indexing into a MultiIndex.
 I bring it up now because I genuinely couldn&rsquo;t tell whether the result I got was a bug or not.
 Also, from that bug report</p>
 <blockquote>
-<p>Sorry if this isn&rsquo;t actually a bug. Still very new to python. Thanks!</p>
-</blockquote>
+<p>Sorry if this isn&rsquo;t actually a bug. Still very new to python. Thanks!</p></blockquote>
 <p>Adorable.</p>
 <p>That operation was made much easier by <a href="http://pandas.pydata.org/pandas-docs/version/0.18.0/whatsnew.html#multiindexing-using-slicers">this</a> addition in 2014, which lets you slice arbitrary levels of a MultiIndex..
 Let&rsquo;s make a MultiIndexed DataFrame to work with.</p>
@@ -17332,28 +17228,24 @@ Then we can set the <code>time</code> column to be our index, which will make ou
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>df[<span style="color:#e6db74">&#39;time&#39;</span>] <span style="color:#f92672">=</span> df<span style="color:#f92672">.</span>index<span style="color:#f92672">.</span>time
 </span></span></code></pre></div><p>With these, let&rsquo;s plot how far along I was in my ride (<code>distance_miles</code>) at the time of day.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>ax <span style="color:#f92672">=</span> df<span style="color:#f92672">.</span>plot(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;time&#39;</span>, y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;distance_miles&#39;</span>)
-</span></span></code></pre></div><p><img loading="lazy" src="pp03_files/pp03_15_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="pp03_files/pp03_15_0.png"></p>
 <p>There&rsquo;s a couple problems. First of all, the data are split into morning and afternoon.
 Let&rsquo;s create a new, boolean, column indicating whether the ride took place in the morning or afternoon.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>df[<span style="color:#e6db74">&#39;is_morning&#39;</span>] <span style="color:#f92672">=</span> df<span style="color:#f92672">.</span>time <span style="color:#f92672">&lt;</span> datetime<span style="color:#f92672">.</span>time(<span style="color:#ae81ff">12</span>)
 </span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>ax <span style="color:#f92672">=</span> df[df<span style="color:#f92672">.</span>is_morning]<span style="color:#f92672">.</span>plot(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;time&#39;</span>, y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;distance_miles&#39;</span>)
-</span></span></code></pre></div><p><img loading="lazy" src="pp03_files/pp03_18_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="pp03_files/pp03_18_0.png"></p>
 <p>Better, but this still isn&rsquo;t quite what we want. When we call <code>.plot(x=..., y=...)</code> the data are sorted before being plotted. This means that an observation from one ride gets mixed up with another. So we&rsquo;ll need to group by ride, and <em>then</em> plot.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>axes <span style="color:#f92672">=</span> df[df<span style="color:#f92672">.</span>is_morning]<span style="color:#f92672">.</span>groupby(df<span style="color:#f92672">.</span>ride_id)<span style="color:#f92672">.</span>plot(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;time&#39;</span>,
 </span></span><span style="display:flex;"><span>                                                  y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;distance_miles&#39;</span>,
 </span></span><span style="display:flex;"><span>                                                  color<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;k&#39;</span>,
 </span></span><span style="display:flex;"><span>                                                  figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">12</span>, <span style="color:#ae81ff">5</span>))
-</span></span></code></pre></div><p><img loading="lazy" src="pp03_files/pp03_20_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="pp03_files/pp03_20_0.png"></p>
 <p>Much better. Groupby is one of the most powerful operations in pandas, and it pays to understand it well. Here&rsquo;s the same thing for the evening.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>axes <span style="color:#f92672">=</span> df[<span style="color:#f92672">~</span>df<span style="color:#f92672">.</span>is_morning]<span style="color:#f92672">.</span>groupby(df<span style="color:#f92672">.</span>ride_id)<span style="color:#f92672">.</span>plot(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;time&#39;</span>,
 </span></span><span style="display:flex;"><span>                                                   y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;distance_miles&#39;</span>,
 </span></span><span style="display:flex;"><span>                                                   color<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;k&#39;</span>,
 </span></span><span style="display:flex;"><span>                                                   figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">12</span>, <span style="color:#ae81ff">5</span>))
-</span></span></code></pre></div><p><img loading="lazy" src="pp03_files/pp03_22_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="pp03_files/pp03_22_0.png"></p>
 <p>Fun. The horizontal distance is the length of time it took me to make the ride. The starting point on the horizontal axis conveys the time that I set out.
 I like this chart because it also conveys the start time of each ride.
 The plot shows that the morning ride typically took longer, but we can verify that.</p>
@@ -17389,8 +17281,7 @@ Name: ride_time_secs, dtype: float64
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>legend([morning_legend, evening_legend], [<span style="color:#e6db74">&#39;Morning&#39;</span>, <span style="color:#e6db74">&#39;Evening&#39;</span>])
 </span></span></code></pre></div><pre><code>&lt;matplotlib.legend.Legend at 0x115640198&gt;
 </code></pre>
-<p><img loading="lazy" src="pp03_files/pp03_26_1.png" alt="png"  />
-</p>
+<p><img alt="png" loading="lazy" src="pp03_files/pp03_26_1.png"></p>
 <p>There&rsquo;s a bit of boilerplate at the end. pandas tries to add a legend element for each ride ID. It doesn&rsquo;t know that we only care whether it&rsquo;s morning or evening. So instead we just fake it, creating two lines thate are invisible, and labeling them appropriately.</p>
 <p>Anyway, we&rsquo;ve accomplished our original goal. The steeper slope on the evening rides show that they typically took me less time. I guess I wasn&rsquo;t too excited to get to school in the morning. The joys of being a grad student.</p>
 <p>I&rsquo;m sure I&rsquo;m not the only one noticing that long evening ride sticking out from the rest. Let&rsquo;s note it&rsquo;s ride ID and follow up. We need the <code>ride_id</code> so groupby that. It&rsquo;s the longest ride so take the <code>max</code> of the distance. And we want the <code>ride_id</code> of the maximum distance, so take the <code>argmax</code> of that. These last three sentances can be beautifully chained together into a single line that reads like poetry.</p>
@@ -18191,8 +18082,7 @@ If I spend a long time in the same place, there&rsquo;s a good chance that I fin
 </span></span><span style="display:flex;"><span>axes[<span style="color:#ae81ff">1</span>]<span style="color:#f92672">.</span>set_title(<span style="color:#e6db74">&#34;Stopped Time&#34;</span>)
 </span></span></code></pre></div><pre><code>&lt;matplotlib.text.Text at 0x11531f3c8&gt;
 </code></pre>
-<p><img loading="lazy" src="pp02_files/pp02_7_1.png" alt="png"  />
-</p>
+<p><img alt="png" loading="lazy" src="pp02_files/pp02_7_1.png"></p>
 <p>Let&rsquo;s dig into that spike in the stopped time. We&rsquo;ll get it&rsquo;s ride id with the <code>Series.argmax</code> method.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>idx <span style="color:#f92672">=</span> times<span style="color:#f92672">.</span>stopped_time_secs<span style="color:#f92672">.</span>argmax()
 </span></span><span style="display:flex;"><span>long_stop <span style="color:#f92672">=</span> df[df<span style="color:#f92672">.</span>ride_id <span style="color:#f92672">==</span> idx]
@@ -18203,8 +18093,7 @@ If I spend a long time in the same place, there&rsquo;s a good chance that I fin
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>hlines(avg_distance, <span style="color:#f92672">*</span>ax<span style="color:#f92672">.</span>get_xlim())
 </span></span></code></pre></div><pre><code>&lt;matplotlib.collections.LineCollection at 0x115004160&gt;
 </code></pre>
-<p><img loading="lazy" src="pp02_files/pp02_9_1.png" alt="png"  />
-</p>
+<p><img alt="png" loading="lazy" src="pp02_files/pp02_9_1.png"></p>
 <p>So it looks like I started my timer, sat around for about 15 minutes, and then continued with my normal ride (I verified that by plotting the average distance travelled per ride, and it was right on target).</p>
 <p>We can use most of the columns fine, it&rsquo;s just the the <code>time</code> column we need to be careful with. Let&rsquo;s
 make an adjusted time column <code>time_adj</code> that accounts for the stopped time.</p>

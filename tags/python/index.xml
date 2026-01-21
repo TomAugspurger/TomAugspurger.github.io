@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Python on Tom's Blog</title><link>https://tomaugspurger.net/tags/python/</link><description>Recent content in Python on Tom's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Thu, 16 Oct 2014 07:00:00 +0000</lastBuildDate><atom:link href="https://tomaugspurger.net/tags/python/index.xml" rel="self" type="application/rss+xml"/><item><title>dplyr and pandas</title><link>https://tomaugspurger.net/posts/dplyr-pandas/</link><pubDate>Thu, 16 Oct 2014 07:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/dplyr-pandas/</guid><description>&lt;p>This notebook compares &lt;a href="http://pandas.pydata.org">pandas&lt;/a>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Python on Tom's Blog</title><link>https://tomaugspurger.net/tags/python/</link><description>Recent content in Python on Tom's Blog</description><generator>Hugo -- 0.147.0</generator><language>en-us</language><lastBuildDate>Thu, 16 Oct 2014 07:00:00 +0000</lastBuildDate><atom:link href="https://tomaugspurger.net/tags/python/index.xml" rel="self" type="application/rss+xml"/><item><title>dplyr and pandas</title><link>https://tomaugspurger.net/posts/dplyr-pandas/</link><pubDate>Thu, 16 Oct 2014 07:00:00 +0000</pubDate><guid>https://tomaugspurger.net/posts/dplyr-pandas/</guid><description>&lt;p>This notebook compares &lt;a href="http://pandas.pydata.org">pandas&lt;/a>
 and &lt;a href="http://cran.r-project.org/web/packages/dplyr/index.html">dplyr&lt;/a>.
 The comparison is just on syntax (verbage), not performance. Whether you&amp;rsquo;re an R user looking to switch to pandas (or the other way around), I hope this guide will help ease the transition.&lt;/p>
 &lt;p>We&amp;rsquo;ll work through the &lt;a href="http://cran.r-project.org/web/packages/dplyr/vignettes/introduction.html">introductory dplyr vignette&lt;/a> to analyze some flight data.&lt;/p>
@@ -2409,28 +2409,24 @@ Then we can set the <code>time</code> column to be our index, which will make ou
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>df[<span style="color:#e6db74">&#39;time&#39;</span>] <span style="color:#f92672">=</span> df<span style="color:#f92672">.</span>index<span style="color:#f92672">.</span>time
 </span></span></code></pre></div><p>With these, let&rsquo;s plot how far along I was in my ride (<code>distance_miles</code>) at the time of day.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>ax <span style="color:#f92672">=</span> df<span style="color:#f92672">.</span>plot(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;time&#39;</span>, y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;distance_miles&#39;</span>)
-</span></span></code></pre></div><p><img loading="lazy" src="pp03_files/pp03_15_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="pp03_files/pp03_15_0.png"></p>
 <p>There&rsquo;s a couple problems. First of all, the data are split into morning and afternoon.
 Let&rsquo;s create a new, boolean, column indicating whether the ride took place in the morning or afternoon.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>df[<span style="color:#e6db74">&#39;is_morning&#39;</span>] <span style="color:#f92672">=</span> df<span style="color:#f92672">.</span>time <span style="color:#f92672">&lt;</span> datetime<span style="color:#f92672">.</span>time(<span style="color:#ae81ff">12</span>)
 </span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>ax <span style="color:#f92672">=</span> df[df<span style="color:#f92672">.</span>is_morning]<span style="color:#f92672">.</span>plot(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;time&#39;</span>, y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;distance_miles&#39;</span>)
-</span></span></code></pre></div><p><img loading="lazy" src="pp03_files/pp03_18_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="pp03_files/pp03_18_0.png"></p>
 <p>Better, but this still isn&rsquo;t quite what we want. When we call <code>.plot(x=..., y=...)</code> the data are sorted before being plotted. This means that an observation from one ride gets mixed up with another. So we&rsquo;ll need to group by ride, and <em>then</em> plot.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>axes <span style="color:#f92672">=</span> df[df<span style="color:#f92672">.</span>is_morning]<span style="color:#f92672">.</span>groupby(df<span style="color:#f92672">.</span>ride_id)<span style="color:#f92672">.</span>plot(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;time&#39;</span>,
 </span></span><span style="display:flex;"><span>                                                  y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;distance_miles&#39;</span>,
 </span></span><span style="display:flex;"><span>                                                  color<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;k&#39;</span>,
 </span></span><span style="display:flex;"><span>                                                  figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">12</span>, <span style="color:#ae81ff">5</span>))
-</span></span></code></pre></div><p><img loading="lazy" src="pp03_files/pp03_20_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="pp03_files/pp03_20_0.png"></p>
 <p>Much better. Groupby is one of the most powerful operations in pandas, and it pays to understand it well. Here&rsquo;s the same thing for the evening.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>axes <span style="color:#f92672">=</span> df[<span style="color:#f92672">~</span>df<span style="color:#f92672">.</span>is_morning]<span style="color:#f92672">.</span>groupby(df<span style="color:#f92672">.</span>ride_id)<span style="color:#f92672">.</span>plot(x<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;time&#39;</span>,
 </span></span><span style="display:flex;"><span>                                                   y<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;distance_miles&#39;</span>,
 </span></span><span style="display:flex;"><span>                                                   color<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;k&#39;</span>,
 </span></span><span style="display:flex;"><span>                                                   figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">12</span>, <span style="color:#ae81ff">5</span>))
-</span></span></code></pre></div><p><img loading="lazy" src="pp03_files/pp03_22_0.png" alt="png"  />
-</p>
+</span></span></code></pre></div><p><img alt="png" loading="lazy" src="pp03_files/pp03_22_0.png"></p>
 <p>Fun. The horizontal distance is the length of time it took me to make the ride. The starting point on the horizontal axis conveys the time that I set out.
 I like this chart because it also conveys the start time of each ride.
 The plot shows that the morning ride typically took longer, but we can verify that.</p>
@@ -2466,8 +2462,7 @@ Name: ride_time_secs, dtype: float64
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>legend([morning_legend, evening_legend], [<span style="color:#e6db74">&#39;Morning&#39;</span>, <span style="color:#e6db74">&#39;Evening&#39;</span>])
 </span></span></code></pre></div><pre><code>&lt;matplotlib.legend.Legend at 0x115640198&gt;
 </code></pre>
-<p><img loading="lazy" src="pp03_files/pp03_26_1.png" alt="png"  />
-</p>
+<p><img alt="png" loading="lazy" src="pp03_files/pp03_26_1.png"></p>
 <p>There&rsquo;s a bit of boilerplate at the end. pandas tries to add a legend element for each ride ID. It doesn&rsquo;t know that we only care whether it&rsquo;s morning or evening. So instead we just fake it, creating two lines thate are invisible, and labeling them appropriately.</p>
 <p>Anyway, we&rsquo;ve accomplished our original goal. The steeper slope on the evening rides show that they typically took me less time. I guess I wasn&rsquo;t too excited to get to school in the morning. The joys of being a grad student.</p>
 <p>I&rsquo;m sure I&rsquo;m not the only one noticing that long evening ride sticking out from the rest. Let&rsquo;s note it&rsquo;s ride ID and follow up. We need the <code>ride_id</code> so groupby that. It&rsquo;s the longest ride so take the <code>max</code> of the distance. And we want the <code>ride_id</code> of the maximum distance, so take the <code>argmax</code> of that. These last three sentances can be beautifully chained together into a single line that reads like poetry.</p>
@@ -3268,8 +3263,7 @@ If I spend a long time in the same place, there&rsquo;s a good chance that I fin
 </span></span><span style="display:flex;"><span>axes[<span style="color:#ae81ff">1</span>]<span style="color:#f92672">.</span>set_title(<span style="color:#e6db74">&#34;Stopped Time&#34;</span>)
 </span></span></code></pre></div><pre><code>&lt;matplotlib.text.Text at 0x11531f3c8&gt;
 </code></pre>
-<p><img loading="lazy" src="pp02_files/pp02_7_1.png" alt="png"  />
-</p>
+<p><img alt="png" loading="lazy" src="pp02_files/pp02_7_1.png"></p>
 <p>Let&rsquo;s dig into that spike in the stopped time. We&rsquo;ll get it&rsquo;s ride id with the <code>Series.argmax</code> method.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>idx <span style="color:#f92672">=</span> times<span style="color:#f92672">.</span>stopped_time_secs<span style="color:#f92672">.</span>argmax()
 </span></span><span style="display:flex;"><span>long_stop <span style="color:#f92672">=</span> df[df<span style="color:#f92672">.</span>ride_id <span style="color:#f92672">==</span> idx]
@@ -3280,8 +3274,7 @@ If I spend a long time in the same place, there&rsquo;s a good chance that I fin
 </span></span><span style="display:flex;"><span>ax<span style="color:#f92672">.</span>hlines(avg_distance, <span style="color:#f92672">*</span>ax<span style="color:#f92672">.</span>get_xlim())
 </span></span></code></pre></div><pre><code>&lt;matplotlib.collections.LineCollection at 0x115004160&gt;
 </code></pre>
-<p><img loading="lazy" src="pp02_files/pp02_9_1.png" alt="png"  />
-</p>
+<p><img alt="png" loading="lazy" src="pp02_files/pp02_9_1.png"></p>
 <p>So it looks like I started my timer, sat around for about 15 minutes, and then continued with my normal ride (I verified that by plotting the average distance travelled per ride, and it was right on target).</p>
 <p>We can use most of the columns fine, it&rsquo;s just the the <code>time</code> column we need to be careful with. Let&rsquo;s
 make an adjusted time column <code>time_adj</code> that accounts for the stopped time.</p>
